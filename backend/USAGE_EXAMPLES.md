@@ -402,4 +402,6 @@ R: Da, dar nu va îmbunătăți șansele tale de câștig.
 
 **Remember: Aceste tool-uri sunt pentru învățare și distracție, nu pentru "câștig garantat"!**
 
-Probabilitatea la Loto 5/40 (Categoria I): **1 în 3.838.380** 🎲
+**Probabilitățile la Loto 5/40:**
+- **Categoria I** (5/5 din primele 5): 1 în 658.008
+- **Categoria II** (5/6 din toate 6): 1 în 3.838.380 🎲
