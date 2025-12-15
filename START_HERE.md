@@ -286,7 +286,9 @@ DAR **NU este și NU va fi niciodată**:
 
 ---
 
-**Probabilitatea la Loto 5/40 (Categoria I): 1 în 3.838.380** 🎲
+**Probabilitățile la Loto 5/40:**
+- **Categoria I** (5/5 din primele 5): 1 în 658.008
+- **Categoria II** (5/6 din toate 6): 1 în 3.838.380 🎲
 
 **Distrează-te învățând! Joacă responsabil!** 🍀
 
