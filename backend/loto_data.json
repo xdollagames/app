@@ -1,12 +1,12 @@
 {
   "total_draws": 1,
   "years": [
-    2025
+    2024
   ],
-  "extracted_at": "2025-12-15T22:27:22.590945",
+  "extracted_at": "2025-12-15T22:27:38.929598",
   "draws": [
     {
-      "date": "2025-01-01",
+      "date": "2024-01-01",
       "date_str": "Numere extrase:",
       "numbers": [
         41,
@@ -24,7 +24,7 @@
         43,
         48
       ],
-      "year": 2025
+      "year": 2024
     }
   ]
 }
