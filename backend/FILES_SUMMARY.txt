@@ -150,7 +150,7 @@ Acest sistem NU poate prezice rezultatele Loto!
 
 ✗ NU este sistem de câștig
 ✗ NU poate "hăcui" loteria
-✗ Toate combinațiile au aceleași șanse: 1 în 3.838.380
+✗ Șansele: Cat. I = 1 în 658.008 | Cat. II = 1 în 3.838.380
 
 Joacă responsabil! 🍀
 
