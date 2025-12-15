@@ -283,7 +283,9 @@ DAR nu pot prezice rezultatele viitoare!
 ✓ Combinația aleasă complet random
 ✓ Combinația ta preferată (ziua de naștere, etc.)
 
-Probabilitatea de a câștiga la categoria I: 1 în 3.838.380
+Probabilitatea de a câștiga:
+  • Categoria I (5/5 din primele 5): 1 în 658.008
+  • Categoria II (5/6 din toate 6): 1 în 3.838.380
 ```
 
 ---
