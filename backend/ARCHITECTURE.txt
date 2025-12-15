@@ -1,0 +1,225 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                    SISTEM UNIFICAT ANALIZĂ LOTERII                         ║
+║                         Architecture Overview                              ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│                            USER INTERFACE                                 │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                           │
+│   Metoda 1: Direct Commands                                              │
+│   ┌─────────────────────────────────────────────────────────────┐       │
+│   │ python3 unified_lottery_scraper.py --lottery 6-49 ...       │       │
+│   │ python3 unified_pattern_finder.py --lottery 6-49 ...        │       │
+│   └─────────────────────────────────────────────────────────────┘       │
+│                                                                           │
+│   Metoda 2: Helper Script                                                │
+│   ┌─────────────────────────────────────────────────────────────┐       │
+│   │ ./quick_analyze.sh 6-49 2024                                │       │
+│   │ (Automated: Scraping → Analysis → Results)                  │       │
+│   └─────────────────────────────────────────────────────────────┘       │
+│                                                                           │
+└──────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│                         CONFIGURATION LAYER                               │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                           │
+│   lottery_config.py                                                      │
+│   ┌──────────────────────────────────────────────────────────┐          │
+│   │  LOTTERY_CONFIGS = {                                      │          │
+│   │    '5-40': LotteryConfig(...)  # Loto 5/40              │          │
+│   │    '6-49': LotteryConfig(...)  # Loto 6/49              │          │
+│   │    'joker': LotteryConfig(...) # Joker (composite)       │          │
+│   │  }                                                        │          │
+│   │                                                           │          │
+│   │  - URL paths                                             │          │
+│   │  - Number ranges                                         │          │
+│   │  - Composite structure                                   │          │
+│   └──────────────────────────────────────────────────────────┘          │
+│                                                                           │
+└──────────────────────────────────────────────────────────────────────────┘
+                │                                    │
+                ▼                                    ▼
+┌───────────────────────────┐       ┌────────────────────────────────────┐
+│   DATA COLLECTION LAYER   │       │     ANALYSIS LAYER                 │
+├───────────────────────────┤       ├────────────────────────────────────┤
+│                           │       │                                    │
+│ unified_lottery_scraper   │       │ unified_pattern_finder.py          │
+│ .py                       │       │                                    │
+│ ┌───────────────────────┐ │       │ ┌────────────────────────────────┐ │
+│ │ Web Scraping         │ │       │ │ Pattern Analysis              │ │
+│ │ - noroc-chior.ro     │ │       │ │ - RNG Testing                 │ │
+│ │ - BeautifulSoup4     │ │       │ │ - Seed Finding                │ │
+│ │ - Requests           │ │       │ │ - Multiprocessing             │ │
+│ └───────────────────────┘ │       │ └────────────────────────────────┘ │
+│ ┌───────────────────────┐ │       │ ┌────────────────────────────────┐ │
+│ │ Data Processing      │ │       │ │ Result Generation             │ │
+│ │ - Parse HTML         │ │       │ │ - Success Rate Calculation    │ │
+│ │ - Extract numbers    │ │       │ │ - Pattern Detection           │ │
+│ │ - Date parsing       │ │       │ │ - Predictions                 │ │
+│ └───────────────────────┘ │       │ └────────────────────────────────┘ │
+│ ┌───────────────────────┐ │       │                                    │
+│ │ Composite Handling   │ │       │                Uses:                │
+│ │ - Breakdown parts    │ │       │ ┌────────────────────────────────┐ │
+│ │ - Separate analysis  │ │       │ │ advanced_rng_library.py        │ │
+│ └───────────────────────┘ │       │ │ - 18 RNG Implementations       │ │
+│            │              │       │ │ - Number Generation            │ │
+│            ▼              │       │ └────────────────────────────────┘ │
+│   ┌─────────────────┐    │       │ ┌────────────────────────────────┐ │
+│   │ JSON Output     │    │       │ │ advanced_pattern_finder.py     │ │
+│   │ - lottery_*.json│    │       │ │ - Mathematical Patterns        │ │
+│   └─────────────────┘    │       │ │ - Formula Detection            │ │
+│                           │       │ └────────────────────────────────┘ │
+└───────────────────────────┘       │            │                       │
+                                    │            ▼                       │
+                                    │   ┌─────────────────┐             │
+                                    │   │ JSON Results    │             │
+                                    │   │ - *_pragmatic_  │             │
+                                    │   │   results.json  │             │
+                                    │   └─────────────────┘             │
+                                    └────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│                         SUPPORTING COMPONENTS                             │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                           │
+│  Testing & Validation              Documentation                         │
+│  ┌──────────────────────┐          ┌──────────────────────────┐         │
+│  │ test_all_lotteries   │          │ README_UNIFIED_SYSTEM    │         │
+│  │ - Automated tests    │          │ - Complete manual        │         │
+│  │ - All 3 lotteries    │          │ - Usage examples         │         │
+│  └──────────────────────┘          │ - Parameters             │         │
+│                                     └──────────────────────────┘         │
+│  Utilities                          ┌──────────────────────────┐         │
+│  ┌──────────────────────┐          │ MIGRATION_GUIDE          │         │
+│  │ quick_analyze.sh     │          │ - Old vs New             │         │
+│  │ - One-command flow   │          │ - Command mapping        │         │
+│  │ - Scrape + Analyze   │          │ - Troubleshooting        │         │
+│  └──────────────────────┘          └──────────────────────────┘         │
+│                                     ┌──────────────────────────┐         │
+│                                     │ EXAMPLES.md              │         │
+│                                     │ - Real workflows         │         │
+│                                     │ - Use cases              │         │
+│                                     │ - Scenarios              │         │
+│                                     └──────────────────────────┘         │
+└──────────────────────────────────────────────────────────────────────────┘
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                              DATA FLOW                                     ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+1. User Input
+   └─> lottery type (5-40, 6-49, joker) + year(s)
+
+2. Configuration Loading
+   └─> lottery_config.py provides:
+       - URL path
+       - Number ranges
+       - Draw format
+       - Composite structure (if applicable)
+
+3. Data Scraping
+   └─> unified_lottery_scraper.py:
+       - Fetches from noroc-chior.ro
+       - Parses HTML tables
+       - Extracts numbers
+       - Handles composite breakdowns
+       - Outputs: lottery_*.json
+
+4. Pattern Analysis
+   └─> unified_pattern_finder.py:
+       - Loads lottery data + config
+       - Tests each RNG type:
+         * Generate numbers for each draw
+         * Find best seed
+         * Calculate matches
+         * Compute success rate
+       - Analyzes seed sequences
+       - Detects patterns (if any)
+       - Generates predictions
+       - Outputs: *_pragmatic_results.json
+
+5. Results Interpretation
+   └─> User reviews:
+       - Success rates per RNG
+       - Pattern detection results
+       - Predictions (if applicable)
+       - Confirmation of randomness
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                          KEY FEATURES                                      ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+✅ UNIFIED ARCHITECTURE
+   - Single codebase for all lotteries
+   - Configuration-driven
+   - No code duplication
+
+✅ EXTENSIBLE
+   - Add new lottery: 5 lines in config
+   - Supports simple & composite formats
+   - Easy to maintain
+
+✅ BACKWARDS COMPATIBLE
+   - Old 5/40 scripts still work
+   - Core libraries (RNG, patterns) unchanged
+   - Gradual migration possible
+
+✅ PERFORMANCE
+   - Multiprocessing support
+   - Quick test mode (4 RNGs)
+   - Full mode (18 RNGs)
+   - Configurable search space
+
+✅ COMPOSITE LOTTERY SUPPORT
+   - Automatic breakdown (Joker: 5/45 + 1/20)
+   - Separate component analysis
+   - Combined predictions
+
+✅ COMPREHENSIVE TESTING
+   - Automated test suite
+   - All 3 lotteries verified
+   - Helper scripts for workflows
+
+✅ DOCUMENTATION
+   - Complete usage guide
+   - Migration guide
+   - Examples & workflows
+   - Architecture docs
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                       FILE DEPENDENCIES                                    ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+lottery_config.py
+    ↓
+    ├─→ unified_lottery_scraper.py
+    │   └─→ Outputs: *_data.json
+    │
+    └─→ unified_pattern_finder.py
+        ├─→ Requires: *_data.json
+        ├─→ Uses: advanced_rng_library.py
+        ├─→ Uses: advanced_pattern_finder.py
+        └─→ Outputs: *_pragmatic_results.json
+
+quick_analyze.sh
+    ├─→ Calls: unified_lottery_scraper.py
+    └─→ Calls: unified_pattern_finder.py
+
+test_all_lotteries.sh
+    └─→ Tests: All components
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                       SUPPORTED LOTTERIES                                  ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────┬──────────┬──────────────────┬────────────┬─────────────┐
+│ Lottery    │ Code     │ Format           │ Type       │ Status      │
+├────────────┼──────────┼──────────────────┼────────────┼─────────────┤
+│ Loto 5/40  │ 5-40     │ 6 from 1-40      │ Simple     │ ✅ Working  │
+│ Loto 6/49  │ 6-49     │ 6 from 1-49      │ Simple     │ ✅ Working  │
+│ Joker      │ joker    │ 5/45 + 1/20      │ Composite  │ ✅ Working  │
+└────────────┴──────────┴──────────────────┴────────────┴─────────────┘
+
