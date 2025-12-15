@@ -231,15 +231,109 @@ class MiddleSquare:
         return self.state
 
 
+class LCG_Weak:
+    """LCG 'HACKED' din video - parametrii slabi"""
+    __slots__ = ['state']
+    
+    def __init__(self, seed: int):
+        self.state = seed % 233280
+    
+    def next(self) -> int:
+        # Exact din video: s = (s * 9301 + 49297) % 233280
+        self.state = (self.state * 9301 + 49297) % 233280
+        return self.state
+
+
+class XorshiftSimple:
+    """Xorshift simplu din video - 'not hacked' variant 1"""
+    __slots__ = ['state']
+    
+    def __init__(self, seed: int):
+        self.state = seed & 0xFFFFFFFF
+        if self.state == 0:
+            self.state = 1
+    
+    def next(self) -> int:
+        # Exact din video:
+        # s = s ^ (s << 13);
+        # s = s ^ (s >> 7);
+        # s = s ^ (s << 17);
+        s = self.state
+        s = s ^ ((s << 13) & 0xFFFFFFFF)
+        s = s ^ (s >> 7)
+        s = s ^ ((s << 17) & 0xFFFFFFFF)
+        self.state = s
+        return s
+
+
+class ComplexHash:
+    """Complex hash din video - 'not hacked' variant 2"""
+    __slots__ = ['state']
+    
+    def __init__(self, seed: int):
+        self.state = seed & 0xFFFFFFFF
+    
+    def next(self) -> int:
+        # Exact din video (mai mult sau mai puțin):
+        # s = ((s << 13) ^ s) - (s >> 21);
+        # n = (s * (s * s * 15731 + 789221) + 771171059) & 0x7FFFFFFF;
+        # n += s;
+        # n = ((n << 13) ^ n) - (n >> 21);
+        
+        s = self.state
+        s = (((s << 13) & 0xFFFFFFFF) ^ s) - (s >> 21)
+        s = s & 0xFFFFFFFF
+        
+        n = (s * (s * s * 15731 + 789221) + 771171059) & 0x7FFFFFFF
+        n = (n + s) & 0xFFFFFFFF
+        n = (((n << 13) & 0xFFFFFFFF) ^ n) - (n >> 21)
+        n = n & 0xFFFFFFFF
+        
+        self.state = n
+        return n
+
+
+class PHPRand:
+    """PHP rand() - combinație LCG"""
+    __slots__ = ['state']
+    
+    def __init__(self, seed: int):
+        self.state = seed & 0xFFFFFFFF
+    
+    def next(self) -> int:
+        # PHP mt_rand() folosește Mersenne Twister
+        # Dar vechi php rand() era LCG
+        self.state = (self.state * 1103515245 + 12345) & 0x7FFFFFFF
+        return self.state
+
+
+class JavaRandom:
+    """Java Random - LCG specific"""
+    __slots__ = ['state']
+    
+    def __init__(self, seed: int):
+        self.state = (seed ^ 0x5DEECE66D) & ((1 << 48) - 1)
+    
+    def next(self) -> int:
+        # Java's LCG
+        self.state = (self.state * 0x5DEECE66D + 0xB) & ((1 << 48) - 1)
+        return (self.state >> 16) & 0xFFFFFFFF
+
+
 # Factory pentru crearea RNG-urilor
 RNG_TYPES = {
     'lcg_glibc': LCG_GLIBC,
     'lcg_minstd': LCG_MINSTD,
     'lcg_randu': LCG_RANDU,
     'lcg_borland': LCG_BORLAND,
+    'lcg_weak': LCG_Weak,  # "HACKED" din video
     'xorshift32': Xorshift32,
     'xorshift64': Xorshift64,
     'xorshift128': Xorshift128,
+    'xorshift_simple': XorshiftSimple,  # "not hacked" 1 din video
+    'complex_hash': ComplexHash,  # "not hacked" 2 din video
+    'php_rand': PHPRand,  # PHP specific
+    'java_random': JavaRandom,  # Java specific
     'mersenne': MersenneTwister,
     'pcg32': PCG32,
     'mwc': MultiplyWithCarry,
