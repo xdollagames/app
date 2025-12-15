@@ -39,11 +39,15 @@ class LotoScraper:
             
             soup = BeautifulSoup(response.content, 'html.parser')
             
-            # Găsește tabelul cu rezultate
-            table = soup.find('table', class_='bilet')
-            if not table:
-                print(f"Nu s-a găsit tabel pentru anul {year}")
+            # Găsește tabelele - sunt 2: primul e header-ul cu rezultate recente, al doilea e arhiva
+            tables = soup.find_all('table', class_='bilet')
+            
+            # Arhiva este al doilea tabel (dacă există)
+            if len(tables) < 2:
+                print(f"Nu s-a găsit tabel de arhivă pentru anul {year}")
                 return []
+            
+            table = tables[1]  # Al doilea tabel este arhiva
             
             results = []
             rows = table.find_all('tr')
