@@ -346,7 +346,26 @@ class CPUOnlyPredictor:
         print(f"⚡ Reverse Engineering: 6 LCG (INSTANT)")
         print(f"📊 Pattern-uri: 23 (toate pe CPU)")
         print(f"🔍 Seed range: {seed_range[0]:,} - {seed_range[1]:,}")
-        print(f"📈 Search size: {search_size:,} seeds per extragere\n")
+        print(f"📈 Base search size: {search_size:,} seeds")
+        
+        # Calculează search size ajustat
+        import math
+        if last_n:
+            num_extractions = last_n
+        elif start_year and end_year:
+            num_extractions = (end_year - start_year + 1) * 50  # Estimare
+        else:
+            num_extractions = 10
+        
+        scale_factor = math.sqrt(max(1, num_extractions))
+        adjusted_search = int(search_size / scale_factor)
+        mersenne_search = min(50000, adjusted_search // 10)
+        
+        print(f"📉 Optimizare dinamică:")
+        print(f"   {num_extractions} extrageri → scale factor: {scale_factor:.2f}")
+        print(f"   Search ajustat: {adjusted_search:,} seeds (RNG-uri normale)")
+        print(f"   Search Mersenne: {mersenne_search:,} seeds (foarte lent)")
+        print()
         
         # Load
         if last_n:
