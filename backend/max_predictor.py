@@ -829,8 +829,8 @@ def analyze_pattern_worker(args):
         return (pattern_name, {'pred': None, 'error': float('inf'), 'formula': f'error: {str(e)}'})
 
 
-def analyze_all_patterns_parallel(seeds: List[int]) -> Dict:
-    """Analizează TOATE cele 10 pattern-uri - EXHAUSTIV"""
+def analyze_all_patterns_parallel_gpu(seeds: List[int]) -> Dict:
+    """Analizează TOATE pattern-urile - OPTIMIZAT GPU + CPU PARALLEL"""
     if len(seeds) < 3:
         return {
             'pattern_type': 'insufficient_data',
