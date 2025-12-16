@@ -527,7 +527,8 @@ class CPUOnlyPredictor:
         print(f"⚡ Reverse Engineering: 6 LCG (INSTANT)")
         print(f"📊 Pattern-uri: 23 (toate pe CPU)")
         print(f"🔍 Seed range: {seed_range[0]:,} - {seed_range[1]:,}")
-        print(f"📈 Base search size: {search_size:,} seeds")
+        print(f"📈 Search: {search_size:,} seeds (100% EXHAUSTIVE!)")
+        print(f"⏰ Mersenne timeout: {mersenne_timeout} min per extragere")
         
         # Calculează search size ajustat
         import math
