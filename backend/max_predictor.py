@@ -1000,9 +1000,6 @@ def analyze_all_patterns_parallel_gpu(seeds: List[int]) -> Dict:
     # Selectare cel mai bun pattern
     valid_patterns = {k: v for k, v in all_patterns.items() 
                      if v['pred'] is not None and not np.isnan(v['error']) and v['error'] != float('inf')}
-    # Selectare cel mai bun pattern
-    valid_patterns = {k: v for k, v in all_patterns.items() 
-                     if v['pred'] is not None and not np.isnan(v['error']) and v['error'] != float('inf')}
     
     if not valid_patterns:
         return {
