@@ -48,10 +48,12 @@ class XorshiftInvestigator:
         
         for seed in range(1, max_seed):
             try:
-                generated = self.rng_lib.xorshift_simple(
-                    seed, 
-                    self.config['numbers_to_draw'], 
-                    self.config['max_number']
+                rng = create_rng('xorshift_simple', seed)
+                generated = generate_numbers(
+                    rng,
+                    self.config.numbers_to_draw,
+                    self.config.min_number,
+                    self.config.max_number
                 )
                 if sorted(generated) == target_sorted:
                     return seed
