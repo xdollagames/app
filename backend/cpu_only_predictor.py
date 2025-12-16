@@ -217,6 +217,11 @@ def cpu_worker_chunked(args):
         except:
             continue
     
+    # Nu am găsit nimic în acest chunk
+    # Dacă e ultimul chunk (seed_chunk_end == search total), salvează NOT_FOUND
+    if seed_chunk_end >= seed_range[1]:
+        cache_seed(lottery_type, date_str, rng_name, 'NOT_FOUND')
+    
     return (draw_idx, None, False)
     """Worker CPU - cu CACHE pentru seeds deja găsite!"""
     import time
