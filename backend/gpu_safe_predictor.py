@@ -418,10 +418,10 @@ class GPUSafePredictor:
         print(f"{'='*70}\n")
         
         num_cores = cpu_count()
-        print(f"🚀 GPU Thread: Va testa xorshift_simple cu CUDA batching")
-        print(f"💻 CPU Multiprocessing: {num_cores} cores, 20 RNG-uri")
+        print(f"🚀 GPU Thread: Va testa {len(gpu_rngs_to_test)} RNG-uri (1 kernel demo)")
+        print(f"💻 CPU: {num_cores-4} cores, {len([r for r in RNG_TYPES.keys() if r not in gpu_rngs_to_test])} RNG-uri PARALEL")
         print(f"🎯 Reverse Engineering: 6 LCG variants")
-        print(f"⚡ GPU + CPU rulează PARALEL!\n")
+        print(f"⚡ GPU + {len([r for r in RNG_TYPES.keys() if r not in gpu_rngs_to_test])} RNG-uri CPU rulează SIMULTAN!\n")
         
         # Load
         if last_n:
