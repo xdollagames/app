@@ -747,7 +747,7 @@ class GPUSafePredictor:
         for rng_name, result in sorted(rng_results.items(), key=lambda x: x[1]['success_rate'], reverse=True):
             print(f"\n{rng_name.upper()} ({result['success_rate']:.1%}):")
             
-            pattern = analyze_patterns_with_gpu(result['seeds'])
+            pattern = analyze_patterns_parallel_gpu_cpu(result['seeds'])
             
             print(f"  Pattern: {pattern['pattern_type']}")
             print(f"  Formula: {pattern.get('formula', 'N/A')}")
