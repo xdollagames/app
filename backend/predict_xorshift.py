@@ -93,27 +93,7 @@ class XorshiftInvestigator:
                 
         return filtered_data
     
-    def find_seed_for_draw(self, numbers: List[int], max_seed: int = 1000000) -> Optional[int]:
-        """Găsește seed-ul care generează numerele date folosind xorshift_simple"""
-        target_sorted = sorted(numbers)
-        
-        for seed in range(1, max_seed):
-            try:
-                rng = create_rng('xorshift_simple', seed)
-                generated = generate_numbers(
-                    rng,
-                    self.config.numbers_to_draw,
-                    self.config.min_number,
-                    self.config.max_number
-                )
-                if sorted(generated) == target_sorted:
-                    return seed
-            except:
-                continue
-                
-        return None
-    
-    def analyze_seed_pattern(self, seeds: List[int]) -> Dict:
+    def run_investigation(self, start_year: int = 2010, end_year: int = 2025):
         """Analizează pattern-ul matematic al seed-urilor"""
         if len(seeds) < 3:
             return {
