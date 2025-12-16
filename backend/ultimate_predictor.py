@@ -367,6 +367,12 @@ class UltimatePredictor:
         
         print(f"✅ {len(data)} extrageri încărcate\n")
         
+        # Afișează extragerile
+        print(f"📋 Extrageri încărcate:")
+        for i, entry in enumerate(data, 1):
+            print(f"  {i}. {entry['data']:15s} → {entry['numere']}")
+        print()
+        
         # Testare toate RNG-urile
         print(f"{'='*70}")
         print(f"  FAZA 1: TESTARE TOATE RNG-URILE ({len(RNG_TYPES)} algoritmi)")
