@@ -241,12 +241,24 @@ def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
 def cpu_multiprocessing_worker(data, lottery_config, seed_range, search_size, min_success_rate, results_queue):
     """CPU Thread - testează 9 RNG-uri SECVENȚIAL cu (total_cores - 3)"""
     
-    # Verificare cores ÎNAINTE de a porni
-    total_cores = cpu_count()
-    num_cores = max(1, total_cores - 3)  # Lasă 3 cores pentru GPU thread
+    # Verificare cores FIZICE (nu logice cu hyperthreading!)
+    total_logical_cores = cpu_count()
     
-    print(f"💻 [CPU Thread] Total cores: {total_cores}")
-    print(f"💻 [CPU Thread] Folosește: {num_cores} cores (lasă 3 pentru GPU)")
+    # Estimăm cores fizice (hyperthreading = 2x)
+    # Verificăm dacă e probabil hyperthreading
+    try:
+        import psutil
+        physical_cores = psutil.cpu_count(logical=False)
+    except:
+        # Fallback: presupunem hyperthreading dacă > 32
+        physical_cores = total_logical_cores // 2 if total_logical_cores > 32 else total_logical_cores
+    
+    # Folosim cores fizice - 3
+    num_cores = max(1, physical_cores - 3)
+    
+    print(f"💻 [CPU Thread] Cores logice (cu HT): {total_logical_cores}")
+    print(f"💻 [CPU Thread] Cores fizice: {physical_cores}")
+    print(f"💻 [CPU Thread] Folosește: {num_cores} cores fizice (lasă 3 pentru GPU)")
     
     # RNG-uri CPU (exclude doar xorshift_simple testat pe GPU)
     gpu_rngs = ['xorshift_simple']  # Doar acesta are kernel corect!
