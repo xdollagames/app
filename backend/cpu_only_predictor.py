@@ -43,12 +43,13 @@ def save_seeds_cache(cache):
         pass
 
 def get_cached_seed(lottery_type, date_str, rng_name):
-    """Verifică dacă avem seed cached pentru această combinație"""
+    """Verifică cache - returnează seed SAU 'NOT_FOUND' SAU None"""
     cache = load_seeds_cache()
-    return cache.get(lottery_type, {}).get(date_str, {}).get(rng_name)
+    result = cache.get(lottery_type, {}).get(date_str, {}).get(rng_name)
+    return result  # Poate fi: seed (int), 'NOT_FOUND' (str), sau None
 
 def cache_seed(lottery_type, date_str, rng_name, seed):
-    """Salvează seed în cache"""
+    """Salvează seed în cache (seed=int SAU seed='NOT_FOUND')"""
     cache = load_seeds_cache()
     
     if lottery_type not in cache:
