@@ -1885,10 +1885,12 @@ class MaxPredictor:
             
             for i, pred in enumerate(predictions, 1):
                 print(f"{i}. RNG: {pred['rng'].upper()}")
-                print(f"   Success: {pred['success_rate']:.1%} | Confidence: {pred['confidence']:.1f}%")
-                print(f"   Best Pattern: {pred['pattern']}")
-                print(f"   Formula: {pred['formula']}")
-                print(f"   NUMERE: {pred['numbers']}\n")
+                print(f"   Success: {pred['success_rate']:.1%} | Confidence: {pred['pattern_analysis']['confidence']:.1f}%")
+                print(f"   Pattern: {pred['pattern_analysis']['pattern_type']}")
+                print(f"   Formula: {pred['pattern_analysis']['formula']}")
+                if pred['predicted_numbers']:
+                    print(f"   NUMERE: {pred['predicted_numbers']}")
+                print()
             
             # Salvare
             output_file = f"max_prediction_{self.lottery_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
@@ -1902,7 +1904,16 @@ class MaxPredictor:
                         'min_success_rate': min_success_rate
                     },
                     'data_size': len(data),
-                    'predictions': predictions
+                    'predictions': [{
+                        'rng': p['rng'],
+                        'success_rate': p['success_rate'],
+                        'pattern': p['pattern_analysis']['pattern_type'],
+                        'formula': p['pattern_analysis']['formula'],
+                        'confidence': p['pattern_analysis']['confidence'],
+                        'seed': p['pattern_analysis']['predicted_seed'],
+                        'numbers': p['predicted_numbers'],
+                        'all_patterns': p['pattern_analysis'].get('all_patterns', {})
+                    } for p in predictions]
                 }, f, indent=2)
             
             print(f"💾 Rezultate complete salvate: {output_file}\n")
