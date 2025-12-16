@@ -85,9 +85,14 @@ def try_reverse_engineering(rng_name, numbers, lottery_config):
 
 
 def cpu_worker(args):
-    """Worker CPU - OPTIMIZAT DINAMIC în funcție de numărul de extrageri"""
+    """Worker CPU - DETERMINIST cu random seed"""
     draw_idx, numbers, rng_name, lottery_config, seed_range, base_search_size, num_extractions = args
     target_sorted = sorted(numbers)
+    
+    # SETARE RANDOM SEED pentru reproducibilitate!
+    # Fiecare worker va avea același seed bazat pe draw_idx + rng_name
+    worker_seed = hash((draw_idx, rng_name)) % (2**32)
+    random.seed(worker_seed)
     
     # Încercăm REVERSE mai întâi
     reversed_seed = try_reverse_engineering(rng_name, numbers, lottery_config)
