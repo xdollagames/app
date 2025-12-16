@@ -395,7 +395,7 @@ class MaxPredictor:
                           end_year: Optional[int] = None,
                           seed_range: tuple = (0, 100000000),  # 100M
                           search_size: int = 5000000,  # 5M
-                          min_success_rate: float = 0.5):
+                          min_success_rate: float = 0.66):
         """PREDICȚIE MAXIMĂ - ZERO COMPROMISURI"""
         
         print(f"\n{'='*70}")
