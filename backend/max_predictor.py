@@ -1670,10 +1670,22 @@ class MaxPredictor:
     
     def test_gpu_rngs_parallel(self, data: List[Dict], seed_range: tuple, 
                                search_size: int, results_queue: Queue):
-        """Testează RNG-urile GPU - rulează în thread separat PARALEL cu CPU"""
+        """Testează RNG-urile GPU - Setup GPU ÎN ACEST THREAD!"""
+        # IMPORTANT: Import și setup CuPy DOAR AICI, nu în main!
+        gpu_ok, gpu_rngs_list = setup_gpu_in_thread()
+        
+        if not gpu_ok or not gpu_rngs_list:
+            print("⚠️  GPU thread: Nu pot inițializa GPU")
+            results_queue.put(('gpu', {}))
+            return
+        
+        # Importăm modulul cu funcțiile GPU (deja are CuPy importat)
+        global GPU_SUPPORTED_RNGS
+        GPU_SUPPORTED_RNGS = gpu_rngs_list
+        
         gpu_results = {}
         
-        for rng_name in GPU_SUPPORTED_RNGS:
+        for rng_name in gpu_rngs_list:
             print(f"\n🚀 [GPU] Testing: {rng_name.upper()}")
             
             seeds_found = []
