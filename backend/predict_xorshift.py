@@ -99,7 +99,7 @@ class XorshiftInvestigator:
         return filtered_data
     
     def analyze_seed_pattern(self, seeds: List[int]) -> Dict:
-        """Analizează pattern-ul matematic al seed-urilor"""
+        """Analizează pattern-ul matematic al seed-urilor - TOATE TIPURILE"""
         if len(seeds) < 3:
             return {
                 'pattern_type': 'insufficient_data',
@@ -110,25 +110,48 @@ class XorshiftInvestigator:
         x = np.arange(len(seeds))
         y = np.array(seeds)
         
-        # Testare pattern linear
+        all_patterns = {}
+        
+        # 1. Pattern LINEAR: y = a*x + b
         try:
             linear_coeffs = np.polyfit(x, y, 1)
             linear_pred = np.poly1d(linear_coeffs)(len(seeds))
             linear_error = np.mean(np.abs(y - np.poly1d(linear_coeffs)(x)))
+            all_patterns['linear'] = {
+                'pred': linear_pred,
+                'error': linear_error,
+                'formula': f"y = {linear_coeffs[0]:.2f}*x + {linear_coeffs[1]:.2f}"
+            }
         except:
-            linear_pred = None
-            linear_error = float('inf')
+            all_patterns['linear'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
         
-        # Testare pattern polinomial (grad 2)
+        # 2. Pattern POLINOMIAL grad 2: y = a*x² + b*x + c
         try:
             poly_coeffs = np.polyfit(x, y, 2)
             poly_pred = np.poly1d(poly_coeffs)(len(seeds))
             poly_error = np.mean(np.abs(y - np.poly1d(poly_coeffs)(x)))
+            all_patterns['polynomial_2'] = {
+                'pred': poly_pred,
+                'error': poly_error,
+                'formula': f"y = {poly_coeffs[0]:.2f}*x² + {poly_coeffs[1]:.2f}*x + {poly_coeffs[2]:.2f}"
+            }
         except:
-            poly_pred = None
-            poly_error = float('inf')
+            all_patterns['polynomial_2'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
         
-        # Testare pattern exponential
+        # 3. Pattern POLINOMIAL grad 3: y = a*x³ + b*x² + c*x + d
+        try:
+            poly3_coeffs = np.polyfit(x, y, 3)
+            poly3_pred = np.poly1d(poly3_coeffs)(len(seeds))
+            poly3_error = np.mean(np.abs(y - np.poly1d(poly3_coeffs)(x)))
+            all_patterns['polynomial_3'] = {
+                'pred': poly3_pred,
+                'error': poly3_error,
+                'formula': f"y = {poly3_coeffs[0]:.2f}*x³ + ... (grad 3)"
+            }
+        except:
+            all_patterns['polynomial_3'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        
+        # 4. Pattern EXPONENȚIAL: y = a*e^(b*x) + c
         try:
             def exp_func(x, a, b, c):
                 return a * np.exp(b * x) + c
@@ -136,34 +159,190 @@ class XorshiftInvestigator:
             popt, _ = curve_fit(exp_func, x, y, maxfev=5000)
             exp_pred = exp_func(len(seeds), *popt)
             exp_error = np.mean(np.abs(y - exp_func(x, *popt)))
+            all_patterns['exponential'] = {
+                'pred': exp_pred,
+                'error': exp_error,
+                'formula': f"y = {popt[0]:.2f}*e^({popt[1]:.4f}*x) + {popt[2]:.2f}"
+            }
         except:
-            exp_pred = None
-            exp_error = float('inf')
+            all_patterns['exponential'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
         
-        # Selectare cel mai bun pattern
-        errors = {
-            'linear': linear_error,
-            'polynomial': poly_error,
-            'exponential': exp_error
-        }
-        
-        best_pattern = min(errors, key=errors.get)
-        
-        if best_pattern == 'linear':
-            predicted_seed = int(round(linear_pred))
-            confidence = max(0, min(100, 100 * (1 - linear_error / np.mean(y))))
-        elif best_pattern == 'polynomial':
-            predicted_seed = int(round(poly_pred))
-            confidence = max(0, min(100, 100 * (1 - poly_error / np.mean(y))))
+        # 5. Pattern FIBONACCI-like: seed[n] = a*seed[n-1] + b*seed[n-2]
+        if len(seeds) >= 3:
+            try:
+                # Construim sistem de ecuații pentru ultimi 3 seeds
+                # seed[n] = a*seed[n-1] + b*seed[n-2]
+                A = np.array([[seeds[i-1], seeds[i-2]] for i in range(2, len(seeds))])
+                B = np.array([seeds[i] for i in range(2, len(seeds))])
+                coeffs, _, _, _ = np.linalg.lstsq(A, B, rcond=None)
+                a, b = coeffs
+                
+                # Predicție
+                fib_pred = a * seeds[-1] + b * seeds[-2]
+                
+                # Eroare pe toți seeds
+                errors = []
+                for i in range(2, len(seeds)):
+                    pred_val = a * seeds[i-1] + b * seeds[i-2]
+                    errors.append(abs(pred_val - seeds[i]))
+                fib_error = np.mean(errors) if errors else float('inf')
+                
+                all_patterns['fibonacci'] = {
+                    'pred': fib_pred,
+                    'error': fib_error,
+                    'formula': f"seed[n] = {a:.4f}*seed[n-1] + {b:.4f}*seed[n-2]"
+                }
+            except:
+                all_patterns['fibonacci'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
         else:
-            predicted_seed = int(round(exp_pred))
-            confidence = max(0, min(100, 100 * (1 - exp_error / np.mean(y))))
+            all_patterns['fibonacci'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+        
+        # 6. Pattern LCG (Linear Congruential): seed[n] = (a*seed[n-1] + c) % m
+        if len(seeds) >= 2:
+            try:
+                # Estimăm m ca fiind puțin mai mare decât max seed
+                m_estimate = max(seeds) * 2
+                
+                # seed[n] ≈ a*seed[n-1] + c (ignorăm modulo pentru estimare)
+                X = np.array([[seeds[i-1], 1] for i in range(1, len(seeds))])
+                Y = np.array([seeds[i] for i in range(1, len(seeds))])
+                coeffs, _, _, _ = np.linalg.lstsq(X, Y, rcond=None)
+                a, c = coeffs
+                
+                # Predicție
+                lcg_pred = (a * seeds[-1] + c) % m_estimate
+                
+                # Eroare
+                errors = []
+                for i in range(1, len(seeds)):
+                    pred_val = (a * seeds[i-1] + c) % m_estimate
+                    errors.append(abs(pred_val - seeds[i]))
+                lcg_error = np.mean(errors) if errors else float('inf')
+                
+                all_patterns['lcg_chain'] = {
+                    'pred': lcg_pred,
+                    'error': lcg_error,
+                    'formula': f"seed[n] = ({a:.4f}*seed[n-1] + {c:.2f}) mod {m_estimate}"
+                }
+            except:
+                all_patterns['lcg_chain'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        else:
+            all_patterns['lcg_chain'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+        
+        # 7. Pattern MODULAR ARITHMETIC: seed[n] = (seed[n-1] + delta) % m
+        if len(seeds) >= 2:
+            try:
+                # Calculăm diferențele
+                diffs = np.diff(seeds)
+                avg_diff = np.mean(diffs)
+                m_estimate = max(seeds) * 2
+                
+                modular_pred = (seeds[-1] + avg_diff) % m_estimate
+                
+                # Eroare
+                errors = []
+                for i in range(1, len(seeds)):
+                    pred_val = (seeds[i-1] + avg_diff) % m_estimate
+                    errors.append(abs(pred_val - seeds[i]))
+                modular_error = np.mean(errors)
+                
+                all_patterns['modular_arithmetic'] = {
+                    'pred': modular_pred,
+                    'error': modular_error,
+                    'formula': f"seed[n] = (seed[n-1] + {avg_diff:.2f}) mod {m_estimate}"
+                }
+            except:
+                all_patterns['modular_arithmetic'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        else:
+            all_patterns['modular_arithmetic'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+        
+        # 8. Pattern DIFERENȚE CONSTANTE (arithmetic progression)
+        if len(seeds) >= 2:
+            try:
+                diffs = np.diff(seeds)
+                avg_diff = np.mean(diffs)
+                const_diff_pred = seeds[-1] + avg_diff
+                const_diff_error = np.std(diffs)
+                
+                all_patterns['constant_difference'] = {
+                    'pred': const_diff_pred,
+                    'error': const_diff_error,
+                    'formula': f"seed[n] = seed[n-1] + {avg_diff:.2f}"
+                }
+            except:
+                all_patterns['constant_difference'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        else:
+            all_patterns['constant_difference'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+        
+        # 9. Pattern RATIE CONSTANTĂ (geometric progression)
+        if len(seeds) >= 2 and all(s > 0 for s in seeds):
+            try:
+                ratios = [seeds[i] / seeds[i-1] for i in range(1, len(seeds))]
+                avg_ratio = np.mean(ratios)
+                ratio_pred = seeds[-1] * avg_ratio
+                ratio_error = np.std(ratios) * seeds[-1]
+                
+                all_patterns['constant_ratio'] = {
+                    'pred': ratio_pred,
+                    'error': ratio_error,
+                    'formula': f"seed[n] = seed[n-1] * {avg_ratio:.4f}"
+                }
+            except:
+                all_patterns['constant_ratio'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        else:
+            all_patterns['constant_ratio'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+        
+        # 10. Pattern LOGARITMIC: y = a*log(x) + b
+        try:
+            log_x = np.log(x + 1)  # +1 pentru a evita log(0)
+            log_coeffs = np.polyfit(log_x, y, 1)
+            log_pred_x = np.log(len(seeds) + 1)
+            log_pred = log_coeffs[0] * log_pred_x + log_coeffs[1]
+            log_error = np.mean(np.abs(y - (log_coeffs[0] * log_x + log_coeffs[1])))
+            
+            all_patterns['logarithmic'] = {
+                'pred': log_pred,
+                'error': log_error,
+                'formula': f"y = {log_coeffs[0]:.2f}*log(x) + {log_coeffs[1]:.2f}"
+            }
+        except:
+            all_patterns['logarithmic'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        
+        # Selectare cel mai bun pattern (cel cu cea mai mică eroare)
+        valid_patterns = {k: v for k, v in all_patterns.items() 
+                         if v['pred'] is not None and not np.isnan(v['error'])}
+        
+        if not valid_patterns:
+            return {
+                'pattern_type': 'no_valid_pattern',
+                'predicted_seed': None,
+                'confidence': 0,
+                'all_patterns': all_patterns
+            }
+        
+        best_pattern_name = min(valid_patterns, key=lambda k: valid_patterns[k]['error'])
+        best_pattern = valid_patterns[best_pattern_name]
+        
+        predicted_seed = int(round(best_pattern['pred']))
+        
+        # Calculăm confidence
+        mean_seed = np.mean(y)
+        if mean_seed > 0:
+            confidence = max(0, min(100, 100 * (1 - best_pattern['error'] / mean_seed)))
+        else:
+            confidence = 0
         
         return {
-            'pattern_type': best_pattern,
+            'pattern_type': best_pattern_name,
             'predicted_seed': predicted_seed,
             'confidence': round(confidence, 2),
-            'all_errors': {k: round(v, 2) for k, v in errors.items()}
+            'formula': best_pattern['formula'],
+            'error': round(best_pattern['error'], 2),
+            'all_patterns': {k: {
+                'error': round(v['error'], 2) if not np.isnan(v['error']) else 'inf',
+                'formula': v['formula'],
+                'pred': int(round(v['pred'])) if v['pred'] is not None else None
+            } for k, v in all_patterns.items()}
         }
     
     def run_investigation(self, start_year: int = 2010, end_year: int = 2025, 
