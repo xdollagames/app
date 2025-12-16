@@ -752,7 +752,7 @@ class CPUOnlyPredictor:
                 for chunk_start in range(seed_range[0], search_size, chunk_size):
                     chunk_end = min(chunk_start + chunk_size, search_size)
                     tasks.append((i, e['numere'], rng_name, self.config, chunk_start, chunk_end, 
-                                mersenne_timeout, self.lottery_type, e['data']))
+                                mersenne_timeout, self.lottery_type, e['data'], seed_range))
             
             print(f"  🔥 {len(tasks)} task-uri (chunks) → {min(num_cores, len(tasks))} cores active")
             
