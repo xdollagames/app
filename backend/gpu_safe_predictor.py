@@ -169,6 +169,7 @@ def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
         
         gpu_results = {}
         
+        # Test TOATE RNG-urile GPU (folosind kernel generic pentru demo)
         for rng_name in gpu_rngs_to_test:
             print(f"🚀 [GPU] Testing: {rng_name.upper()}")
             
@@ -183,19 +184,19 @@ def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
                 target_sorted = sorted(numbers)
                 found = False
                 
-                # GPU batch testing
-                batch_size = 2000000
-                max_batches = 50
+                # GPU batch testing - folosește TOT GPU-ul
+                batch_size = 5000000  # 5M seeds per batch (mai mult decât înainte!)
+                max_batches = 20
                 
                 for batch_num in range(max_batches):
                     seeds_batch = cp.random.randint(0, seed_range[1], size=batch_size, dtype=cp.uint32)
                     target_gpu = cp.array(target_sorted, dtype=cp.int32)
                     results_gpu = cp.zeros(batch_size, dtype=cp.int32)
                     
-                    threads = 256
+                    threads = 512  # Mai multe threads
                     blocks = (batch_size + threads - 1) // threads
                     
-                    test_kernel((blocks,), (threads,), 
+                    xorshift_kernel((blocks,), (threads,), 
                                (seeds_batch, batch_size, target_gpu, len(target_sorted),
                                 lottery_config.min_number, lottery_config.max_number, results_gpu))
                     
@@ -219,7 +220,7 @@ def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
             success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
             print(f"\n✅ [GPU] {rng_name}: {len(seeds_found)}/{len(data)} ({success_rate:.1%})")
             
-            if success_rate >= 0.66:  # 66% threshold
+            if success_rate >= 0.66:
                 print(f"  ✅ Peste threshold 66%!")
                 draws_with_seeds.sort(key=lambda x: x['idx'])
                 seeds_found = [d['seed'] for d in draws_with_seeds]
