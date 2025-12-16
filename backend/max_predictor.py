@@ -1321,7 +1321,7 @@ class MaxPredictor:
                           start_year: Optional[int] = None,
                           end_year: Optional[int] = None,
                           seed_range: tuple = (0, 100000000),  # 100M
-                          search_size: int = 5000000,  # 5M
+                          search_size: int = 10000000,  # 10M seeds per extragere!
                           min_success_rate: float = 0.66):
         """PREDICȚIE MAXIMĂ - ZERO COMPROMISURI"""
         
