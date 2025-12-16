@@ -780,14 +780,29 @@ class GPUSafePredictor:
             
             pattern = analyze_patterns_parallel_gpu_cpu(result['seeds'])
             
-            print(f"  Pattern: {pattern['pattern_type']}")
-            print(f"  Formula: {pattern.get('formula', 'N/A')}")
-            print(f"  Confidence: {pattern['confidence']:.2f}%")
+            # Afișare pattern-uri
+            if pattern.get('top_patterns') and len(pattern['top_patterns']) > 1:
+                # MULTIPLE PATTERN-URI CU 100%!
+                print(f"  🔥 MULTIPLE PATTERN-URI PERFECTE (100% confidence):")
+                for i, p in enumerate(pattern['top_patterns'], 1):
+                    print(f"    {i}. {p['name'].upper()}")
+                    print(f"       Formula: {p['formula']}")
+                    print(f"       Seed prezis: {p['pred']:,}")
+                    print(f"       Error: {p['error']}")
+                print()
+            elif pattern.get('top_patterns'):
+                # UN SINGUR PATTERN (cel mai bun)
+                p = pattern['top_patterns'][0]
+                print(f"  🏆 BEST PATTERN: {p['name'].upper()}")
+                print(f"  📐 Formula: {p['formula']}")
+                print(f"  🎯 Confidence: {p['confidence']:.2f}%")
+                print(f"  ❌ Error: {p['error']}")
             
-            if 'all_patterns' in pattern:
-                print(f"  Toate patterns:")
-                for pn, pd in pattern['all_patterns'].items():
-                    print(f"    {pn}: error={pd.get('error', '?')}")
+            print(f"\n  📊 Toate patterns ({len(pattern.get('all_patterns', {}))}):")
+            for pn, pd in pattern.get('all_patterns', {}).items():
+                err_str = f"{pd.get('error', '?'):.2f}" if pd.get('error') != float('inf') else "∞"
+                print(f"    {pn:20s}: error={err_str}")
+            print()
             
             if pattern['predicted_seed']:
                 try:
