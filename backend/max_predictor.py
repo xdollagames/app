@@ -998,8 +998,8 @@ def analyze_all_patterns_parallel_gpu(seeds: List[int]) -> Dict:
     print(f"  ✅ Total patterns calculați: {len(all_patterns)}")
     
     # Selectare cel mai bun pattern
-    valid_patterns = {k: v for k, v in all_patterns.items()
-        try:
+    valid_patterns = {k: v for k, v in all_patterns.items() 
+                     if v['pred'] is not None and not np.isnan(v['error']) and v['error'] != float('inf')}
             A = np.array([[seeds[i-1], seeds[i-2]] for i in range(2, len(seeds))])
             B = np.array([seeds[i] for i in range(2, len(seeds))])
             coeffs, _, _, _ = np.linalg.lstsq(A, B, rcond=None)
