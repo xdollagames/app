@@ -758,15 +758,20 @@ class CPUOnlyPredictor:
             
             seeds_found = []
             draws_with_seeds = []
-            cached_count = 0
-            seeds_by_draw = {}  # Track seeds per draw
+            cached_positive = 0  # Seeds găsite în cache
+            cached_negative = 0  # NOT_FOUND în cache (skip)
+            seeds_by_draw = {}
             
             with Pool(processes=num_cores) as pool:
                 for result in pool.imap_unordered(cpu_worker_chunked, tasks):
                     idx_task, seed, from_cache = result
                     
-                    if seed is not None and idx_task not in seeds_by_draw:
-                        # Prima dată găsit pentru această extragere
+                    if seed is None and from_cache:
+                        # Cache NEGATIV (NOT_FOUND)
+                        cached_negative += 1
+                        seeds_by_draw[idx_task] = None  # Marchează ca procesat
+                    elif seed is not None and idx_task not in seeds_by_draw:
+                        # Seed GĂSIT (prima dată pentru această extragere)
                         seeds_by_draw[idx_task] = seed
                         seeds_found.append(seed)
                         draws_with_seeds.append({
@@ -776,15 +781,23 @@ class CPUOnlyPredictor:
                             'seed': seed
                         })
                         if from_cache:
-                            cached_count += 1
+                            cached_positive += 1
                     
                     completed = len(seeds_by_draw)
-                    progress = 100 * completed / len(data)
-                    cache_info = f" ({cached_count} cache)" if cached_count > 0 else ""
+                    progress = 100 * completed / len(data) if len(data) > 0 else 0
+                    cache_info = ""
+                    if cached_positive > 0:
+                        cache_info += f" (✅{cached_positive} cache)"
+                    if cached_negative > 0:
+                        cache_info += f" (⏭️{cached_negative} skip)"
                     print(f"  [{completed}/{len(data)}] ({progress:.1f}%)... {len(seeds_found)} seeds{cache_info}", end='\r')
             
             success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
-            cache_msg = f" ({cached_count} INSTANT din cache!)" if cached_count > 0 else ""
+            cache_msg = ""
+            if cached_positive > 0:
+                cache_msg += f" (✅{cached_positive} instant cache)"
+            if cached_negative > 0:
+                cache_msg += f" (⏭️{cached_negative} skip cache)"
             print(f"\n  ✅ {len(seeds_found)}/{len(data)} ({success_rate:.1%}){cache_msg}", end='')
             
             if success_rate >= min_success_rate:
