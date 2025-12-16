@@ -150,7 +150,7 @@ class XorshiftInvestigator:
             numbers = entry.get('numere', [])
             date_str = entry.get('data', 'N/A')
             
-            if len(numbers) != self.config['numbers_to_draw']:
+            if len(numbers) != self.config.numbers_to_draw:
                 continue
             
             seed = self.find_seed_for_draw(numbers)
