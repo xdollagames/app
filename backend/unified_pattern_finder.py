@@ -373,8 +373,8 @@ def main():
     
     # Determine RNG types to test
     if args.quick_test:
-        rng_types = ['lcg_weak', 'xorshift_simple', 'lcg_glibc', 'xorshift32']
-        print(f"  Quick test mode: {len(rng_types)} fast RNGs")
+        rng_types = ['lcg_weak', 'xorshift_simple', 'lcg_glibc', 'xorshift32', 'js_math_random', 'xoshiro256']
+        print(f"  Quick test mode: {len(rng_types)} fast RNGs (includes web/modern)")
     elif args.rng_types:
         rng_types = args.rng_types
     else:
