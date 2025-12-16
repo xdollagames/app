@@ -887,7 +887,16 @@ class CPUOnlyPredictor:
                             
                             print(f"  {i}. {p['name'].upper()}:")
                             print(f"     Seed: {p['pred']:,}")
-                            print(f"     NUMERE: {sorted(nums)}")
+                            
+                            # Afișare SPECIALĂ pentru Joker
+                            if self.config.is_composite:
+                                main_nums = sorted(nums[:-1])
+                                joker_num = nums[-1]
+                                print(f"     Numere principale: {main_nums}")
+                                print(f"     🎰 JOKER: {joker_num}")
+                            else:
+                                print(f"     NUMERE: {sorted(nums)}")
+                            
                             print()
                             
                             predictions.append({
