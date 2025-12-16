@@ -157,8 +157,8 @@ def cpu_worker_chunked(args):
     if cached_result is not None and isinstance(cached_result, int):
         # Seed găsit în cache → verifică că e în acest chunk
         if seed_chunk_start <= cached_result < seed_chunk_end:
-        try:
-            rng = create_rng(rng_name, cached_seed)
+            try:
+                rng = create_rng(rng_name, cached_result)
             if lottery_config.is_composite:
                 generated = []
                 for part_idx, (count, min_val, max_val) in enumerate(lottery_config.composite_parts):
