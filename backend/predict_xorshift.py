@@ -11,15 +11,14 @@ from typing import List, Tuple, Optional, Dict
 import numpy as np
 from scipy.optimize import curve_fit
 
-from lottery_config import LOTTERY_CONFIGS
-from advanced_rng_library import RNGLibrary
+from lottery_config import get_lottery_config
+from advanced_rng_library import create_rng, generate_numbers
 
 
 class XorshiftInvestigator:
     def __init__(self, lottery_type: str = "5-40"):
         self.lottery_type = lottery_type
-        self.config = LOTTERY_CONFIGS[lottery_type]
-        self.rng_lib = RNGLibrary()
+        self.config = get_lottery_config(lottery_type)
         self.data_file = f"{lottery_type}_data.json"
         
     def load_data(self, start_year: int = 2010, end_year: int = 2025) -> List[Dict]:
