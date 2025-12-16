@@ -1144,10 +1144,6 @@ def find_seed_exhaustive_worker(args):
     
     seeds_tested = 0
     for seed in test_seeds:
-        if rng_type == 'mersenne':
-            if (time.time() - start_time) > timeout_seconds:
-                return (draw_idx, None)
-        
         try:
             rng = create_rng(rng_type, seed)
             generated = generate_numbers(
