@@ -2,6 +2,7 @@
 """
 Script pentru investigarea xorshift_simple pe perioada 2010-2025
 și prezicerea următoarei secvențe de numere.
+OPTIMIZAT PENTRU MULTICORE CPU
 """
 
 import json
@@ -10,9 +11,32 @@ from datetime import datetime
 from typing import List, Tuple, Optional, Dict
 import numpy as np
 from scipy.optimize import curve_fit
+from multiprocessing import Pool, cpu_count
 
 from lottery_config import get_lottery_config
 from advanced_rng_library import create_rng, generate_numbers
+
+
+def find_seed_worker(args):
+    """Worker function pentru multiprocessing"""
+    idx, numbers, lottery_config, max_seed = args
+    target_sorted = sorted(numbers)
+    
+    for seed in range(1, max_seed):
+        try:
+            rng = create_rng('xorshift_simple', seed)
+            generated = generate_numbers(
+                rng,
+                lottery_config.numbers_to_draw,
+                lottery_config.min_number,
+                lottery_config.max_number
+            )
+            if sorted(generated) == target_sorted:
+                return (idx, seed)
+        except:
+            continue
+    
+    return (idx, None)
 
 
 class XorshiftInvestigator:
