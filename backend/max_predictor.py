@@ -741,51 +741,94 @@ class MaxPredictor:
             print(f"  {i}. {entry['data']:15s} → {entry['numere']}")
         print()
         
-        # Test TOATE RNG-urile
+        # Test TOATE RNG-urile - HYBRID GPU + CPU
         print(f"\n{'='*70}")
-        print(f"  FAZA 1: TESTARE EXHAUSTIVĂ TOATE RNG-URILE")
+        print(f"  FAZA 1: TESTARE EXHAUSTIVĂ - HYBRID GPU + CPU")
         print(f"{'='*70}\n")
+        
+        if GPU_AVAILABLE:
+            print(f"🚀 GPU Mode: Activ pentru {len(GPU_SUPPORTED_RNGS)} RNG-uri simple")
+            print(f"   GPU RNG-uri: {', '.join(GPU_SUPPORTED_RNGS)}")
+        print(f"💻 CPU Mode: {num_cores} cores pentru RNG-uri complexe\n")
         
         rng_results = {}
         
         for idx, rng_name in enumerate(RNG_TYPES.keys(), 1):
             print(f"\n{'='*70}")
             print(f"[{idx}/{len(RNG_TYPES)}] RNG: {rng_name.upper()}")
+            
+            # Decide: GPU sau CPU?
+            use_gpu = GPU_AVAILABLE and rng_name in GPU_SUPPORTED_RNGS
+            
+            if use_gpu:
+                print(f"🚀 Mode: GPU ACCELERATED")
+            else:
+                print(f"💻 Mode: CPU MULTICORE")
+            
             print(f"{'='*70}")
             
-            # Pregătire tasks
-            tasks = []
-            for i, entry in enumerate(data):
-                numbers = entry.get('numere', [])
-                if len(numbers) == self.config.numbers_to_draw:
-                    tasks.append((i, numbers, rng_name, self.config, seed_range, search_size))
-            
-            # Rulare paralel
             seeds_found = []
             draws_with_seeds = []
             
-            with Pool(processes=num_cores) as pool:
-                optimal_chunksize = max(1, len(tasks) // (num_cores * 4))
-                for i, result in enumerate(pool.imap_unordered(find_seed_exhaustive_worker, tasks, chunksize=optimal_chunksize)):
-                    idx_task, seed = result
+            if use_gpu:
+                # ===== GPU MODE =====
+                for i, entry in enumerate(data):
+                    numbers = entry.get('numere', [])
+                    if len(numbers) != self.config.numbers_to_draw:
+                        continue
                     
-                    if seed is not None:
-                        seeds_found.append(seed)
+                    # GPU batch processing - 2M seeds per încercare
+                    found_seed = find_seed_gpu_accelerated(
+                        i, numbers, rng_name, self.config, seed_range, batch_size=2000000
+                    )
+                    
+                    if found_seed is not None:
+                        seeds_found.append(found_seed)
                         draws_with_seeds.append({
-                            'idx': idx_task,
-                            'date': data[idx_task]['data'],
-                            'numbers': data[idx_task]['numere'],
-                            'seed': seed
+                            'idx': i,
+                            'date': entry['data'],
+                            'numbers': numbers,
+                            'seed': found_seed
                         })
                     
                     # Progress
-                    if (i + 1) % 2 == 0 or (i + 1) == len(tasks):
-                        progress = 100 * (i + 1) / len(tasks)
-                        print(f"  [{i + 1}/{len(tasks)}] ({progress:.1f}%)... {len(seeds_found)} seeds găsite", end='\r')
+                    progress = 100 * (i + 1) / len(data)
+                    print(f"  [{i + 1}/{len(data)}] ({progress:.1f}%)... {len(seeds_found)} seeds găsite", end='\r')
+                
+                print(f"\n✅ Seeds găsite (GPU): {len(seeds_found)}/{len(data)} ({len(seeds_found)/len(data):.1%})")
+            
+            else:
+                # ===== CPU MODE =====
+                tasks = []
+                for i, entry in enumerate(data):
+                    numbers = entry.get('numere', [])
+                    if len(numbers) == self.config.numbers_to_draw:
+                        tasks.append((i, numbers, rng_name, self.config, seed_range, search_size))
+                
+                with Pool(processes=num_cores) as pool:
+                    optimal_chunksize = max(1, len(tasks) // (num_cores * 4))
+                    for i, result in enumerate(pool.imap_unordered(find_seed_exhaustive_worker, tasks, chunksize=optimal_chunksize)):
+                        idx_task, seed = result
+                        
+                        if seed is not None:
+                            seeds_found.append(seed)
+                            draws_with_seeds.append({
+                                'idx': idx_task,
+                                'date': data[idx_task]['data'],
+                                'numbers': data[idx_task]['numere'],
+                                'seed': seed
+                            })
+                        
+                        # Progress
+                        if (i + 1) % 2 == 0 or (i + 1) == len(tasks):
+                            progress = 100 * (i + 1) / len(tasks)
+                            print(f"  [{i + 1}/{len(tasks)}] ({progress:.1f}%)... {len(seeds_found)} seeds găsite", end='\r')
+                
+                print(f"\n✅ Seeds găsite (CPU): {len(seeds_found)}/{len(data)} ({len(seeds_found)/len(data):.1%})")
             
             success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
             
-            print(f"\n✅ Seeds găsite: {len(seeds_found)}/{len(data)} ({success_rate:.1%})")
+            print(f"📊 Success Rate: {success_rate:.1%}")
             
             if success_rate >= min_success_rate:
                 print(f"✅ SUCCESS RATE PESTE THRESHOLD!")
