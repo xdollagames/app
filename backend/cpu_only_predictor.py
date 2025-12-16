@@ -368,8 +368,8 @@ class CPUOnlyPredictor:
         
         print(f"📉 Optimizare dinamică:")
         print(f"   {num_extractions} extrageri → scale factor: {scale_factor:.2f}")
-        print(f"   Search ajustat: {adjusted_search:,} seeds (RNG-uri normale)")
-        print(f"   Search Mersenne: {mersenne_search:,} seeds (foarte lent)")
+        print(f"   Search ajustat RNG normale: ~{adjusted_search:,} seeds (MAX 5M pentru 3 extrageri)")
+        print(f"   Search Mersenne: ~{mersenne_search:,} seeds (MAX 100K)")
         print()
         
         # Load
