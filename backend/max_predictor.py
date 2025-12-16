@@ -17,15 +17,247 @@ from scipy.optimize import curve_fit
 from multiprocessing import Pool, cpu_count
 import random
 
-# GPU Check
-try:
-    import cupy as cp
-    GPU_AVAILABLE = True
-    print("✅ GPU DETECTAT - FULL POWER MODE!")
-except ImportError:
-    GPU_AVAILABLE = False
-    print("⚠️  GPU nu e disponibil - CPU multicore mode")
-    import numpy as cp
+# GPU Kernels pentru RNG-uri simple
+GPU_RNG_KERNELS = {}
+
+if GPU_AVAILABLE:
+    # Kernel pentru xorshift_simple
+    GPU_RNG_KERNELS['xorshift_simple'] = cp.RawKernel(r'''
+    extern "C" __global__
+    void test_seeds(
+        const unsigned int* seeds, const int num_seeds,
+        const int* target, const int target_size,
+        const int min_num, const int max_num,
+        int* results
+    ) {
+        int idx = blockDim.x * blockIdx.x + threadIdx.x;
+        if (idx >= num_seeds) return;
+        
+        unsigned int state = seeds[idx];
+        int range_size = max_num - min_num + 1;
+        int matches = 0;
+        
+        // Generează numere
+        int generated[10];  // max 10 numere
+        for (int i = 0; i < target_size; i++) {
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+            generated[i] = min_num + (state % range_size);
+        }
+        
+        // Sortare bubble sort (mic array)
+        for (int i = 0; i < target_size - 1; i++) {
+            for (int j = 0; j < target_size - i - 1; j++) {
+                if (generated[j] > generated[j + 1]) {
+                    int temp = generated[j];
+                    generated[j] = generated[j + 1];
+                    generated[j + 1] = temp;
+                }
+            }
+        }
+        
+        // Compare cu target
+        int all_match = 1;
+        for (int i = 0; i < target_size; i++) {
+            if (generated[i] != target[i]) {
+                all_match = 0;
+                break;
+            }
+        }
+        
+        results[idx] = all_match ? 1 : 0;
+    }
+    ''', 'test_seeds')
+    
+    # Kernel pentru LCG GLIBC
+    GPU_RNG_KERNELS['lcg_glibc'] = cp.RawKernel(r'''
+    extern "C" __global__
+    void test_seeds(
+        const unsigned int* seeds, const int num_seeds,
+        const int* target, const int target_size,
+        const int min_num, const int max_num,
+        int* results
+    ) {
+        int idx = blockDim.x * blockIdx.x + threadIdx.x;
+        if (idx >= num_seeds) return;
+        
+        unsigned long long state = seeds[idx] % 2147483648ULL;
+        int range_size = max_num - min_num + 1;
+        
+        int generated[10];
+        for (int i = 0; i < target_size; i++) {
+            state = (1103515245ULL * state + 12345ULL) % 2147483648ULL;
+            generated[i] = min_num + (state % range_size);
+        }
+        
+        // Sortare
+        for (int i = 0; i < target_size - 1; i++) {
+            for (int j = 0; j < target_size - i - 1; j++) {
+                if (generated[j] > generated[j + 1]) {
+                    int temp = generated[j];
+                    generated[j] = generated[j + 1];
+                    generated[j + 1] = temp;
+                }
+            }
+        }
+        
+        // Compare
+        int all_match = 1;
+        for (int i = 0; i < target_size; i++) {
+            if (generated[i] != target[i]) {
+                all_match = 0;
+                break;
+            }
+        }
+        
+        results[idx] = all_match ? 1 : 0;
+    }
+    ''', 'test_seeds')
+    
+    # Kernel pentru Java Random
+    GPU_RNG_KERNELS['java_random'] = cp.RawKernel(r'''
+    extern "C" __global__
+    void test_seeds(
+        const unsigned long long* seeds, const int num_seeds,
+        const int* target, const int target_size,
+        const int min_num, const int max_num,
+        int* results
+    ) {
+        int idx = blockDim.x * blockIdx.x + threadIdx.x;
+        if (idx >= num_seeds) return;
+        
+        unsigned long long state = (seeds[idx] ^ 0x5DEECE66DULL) & ((1ULL << 48) - 1);
+        int range_size = max_num - min_num + 1;
+        
+        int generated[10];
+        for (int i = 0; i < target_size; i++) {
+            state = (state * 0x5DEECE66DULL + 0xBULL) & ((1ULL << 48) - 1);
+            generated[i] = min_num + ((state >> 16) % range_size);
+        }
+        
+        // Sortare
+        for (int i = 0; i < target_size - 1; i++) {
+            for (int j = 0; j < target_size - i - 1; j++) {
+                if (generated[j] > generated[j + 1]) {
+                    int temp = generated[j];
+                    generated[j] = generated[j + 1];
+                    generated[j + 1] = temp;
+                }
+            }
+        }
+        
+        // Compare
+        int all_match = 1;
+        for (int i = 0; i < target_size; i++) {
+            if (generated[i] != target[i]) {
+                all_match = 0;
+                break;
+            }
+        }
+        
+        results[idx] = all_match ? 1 : 0;
+    }
+    ''', 'test_seeds')
+    
+    # Kernel pentru xorshift32
+    GPU_RNG_KERNELS['xorshift32'] = cp.RawKernel(r'''
+    extern "C" __global__
+    void test_seeds(
+        const unsigned int* seeds, const int num_seeds,
+        const int* target, const int target_size,
+        const int min_num, const int max_num,
+        int* results
+    ) {
+        int idx = blockDim.x * blockIdx.x + threadIdx.x;
+        if (idx >= num_seeds) return;
+        
+        unsigned int state = seeds[idx];
+        if (state == 0) state = 1;
+        int range_size = max_num - min_num + 1;
+        
+        int generated[10];
+        for (int i = 0; i < target_size; i++) {
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+            generated[i] = min_num + (state % range_size);
+        }
+        
+        // Sortare
+        for (int i = 0; i < target_size - 1; i++) {
+            for (int j = 0; j < target_size - i - 1; j++) {
+                if (generated[j] > generated[j + 1]) {
+                    int temp = generated[j];
+                    generated[j] = generated[j + 1];
+                    generated[j + 1] = temp;
+                }
+            }
+        }
+        
+        // Compare
+        int all_match = 1;
+        for (int i = 0; i < target_size; i++) {
+            if (generated[i] != target[i]) {
+                all_match = 0;
+                break;
+            }
+        }
+        
+        results[idx] = all_match ? 1 : 0;
+    }
+    ''', 'test_seeds')
+    
+    # Kernel pentru xorshift64
+    GPU_RNG_KERNELS['xorshift64'] = cp.RawKernel(r'''
+    extern "C" __global__
+    void test_seeds(
+        const unsigned long long* seeds, const int num_seeds,
+        const int* target, const int target_size,
+        const int min_num, const int max_num,
+        int* results
+    ) {
+        int idx = blockDim.x * blockIdx.x + threadIdx.x;
+        if (idx >= num_seeds) return;
+        
+        unsigned long long state = seeds[idx];
+        if (state == 0) state = 1;
+        int range_size = max_num - min_num + 1;
+        
+        int generated[10];
+        for (int i = 0; i < target_size; i++) {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            generated[i] = min_num + (state % range_size);
+        }
+        
+        // Sortare
+        for (int i = 0; i < target_size - 1; i++) {
+            for (int j = 0; j < target_size - i - 1; j++) {
+                if (generated[j] > generated[j + 1]) {
+                    int temp = generated[j];
+                    generated[j] = generated[j + 1];
+                    generated[j + 1] = temp;
+                }
+            }
+        }
+        
+        // Compare
+        int all_match = 1;
+        for (int i = 0; i < target_size; i++) {
+            if (generated[i] != target[i]) {
+                all_match = 0;
+                break;
+            }
+        }
+        
+        results[idx] = all_match ? 1 : 0;
+    }
+    ''', 'test_seeds')
+
+# RNG-uri suportate pe GPU
+GPU_SUPPORTED_RNGS = list(GPU_RNG_KERNELS.keys()) if GPU_AVAILABLE else []
 
 from lottery_config import get_lottery_config
 from advanced_rng_library import RNG_TYPES, create_rng, generate_numbers
