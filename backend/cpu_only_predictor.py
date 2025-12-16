@@ -85,7 +85,7 @@ def try_reverse_engineering(rng_name, numbers, lottery_config):
 
 
 def cpu_worker(args):
-    """Worker CPU - cu reverse engineering + brute force + SUPORT COMPOSITE!"""
+    """Worker CPU - cu reverse engineering + brute force + SUPORT COMPOSITE + Mersenne optimizat"""
     draw_idx, numbers, rng_name, lottery_config, seed_range, search_size = args
     target_sorted = sorted(numbers)
     
@@ -94,8 +94,15 @@ def cpu_worker(args):
     if reversed_seed is not None:
         return (draw_idx, reversed_seed)
     
+    # REDUCERE DRASTICĂ pentru Mersenne (e FOARTE lent!)
+    if rng_name == 'mersenne':
+        actual_search_size = min(50000, search_size)  # Doar 50K în loc de 10M!
+    else:
+        actual_search_size = search_size
+    
     # Brute force
-    test_seeds = random.sample(range(seed_range[0], seed_range[1]), min(search_size, seed_range[1] - seed_range[0]))
+    test_seeds = random.sample(range(seed_range[0], seed_range[1]), 
+                              min(actual_search_size, seed_range[1] - seed_range[0]))
     
     for seed in test_seeds:
         try:
