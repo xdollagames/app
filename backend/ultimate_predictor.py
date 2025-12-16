@@ -21,6 +21,10 @@ def find_seed_for_draw_worker(args):
     draw_idx, numbers, rng_type, lottery_config, seed_range, search_size = args
     target_sorted = sorted(numbers)
     
+    # Skip Mersenne dacă durează prea mult (e foarte lent)
+    if rng_type == 'mersenne':
+        search_size = min(search_size, 100000)  # Reduce dramatic pentru Mersenne
+    
     # Generează seed-uri random
     test_seeds = random.sample(range(seed_range[0], seed_range[1]), 
                               min(search_size, seed_range[1] - seed_range[0]))
