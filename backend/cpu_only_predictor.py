@@ -23,6 +23,43 @@ from lottery_config import get_lottery_config
 from advanced_rng_library import RNG_TYPES, create_rng, generate_numbers
 
 
+# CACHE pentru seeds găsite (persistent între rulări!)
+CACHE_FILE = "seeds_cache.json"
+
+def load_seeds_cache():
+    """Încarcă cache-ul de seeds"""
+    try:
+        with open(CACHE_FILE, 'r') as f:
+            return json.load(f)
+    except:
+        return {}
+
+def save_seeds_cache(cache):
+    """Salvează cache-ul de seeds"""
+    try:
+        with open(CACHE_FILE, 'w') as f:
+            json.dump(cache, f, indent=2)
+    except:
+        pass
+
+def get_cached_seed(lottery_type, date_str, rng_name):
+    """Verifică dacă avem seed cached pentru această combinație"""
+    cache = load_seeds_cache()
+    return cache.get(lottery_type, {}).get(date_str, {}).get(rng_name)
+
+def cache_seed(lottery_type, date_str, rng_name, seed):
+    """Salvează seed în cache"""
+    cache = load_seeds_cache()
+    
+    if lottery_type not in cache:
+        cache[lottery_type] = {}
+    if date_str not in cache[lottery_type]:
+        cache[lottery_type][date_str] = {}
+    
+    cache[lottery_type][date_str][rng_name] = seed
+    save_seeds_cache(cache)
+
+
 # SEED RANGES OPTIMIZATE + SEARCH SIZE = 100% COVERAGE!
 OPTIMIZED_SEED_RANGES = {
     '5-40': (0, 4000000),      # C(40,6) = 3,838,380 → 100% coverage
