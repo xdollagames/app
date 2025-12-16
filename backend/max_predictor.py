@@ -941,7 +941,7 @@ def try_reverse_engineering(rng_name: str, numbers: List[int], lottery_config) -
     if not numbers:
         return None
     
-    # Mapare RNG → funcție inversă - ACUM 11 RNG-URI!
+    # Mapare RNG → funcție inversă - ACUM 11 RNG-URI CU REVERSE!
     reverse_functions = {
         'lcg_glibc': lambda: reverse_lcg_glibc(numbers[0], lottery_config.min_number, lottery_config.max_number),
         'lcg_minstd': lambda: reverse_mcg(numbers[0], lottery_config.min_number, lottery_config.max_number),
@@ -953,7 +953,7 @@ def try_reverse_engineering(rng_name: str, numbers: List[int], lottery_config) -
         'pcg32': lambda: reverse_pcg32(numbers, lottery_config.min_number, lottery_config.max_number),
         'splitmix': lambda: reverse_splitmix64(numbers, lottery_config.min_number, lottery_config.max_number),
         'xoshiro256': lambda: reverse_xoshiro256(numbers, lottery_config.min_number, lottery_config.max_number),
-        # LFSR nu e în RNG_TYPES dar îl adăugăm dacă există
+        'lfsr': lambda: reverse_lfsr(numbers, lottery_config.min_number, lottery_config.max_number),
     }
     
     if rng_name in reverse_functions:
