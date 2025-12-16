@@ -443,7 +443,15 @@ class CPUOnlyPredictor:
             if pattern['predicted_seed']:
                 try:
                     rng = create_rng(rng_name, pattern['predicted_seed'])
-                    nums = generate_numbers(rng, self.config.numbers_to_draw, self.config.min_number, self.config.max_number)
+                    
+                    # Suport COMPOSITE (Joker)
+                    if self.config.is_composite:
+                        nums = []
+                        for count, min_val, max_val in self.config.composite_parts:
+                            part = generate_numbers(rng, count, min_val, max_val)
+                            nums.extend(part)
+                    else:
+                        nums = generate_numbers(rng, self.config.numbers_to_draw, self.config.min_number, self.config.max_number)
                     
                     print(f"\n  {'='*66}")
                     print(f"  🎯 PREDICȚIE PENTRU URMĂTOAREA EXTRAGERE")
