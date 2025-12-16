@@ -248,35 +248,6 @@ class XorshiftInvestigator:
             pattern_analysis, predicted_numbers
         )
     
-    def analyze_seed_pattern(self, seeds: List[int]) -> Dict:
-        
-        # Generare numere prezise
-        predicted_seed = pattern_analysis['predicted_seed']
-        if predicted_seed:
-            rng = create_rng('xorshift_simple', predicted_seed)
-            predicted_numbers = generate_numbers(
-                rng,
-                self.config.numbers_to_draw,
-                self.config.min_number,
-                self.config.max_number
-            )
-        else:
-            predicted_numbers = []
-        
-        # Output rezultate
-        self._print_results(
-            start_year, end_year, len(data), 
-            draws_with_seeds, seeds_found, 
-            pattern_analysis, predicted_numbers
-        )
-        
-        # Salvare JSON
-        self._save_json_results(
-            start_year, end_year, len(data),
-            draws_with_seeds, seeds_found,
-            pattern_analysis, predicted_numbers
-        )
-    
     def _print_results(self, start_year, end_year, total_draws, 
                       draws_with_seeds, seeds_found, pattern_analysis, predicted_numbers):
         """Afișează rezultatele în terminal"""
