@@ -1438,6 +1438,110 @@ class MaxPredictor:
         
         return normalized
     
+    def test_gpu_rngs_parallel(self, data: List[Dict], seed_range: tuple, 
+                               search_size: int, results_queue: Queue):
+        """Testează TOATE RNG-urile GPU în paralel - rulează în thread separat"""
+        gpu_results = {}
+        
+        for rng_name in GPU_SUPPORTED_RNGS:
+            print(f"\n🚀 [GPU] Testing: {rng_name.upper()}")
+            
+            seeds_found = []
+            draws_with_seeds = []
+            
+            for i, entry in enumerate(data):
+                numbers = entry.get('numere', [])
+                if len(numbers) != self.config.numbers_to_draw:
+                    continue
+                
+                # GPU batch processing
+                found_seed = find_seed_gpu_accelerated(
+                    i, numbers, rng_name, self.config, seed_range, batch_size=2000000
+                )
+                
+                if found_seed is not None:
+                    seeds_found.append(found_seed)
+                    draws_with_seeds.append({
+                        'idx': i,
+                        'date': entry['data'],
+                        'numbers': numbers,
+                        'seed': found_seed
+                    })
+                
+                progress = 100 * (i + 1) / len(data)
+                print(f"  [{i + 1}/{len(data)}] ({progress:.1f}%)... {len(seeds_found)} seeds", end='\r')
+            
+            success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
+            print(f"\n✅ [GPU] {rng_name}: {len(seeds_found)}/{len(data)} ({success_rate:.1%})")
+            
+            if success_rate > 0:
+                # Sortare cronologică
+                draws_with_seeds.sort(key=lambda x: x['idx'])
+                seeds_found = [d['seed'] for d in draws_with_seeds]
+                
+                gpu_results[rng_name] = {
+                    'seeds': seeds_found,
+                    'draws': draws_with_seeds,
+                    'success_rate': success_rate
+                }
+        
+        results_queue.put(('gpu', gpu_results))
+    
+    def test_cpu_rngs_parallel(self, data: List[Dict], seed_range: tuple, 
+                               search_size: int, results_queue: Queue):
+        """Testează TOATE RNG-urile CPU în paralel - rulează în thread separat"""
+        cpu_results = {}
+        num_cores = cpu_count()
+        
+        # RNG-uri care NU sunt pe GPU
+        cpu_only_rngs = [rng for rng in RNG_TYPES.keys() if rng not in GPU_SUPPORTED_RNGS]
+        
+        for rng_name in cpu_only_rngs:
+            print(f"\n💻 [CPU] Testing: {rng_name.upper()}")
+            
+            tasks = []
+            for i, entry in enumerate(data):
+                numbers = entry.get('numere', [])
+                if len(numbers) == self.config.numbers_to_draw:
+                    tasks.append((i, numbers, rng_name, self.config, seed_range, search_size))
+            
+            seeds_found = []
+            draws_with_seeds = []
+            
+            with Pool(processes=num_cores) as pool:
+                optimal_chunksize = max(1, len(tasks) // (num_cores * 4))
+                for i, result in enumerate(pool.imap_unordered(find_seed_exhaustive_worker, tasks, chunksize=optimal_chunksize)):
+                    idx_task, seed = result
+                    
+                    if seed is not None:
+                        seeds_found.append(seed)
+                        draws_with_seeds.append({
+                            'idx': idx_task,
+                            'date': data[idx_task]['data'],
+                            'numbers': data[idx_task]['numere'],
+                            'seed': seed
+                        })
+                    
+                    if (i + 1) % 2 == 0 or (i + 1) == len(tasks):
+                        progress = 100 * (i + 1) / len(tasks)
+                        print(f"  [{i + 1}/{len(tasks)}] ({progress:.1f}%)... {len(seeds_found)} seeds", end='\r')
+            
+            success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
+            print(f"\n✅ [CPU] {rng_name}: {len(seeds_found)}/{len(data)} ({success_rate:.1%})")
+            
+            if success_rate > 0:
+                # Sortare cronologică
+                draws_with_seeds.sort(key=lambda x: x['idx'])
+                seeds_found = [d['seed'] for d in draws_with_seeds]
+                
+                cpu_results[rng_name] = {
+                    'seeds': seeds_found,
+                    'draws': draws_with_seeds,
+                    'success_rate': success_rate
+                }
+        
+        results_queue.put(('cpu', cpu_results))
+    
     def run_max_prediction(self, last_n: Optional[int] = None,
                           start_year: Optional[int] = None,
                           end_year: Optional[int] = None,
