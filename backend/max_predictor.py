@@ -10,6 +10,7 @@ ULTIMATE MAX PREDICTOR - ZERO COMPROMISURI
 
 import json
 import sys
+import os
 from datetime import datetime
 from typing import List, Dict, Optional
 import numpy as np
@@ -18,6 +19,20 @@ from multiprocessing import Pool, cpu_count
 import random
 import threading
 from queue import Queue
+
+# FIX: Setează LD_LIBRARY_PATH înainte de import CuPy
+# Asigură că toate child processes-urile găsesc librăriile CUDA
+if 'LD_LIBRARY_PATH' not in os.environ or '/usr/local/cuda' not in os.environ.get('LD_LIBRARY_PATH', ''):
+    cuda_paths = [
+        '/usr/local/cuda-13.0/lib64',
+        '/usr/local/cuda/lib64',
+        '/usr/lib/x86_64-linux-gnu',
+    ]
+    for path in cuda_paths:
+        if os.path.exists(path):
+            current_ld = os.environ.get('LD_LIBRARY_PATH', '')
+            if path not in current_ld:
+                os.environ['LD_LIBRARY_PATH'] = f"{path}:{current_ld}" if current_ld else path
 
 # Check GPU availability
 try:
