@@ -247,7 +247,166 @@ def analyze_all_patterns_cpu(seeds):
         except:
             pass
     
-    # 12-23: Alte patterns (simplificat pentru viteză)
+    # 12-23: Pattern-uri adiționale
+    
+    # 12. Power Law
+    try:
+        def power_func(x, a, b, c):
+            return a * np.power(x + 1, b) + c
+        popt, _ = curve_fit(power_func, x, y, maxfev=2000, bounds=([0, -10, -np.inf], [np.inf, 10, np.inf]))
+        pred = power_func(len(seeds), *popt)
+        error = np.mean(np.abs(y - power_func(x, *popt)))
+        all_patterns['power_law'] = {'pred': pred, 'error': error, 'formula': 'power_law'}
+    except:
+        pass
+    
+    # 13. QCG
+    if len(seeds) >= 3:
+        try:
+            m = 2147483648
+            X = np.array([[seeds[i-1]**2, seeds[i-1], 1] for i in range(1, len(seeds))])
+            Y = np.array([seeds[i] for i in range(1, len(seeds))])
+            coeffs, _, _, _ = np.linalg.lstsq(X, Y, rcond=None)
+            a, b, c = coeffs
+            pred = (a * seeds[-1]**2 + b * seeds[-1] + c) % m
+            errors = [abs((a * seeds[i-1]**2 + b * seeds[i-1] + c) % m - seeds[i]) for i in range(1, len(seeds))]
+            all_patterns['qcg'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'QCG'}
+        except:
+            pass
+    
+    # 14. Multiplicative
+    if len(seeds) >= 2:
+        try:
+            m = 2147483648
+            ratios = [seeds[i] / seeds[i-1] for i in range(1, len(seeds)) if seeds[i-1] != 0]
+            if ratios:
+                a = np.mean(ratios)
+                pred = (a * seeds[-1]) % m
+                errors = [abs((a * seeds[i-1]) % m - seeds[i]) for i in range(1, len(seeds))]
+                all_patterns['multiplicative'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'multiplicative'}
+        except:
+            pass
+    
+    # 15. Lag-3
+    if len(seeds) >= 4:
+        try:
+            A = np.array([[seeds[i-1], seeds[i-2], seeds[i-3]] for i in range(3, len(seeds))])
+            B = np.array([seeds[i] for i in range(3, len(seeds))])
+            coeffs, _, _, _ = np.linalg.lstsq(A, B, rcond=None)
+            a, b, c = coeffs
+            pred = a * seeds[-1] + b * seeds[-2] + c * seeds[-3]
+            errors = [abs(a * seeds[i-1] + b * seeds[i-2] + c * seeds[i-3] - seeds[i]) for i in range(3, len(seeds))]
+            all_patterns['lag3'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'lag3'}
+        except:
+            pass
+    
+    # 16. Hyperbolic
+    try:
+        def hyp_func(x, a, b, c):
+            return a / (x + b + 1) + c
+        popt, _ = curve_fit(hyp_func, x, y, maxfev=2000)
+        pred = hyp_func(len(seeds), *popt)
+        error = np.mean(np.abs(y - hyp_func(x, *popt)))
+        all_patterns['hyperbolic'] = {'pred': pred, 'error': error, 'formula': 'hyperbolic'}
+    except:
+        pass
+    
+    # 17. XOR Chain
+    if len(seeds) >= 2:
+        try:
+            max_val = max(seeds) * 4 if max(seeds) > 0 else 0xFFFFFFFF
+            best_err = float('inf')
+            best_pred = None
+            for sa in [5, 7, 13]:
+                for sb in [5, 7, 13]:
+                    errors = [abs((seeds[i-1] ^ ((seeds[i-1] << sa) % max_val) ^ (seeds[i-1] >> sb)) - seeds[i]) for i in range(1, len(seeds))]
+                    err = np.mean(errors)
+                    if err < best_err:
+                        best_err = err
+                        best_pred = seeds[-1] ^ ((seeds[-1] << sa) % max_val) ^ (seeds[-1] >> sb)
+            if best_pred is not None:
+                all_patterns['xor_chain'] = {'pred': best_pred, 'error': best_err, 'formula': 'xor_chain'}
+        except:
+            pass
+    
+    # 18. Combined LCG
+    if len(seeds) >= 3:
+        try:
+            m = 2147483648
+            X = np.array([[seeds[i-1], i, 1] for i in range(1, len(seeds))])
+            Y = np.array([seeds[i] for i in range(1, len(seeds))])
+            coeffs, _, _, _ = np.linalg.lstsq(X, Y, rcond=None)
+            a, b, c = coeffs
+            pred = (a * seeds[-1] + b * len(seeds) + c) % m
+            errors = [abs((a * seeds[i-1] + b * i + c) % m - seeds[i]) for i in range(1, len(seeds))]
+            all_patterns['combined_lcg'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'combined_lcg'}
+        except:
+            pass
+    
+    # 19. Hash Mix
+    if len(seeds) >= 2:
+        try:
+            c1, r1, c2 = 0xcc9e2d51, 15, 0x1b873593
+            errors = [abs((((seeds[i-1] * c1) & 0xFFFFFFFF) ^ (seeds[i-1] >> r1)) * c2 & 0xFFFFFFFF - seeds[i]) for i in range(1, len(seeds))]
+            pred = (((seeds[-1] * c1) & 0xFFFFFFFF) ^ (seeds[-1] >> r1)) * c2 & 0xFFFFFFFF
+            all_patterns['hash_mix'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'hash_mix'}
+        except:
+            pass
+    
+    # 20. Hash Rotate
+    if len(seeds) >= 2:
+        try:
+            k, c = 13, 0x9e3779b9
+            errors = [abs((((seeds[i-1] << k) | (seeds[i-1] >> (32 - k))) & 0xFFFFFFFF) ^ c - seeds[i]) for i in range(1, len(seeds))]
+            pred = (((seeds[-1] << k) | (seeds[-1] >> (32 - k))) & 0xFFFFFFFF) ^ c
+            all_patterns['hash_rotate'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'hash_rotate'}
+        except:
+            pass
+    
+    # 21. Hash Weyl
+    if len(seeds) >= 2:
+        try:
+            weyl = 0x9e3779b97f4a7c15
+            pred = (seeds[-1] + weyl) & 0xFFFFFFFF
+            errors = [abs((seeds[i-1] + weyl) & 0xFFFFFFFF - seeds[i]) for i in range(1, len(seeds))]
+            all_patterns['hash_weyl'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'hash_weyl'}
+        except:
+            pass
+    
+    # 22. Hash Combine
+    if len(seeds) >= 2:
+        try:
+            gamma = 0x9e3779b97f4a7c15
+            z = (seeds[-1] + gamma) & 0xFFFFFFFFFFFFFFFF
+            z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9 & 0xFFFFFFFFFFFFFFFF
+            z = (z ^ (z >> 27)) * 0x94d049bb133111eb & 0xFFFFFFFFFFFFFFFF
+            pred = (z ^ (z >> 31)) & 0xFFFFFFFF
+            errors = []
+            for i in range(1, len(seeds)):
+                z = (seeds[i-1] + gamma) & 0xFFFFFFFFFFFFFFFF
+                z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9 & 0xFFFFFFFFFFFFFFFF
+                z = (z ^ (z >> 27)) * 0x94d049bb133111eb & 0xFFFFFFFFFFFFFFFF
+                p = (z ^ (z >> 31)) & 0xFFFFFFFF
+                errors.append(abs(p - seeds[i]))
+            all_patterns['hash_combine'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'hash_combine'}
+        except:
+            pass
+    
+    # 23. Hash Avalanche
+    if len(seeds) >= 2:
+        try:
+            def avalanche(x):
+                x = (x ^ (x >> 30)) & 0xFFFFFFFFFFFFFFFF
+                x = (x * 0xbf58476d1ce4e5b9) & 0xFFFFFFFFFFFFFFFF
+                x = (x ^ (x >> 27)) & 0xFFFFFFFFFFFFFFFF
+                x = (x * 0x94d049bb133111eb) & 0xFFFFFFFFFFFFFFFF
+                return (x ^ (x >> 31)) & 0xFFFFFFFF
+            
+            errors = [abs(avalanche(seeds[i-1]) - seeds[i]) for i in range(1, len(seeds))]
+            pred = avalanche(seeds[-1])
+            all_patterns['hash_avalanche'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'hash_avalanche'}
+        except:
+            pass
     
     print(f"  ✅ {len(all_patterns)} patterns analizați\n")
     
