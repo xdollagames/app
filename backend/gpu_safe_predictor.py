@@ -253,12 +253,12 @@ def cpu_multiprocessing_worker(data, lottery_config, seed_range, search_size, mi
         # Fallback: presupunem hyperthreading dacă > 32
         physical_cores = total_logical_cores // 2 if total_logical_cores > 32 else total_logical_cores
     
-    # Folosim cores fizice - 3
-    num_cores = max(1, physical_cores - 3)
+    # Folosim TOATE cores-urile MINUS 1 (lasă 1 pentru sistem/GPU)
+    num_cores = max(1, physical_cores - 1)
     
     print(f"💻 [CPU Thread] Cores logice (cu HT): {total_logical_cores}")
     print(f"💻 [CPU Thread] Cores fizice: {physical_cores}")
-    print(f"💻 [CPU Thread] Folosește: {num_cores} cores fizice (lasă 3 pentru GPU)")
+    print(f"💻 [CPU Thread] Folosește: {num_cores}/{physical_cores} cores (lasă 1 pentru sistem/GPU)")
     
     # RNG-uri CPU (exclude doar xorshift_simple testat pe GPU)
     gpu_rngs = ['xorshift_simple']  # Doar acesta are kernel corect!
