@@ -116,16 +116,11 @@ def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
         import cupy as cp
         print("🚀 [GPU Thread] CuPy importat cu succes!\n")
         
-        # 12 RNG-uri pentru GPU (inclusiv Mersenne!)
-        gpu_rngs_to_test = ['xorshift_simple', 'lcg_glibc', 'java_random', 'xorshift32', 
-                           'xorshift64', 'pcg32', 'splitmix', 'xoshiro256', 'xorshift128', 
-                           'mersenne', 'lfsr', 'lcg_minstd']
+        # 1 RNG pentru GPU (doar xorshift_simple - singurul cu kernel CORECT!)
+        gpu_rngs_to_test = ['xorshift_simple']
         
-        print(f"🚀 [GPU] Va testa {len(gpu_rngs_to_test)} RNG-uri cu CUDA")
-        print(f"   RNG-uri GPU: {', '.join(gpu_rngs_to_test)}\n")
-        
-        # NOTA: Pentru demo am doar kernel xorshift, dar poți adăuga altele
-        # Kernel-urile complexe (Mersenne) pot fi implementate similar
+        print(f"🚀 [GPU] Va testa {len(gpu_rngs_to_test)} RNG (xorshift_simple - kernel CORECT)")
+        print(f"⚠️  Alte RNG-uri necesită kernels dedicați - momentan pe CPU\n")
         
         # Kernel xorshift (funcționează pentru xorshift_simple, xorshift32, xorshift64, xorshift128)
         xorshift_kernel = cp.RawKernel(r'''
