@@ -1450,7 +1450,67 @@ def analyze_all_patterns_parallel_gpu(seeds: List[int]) -> Dict:
             except:
                 return {'pred': None, 'error': float('inf'), 'formula': 'failed'}
         
-        # Pattern-uri CPU
+        def hash_rotate_p():
+            if len(seeds) < 2:
+                return {'pred': None, 'error': float('inf'), 'formula': 'insufficient'}
+            try:
+                k, c = 13, 0x9e3779b9
+                errors = [abs((((seeds[i-1] << k) | (seeds[i-1] >> (32 - k))) & 0xFFFFFFFF) ^ c - seeds[i]) for i in range(1, len(seeds))]
+                rotate_pred = (((seeds[-1] << k) | (seeds[-1] >> (32 - k))) & 0xFFFFFFFF) ^ c
+                return {'pred': rotate_pred, 'error': np.mean(errors), 'formula': "hash_rotate"}
+            except:
+                return {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        
+        def hash_weyl_p():
+            if len(seeds) < 2:
+                return {'pred': None, 'error': float('inf'), 'formula': 'insufficient'}
+            try:
+                weyl = 0x9e3779b97f4a7c15
+                weyl_pred = (seeds[-1] + weyl) & 0xFFFFFFFF
+                errors = [abs((seeds[i-1] + weyl) & 0xFFFFFFFF - seeds[i]) for i in range(1, len(seeds))]
+                return {'pred': weyl_pred, 'error': np.mean(errors), 'formula': "hash_weyl"}
+            except:
+                return {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        
+        def hash_combine_p():
+            if len(seeds) < 2:
+                return {'pred': None, 'error': float('inf'), 'formula': 'insufficient'}
+            try:
+                gamma = 0x9e3779b97f4a7c15
+                z = (seeds[-1] + gamma) & 0xFFFFFFFFFFFFFFFF
+                z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9
+                z = (z ^ (z >> 27)) * 0x94d049bb133111eb
+                combine_pred = (z ^ (z >> 31)) & 0xFFFFFFFF
+                errors = []
+                for i in range(1, len(seeds)):
+                    z = (seeds[i-1] + gamma) & 0xFFFFFFFFFFFFFFFF
+                    z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9
+                    z = (z ^ (z >> 27)) * 0x94d049bb133111eb
+                    pred = (z ^ (z >> 31)) & 0xFFFFFFFF
+                    errors.append(abs(pred - seeds[i]))
+                return {'pred': combine_pred, 'error': np.mean(errors), 'formula': "hash_combine"}
+            except:
+                return {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        
+        def hash_avalanche_p():
+            if len(seeds) < 2:
+                return {'pred': None, 'error': float('inf'), 'formula': 'insufficient'}
+            try:
+                def avalanche(x):
+                    x = (x ^ (x >> 30)) & 0xFFFFFFFFFFFFFFFF
+                    x = (x * 0xbf58476d1ce4e5b9) & 0xFFFFFFFFFFFFFFFF
+                    x = (x ^ (x >> 27)) & 0xFFFFFFFFFFFFFFFF
+                    x = (x * 0x94d049bb133111eb) & 0xFFFFFFFFFFFFFFFF
+                    x = (x ^ (x >> 31)) & 0xFFFFFFFF
+                    return x
+                
+                errors = [abs(avalanche(seeds[i-1]) - seeds[i]) for i in range(1, len(seeds))]
+                avalanche_pred = avalanche(seeds[-1])
+                return {'pred': avalanche_pred, 'error': np.mean(errors), 'formula': "hash_avalanche"}
+            except:
+                return {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        
+        # Pattern functions pentru CPU parallel - TOATE 12!
         cpu_pattern_funcs = {
             'exponential': exponential_p,
             'fibonacci': fibonacci_p,
@@ -1464,6 +1524,10 @@ def analyze_all_patterns_parallel_gpu(seeds: List[int]) -> Dict:
             'xor_chain': xor_chain_p,
             'combined_lcg': combined_lcg_p,
             'hash_mix': hash_mix_p,
+            'hash_rotate': hash_rotate_p,
+            'hash_weyl': hash_weyl_p,
+            'hash_combine': hash_combine_p,
+            'hash_avalanche': hash_avalanche_p,
         }
         
         # Rulare PARALLEL pe CPU (în interiorul thread-ului)
