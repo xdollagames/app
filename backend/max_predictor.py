@@ -610,6 +610,223 @@ def analyze_all_patterns(seeds: List[int]) -> Dict:
     except:
         all_patterns['logarithmic'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
     
+    # 11. Pattern POWER LAW: y = a*x^b + c
+    try:
+        def power_func(x, a, b, c):
+            return a * np.power(x + 1, b) + c
+        
+        popt, _ = curve_fit(power_func, x, y, maxfev=10000, bounds=([0, -10, -np.inf], [np.inf, 10, np.inf]))
+        power_pred = power_func(len(seeds), *popt)
+        power_error = np.mean(np.abs(y - power_func(x, *popt)))
+        
+        all_patterns['power_law'] = {
+            'pred': power_pred,
+            'error': power_error,
+            'formula': f"y = {popt[0]:.4e}*x^{popt[1]:.4f} + {popt[2]:.2f}"
+        }
+    except:
+        all_patterns['power_law'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    
+    # 12. Pattern POLYNOMIAL grad 4
+    if len(seeds) >= 5:
+        try:
+            poly4_coeffs = np.polyfit(x, y, 4)
+            poly4_pred = np.poly1d(poly4_coeffs)(len(seeds))
+            poly4_error = np.mean(np.abs(y - np.poly1d(poly4_coeffs)(x)))
+            all_patterns['polynomial_4'] = {
+                'pred': poly4_pred,
+                'error': poly4_error,
+                'formula': f"y = {poly4_coeffs[0]:.4e}*x⁴ + ... (grad 4)"
+            }
+        except:
+            all_patterns['polynomial_4'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    else:
+        all_patterns['polynomial_4'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+    
+    # 13. Pattern QUADRATIC CONGRUENTIAL: S(n+1) = (a*S(n)^2 + b*S(n) + c) mod m
+    if len(seeds) >= 3:
+        try:
+            possible_m = [2147483648, 4294967296, max(seeds) * 2]
+            best_qcg = None
+            best_qcg_error = float('inf')
+            
+            for m_estimate in possible_m:
+                # S(n+1) = (a*S(n)^2 + b*S(n) + c) mod m
+                X = np.array([[seeds[i-1]**2, seeds[i-1], 1] for i in range(1, len(seeds))])
+                Y = np.array([seeds[i] for i in range(1, len(seeds))])
+                
+                try:
+                    coeffs, _, _, _ = np.linalg.lstsq(X, Y, rcond=None)
+                    a, b, c = coeffs
+                    
+                    qcg_pred = (a * seeds[-1]**2 + b * seeds[-1] + c) % m_estimate
+                    
+                    errors = []
+                    for i in range(1, len(seeds)):
+                        pred_val = (a * seeds[i-1]**2 + b * seeds[i-1] + c) % m_estimate
+                        errors.append(abs(pred_val - seeds[i]))
+                    qcg_error = np.mean(errors) if errors else float('inf')
+                    
+                    if qcg_error < best_qcg_error:
+                        best_qcg_error = qcg_error
+                        best_qcg = {
+                            'pred': qcg_pred,
+                            'error': qcg_error,
+                            'formula': f"S(n+1) = ({a:.4e}*S²(n) + {b:.4f}*S(n) + {c:.2f}) mod {int(m_estimate)}"
+                        }
+                except:
+                    continue
+            
+            all_patterns['qcg'] = best_qcg if best_qcg else {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        except:
+            all_patterns['qcg'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    else:
+        all_patterns['qcg'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+    
+    # 14. Pattern MULTIPLICATIVE CONGRUENTIAL: S(n+1) = (a*S(n)) mod m
+    if len(seeds) >= 2:
+        try:
+            possible_m = [2147483648, 4294967296, max(seeds) * 2]
+            best_mult = None
+            best_mult_error = float('inf')
+            
+            for m_estimate in possible_m:
+                # Estimăm a ca media raporturilor
+                ratios = [seeds[i] / seeds[i-1] for i in range(1, len(seeds)) if seeds[i-1] != 0]
+                if ratios:
+                    a = np.mean(ratios)
+                    
+                    mult_pred = (a * seeds[-1]) % m_estimate
+                    
+                    errors = []
+                    for i in range(1, len(seeds)):
+                        pred_val = (a * seeds[i-1]) % m_estimate
+                        errors.append(abs(pred_val - seeds[i]))
+                    mult_error = np.mean(errors)
+                    
+                    if mult_error < best_mult_error:
+                        best_mult_error = mult_error
+                        best_mult = {
+                            'pred': mult_pred,
+                            'error': mult_error,
+                            'formula': f"S(n+1) = ({a:.6f}*S(n)) mod {int(m_estimate)}"
+                        }
+            
+            all_patterns['multiplicative'] = best_mult if best_mult else {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        except:
+            all_patterns['multiplicative'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    else:
+        all_patterns['multiplicative'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+    
+    # 15. Pattern LAG-3 (Autoregressive): S(n) = a*S(n-1) + b*S(n-2) + c*S(n-3)
+    if len(seeds) >= 4:
+        try:
+            A = np.array([[seeds[i-1], seeds[i-2], seeds[i-3]] for i in range(3, len(seeds))])
+            B = np.array([seeds[i] for i in range(3, len(seeds))])
+            coeffs, _, _, _ = np.linalg.lstsq(A, B, rcond=None)
+            a, b, c = coeffs
+            
+            lag3_pred = a * seeds[-1] + b * seeds[-2] + c * seeds[-3]
+            
+            errors = []
+            for i in range(3, len(seeds)):
+                pred_val = a * seeds[i-1] + b * seeds[i-2] + c * seeds[i-3]
+                errors.append(abs(pred_val - seeds[i]))
+            lag3_error = np.mean(errors) if errors else float('inf')
+            
+            all_patterns['lag3'] = {
+                'pred': lag3_pred,
+                'error': lag3_error,
+                'formula': f"S(n) = {a:.6f}*S(n-1) + {b:.6f}*S(n-2) + {c:.6f}*S(n-3)"
+            }
+        except:
+            all_patterns['lag3'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    else:
+        all_patterns['lag3'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+    
+    # 16. Pattern HYPERBOLIC: y = a/(x + b) + c
+    try:
+        def hyperbolic_func(x, a, b, c):
+            return a / (x + b + 1) + c
+        
+        popt, _ = curve_fit(hyperbolic_func, x, y, maxfev=10000)
+        hyp_pred = hyperbolic_func(len(seeds), *popt)
+        hyp_error = np.mean(np.abs(y - hyperbolic_func(x, *popt)))
+        
+        all_patterns['hyperbolic'] = {
+            'pred': hyp_pred,
+            'error': hyp_error,
+            'formula': f"y = {popt[0]:.4f}/(x + {popt[1]:.4f}) + {popt[2]:.2f}"
+        }
+    except:
+        all_patterns['hyperbolic'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    
+    # 17. Pattern XOR CHAIN: S(n+1) = S(n) XOR (S(n) << a) XOR (S(n) >> b)
+    if len(seeds) >= 2:
+        try:
+            # Găsim cel mai bun shift prin încercare
+            best_xor = None
+            best_xor_error = float('inf')
+            
+            for shift_a in [1, 3, 5, 7, 13, 17]:
+                for shift_b in [1, 3, 5, 7, 13, 17]:
+                    errors = []
+                    for i in range(1, len(seeds)):
+                        # Aproximăm cu modulo pentru a evita overflow
+                        max_val = max(seeds) * 4
+                        pred_val = seeds[i-1] ^ ((seeds[i-1] << shift_a) % max_val) ^ ((seeds[i-1] >> shift_b))
+                        errors.append(abs(pred_val - seeds[i]))
+                    
+                    xor_error = np.mean(errors)
+                    if xor_error < best_xor_error:
+                        best_xor_error = xor_error
+                        xor_pred = seeds[-1] ^ ((seeds[-1] << shift_a) % max_val) ^ ((seeds[-1] >> shift_b))
+                        best_xor = {
+                            'pred': xor_pred,
+                            'error': xor_error,
+                            'formula': f"S(n+1) = S(n) XOR (S(n)<<{shift_a}) XOR (S(n)>>{shift_b})"
+                        }
+            
+            all_patterns['xor_chain'] = best_xor if best_xor else {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        except:
+            all_patterns['xor_chain'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    else:
+        all_patterns['xor_chain'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+    
+    # 18. Pattern COMBINED LCG (două LCG-uri combinate): S(n+1) = (LCG1(n) + LCG2(n)) mod m
+    if len(seeds) >= 3:
+        try:
+            m_estimate = max(seeds) * 2 if max(seeds) > 0 else 2147483648
+            
+            # Presupunem două LCG-uri cu parametri diferiți
+            # Simplificare: S(n+1) ≈ (a1*S(n) + c1 + a2*S(n) + c2) mod m
+            # = ((a1+a2)*S(n) + (c1+c2)) mod m
+            # Deci e similar cu un singur LCG, dar poate avea pattern diferit
+            
+            # Încercăm variație: S(n+1) = (a*S(n) + b*n + c) mod m (LCG cu trend)
+            X = np.array([[seeds[i-1], i, 1] for i in range(1, len(seeds))])
+            Y = np.array([seeds[i] for i in range(1, len(seeds))])
+            coeffs, _, _, _ = np.linalg.lstsq(X, Y, rcond=None)
+            a, b, c = coeffs
+            
+            combined_pred = (a * seeds[-1] + b * len(seeds) + c) % m_estimate
+            
+            errors = []
+            for i in range(1, len(seeds)):
+                pred_val = (a * seeds[i-1] + b * i + c) % m_estimate
+                errors.append(abs(pred_val - seeds[i]))
+            combined_error = np.mean(errors) if errors else float('inf')
+            
+            all_patterns['combined_lcg'] = {
+                'pred': combined_pred,
+                'error': combined_error,
+                'formula': f"S(n+1) = ({a:.4f}*S(n) + {b:.4f}*n + {c:.2f}) mod {int(m_estimate)}"
+            }
+        except:
+            all_patterns['combined_lcg'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    else:
+        all_patterns['combined_lcg'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+    
     # Selectare cel mai bun pattern
     valid_patterns = {k: v for k, v in all_patterns.items() 
                      if v['pred'] is not None and not np.isnan(v['error']) and v['error'] != float('inf')}
