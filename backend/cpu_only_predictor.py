@@ -148,8 +148,15 @@ def cpu_worker_chunked(args):
     start_time = time.time()
     
     # VERIFICĂ CACHE MAI ÎNTÂI
-    cached_seed = get_cached_seed(lottery_type, date_str, rng_name)
-    if cached_seed is not None and seed_chunk_start <= cached_seed < seed_chunk_end:
+    cached_result = get_cached_seed(lottery_type, date_str, rng_name)
+    
+    if cached_result == 'NOT_FOUND':
+        # Deja am căutat și NU am găsit → SKIP direct!
+        return (draw_idx, None, True)  # True = din cache (negativ)
+    
+    if cached_result is not None and isinstance(cached_result, int):
+        # Seed găsit în cache → verifică că e în acest chunk
+        if seed_chunk_start <= cached_result < seed_chunk_end:
         try:
             rng = create_rng(rng_name, cached_seed)
             if lottery_config.is_composite:
