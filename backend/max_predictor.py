@@ -28,16 +28,15 @@ from queue import Queue
 GPU_AVAILABLE = False
 GPU_SUPPORTED_RNGS = []
 
-# GPU Kernels pentru RNG-uri simple - SE CREEAZĂ DOAR DUPĂ initialize_gpu()
+# GPU Kernels - NU se creează la import, doar când thread-ul GPU pornește
 GPU_RNG_KERNELS = {}
 
-def setup_gpu_kernels():
-    """Setup GPU kernels - apelat DOAR după initialize_gpu()"""
-    global GPU_RNG_KERNELS, GPU_SUPPORTED_RNGS
-    
-    if not GPU_AVAILABLE:
-        return
-    # Kernel pentru xorshift_simple
+def setup_gpu_in_thread():
+    """Setup GPU DOAR în thread dedicat - NU în main, NU în workers!"""
+    try:
+        import cupy as cp
+        
+        # Kernel pentru xorshift_simple
     GPU_RNG_KERNELS['xorshift_simple'] = cp.RawKernel(r'''
     extern "C" __global__
     void test_seeds(
