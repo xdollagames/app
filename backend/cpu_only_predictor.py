@@ -200,11 +200,13 @@ def cpu_worker(args):
                 generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
             
             if sorted(generated) == target_sorted:
-                return (draw_idx, seed)
+                # GĂSIT! Salvează în cache
+                cache_seed(lottery_type, date_str, rng_name, seed)
+                return (draw_idx, seed, False)  # False = calculat acum
         except:
             continue
     
-    return (draw_idx, None)
+    return (draw_idx, None, False)
 
 
 def analyze_all_patterns_cpu(seeds):
