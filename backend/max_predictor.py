@@ -571,9 +571,14 @@ def setup_gpu_kernels():
         results[idx] = all_match ? 1 : 0;
     }
     ''', 'test_seeds')
+    
+    # RNG-uri suportate pe GPU - ACUM 11 RNG-URI!
+    GPU_SUPPORTED_RNGS = list(GPU_RNG_KERNELS.keys())
+    
+    print(f"✅ GPU Kernels setup: {len(GPU_SUPPORTED_RNGS)} RNG-uri")
 
-# RNG-uri suportate pe GPU - ACUM 11 RNG-URI!
-GPU_SUPPORTED_RNGS = list(GPU_RNG_KERNELS.keys()) if GPU_AVAILABLE else []
+
+# La import, GPU nu e inițializat - se va face manual în __main__
 
 from lottery_config import get_lottery_config
 from advanced_rng_library import RNG_TYPES, create_rng, generate_numbers
