@@ -1563,8 +1563,8 @@ if __name__ == "__main__":
     parser.add_argument('--end-year', type=int)
     parser.add_argument('--seed-range', type=int, nargs=2, default=[0, 100000000],
                       help='Seed range (default: 0 100000000)')
-    parser.add_argument('--search-size', type=int, default=5000000,
-                      help='Seeds testate per extragere (default: 5000000)')
+    parser.add_argument('--search-size', type=int, default=10000000,
+                      help='Seeds testate per extragere (default: 10000000)')
     parser.add_argument('--min-success-rate', type=float, default=0.66)
     
     args = parser.parse_args()
