@@ -590,7 +590,7 @@ if __name__ == "__main__":
                       help='Seed range (default: 0 100000000)')
     parser.add_argument('--search-size', type=int, default=5000000,
                       help='Seeds testate per extragere (default: 5000000)')
-    parser.add_argument('--min-success-rate', type=float, default=0.5)
+    parser.add_argument('--min-success-rate', type=float, default=0.66)
     
     args = parser.parse_args()
     
