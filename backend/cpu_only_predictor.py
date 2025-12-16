@@ -191,8 +191,14 @@ def cpu_worker_chunked(args):
             
             if lottery_config.is_composite:
                 generated = []
-                for count, min_val, max_val in lottery_config.composite_parts:
+                for part_idx, (count, min_val, max_val) in enumerate(lottery_config.composite_parts):
                     part = generate_numbers(rng, count, min_val, max_val)
+                    # Evită duplicate pentru joker
+                    if part_idx > 0:
+                        attempts = 0
+                        while any(num in generated for num in part) and attempts < 100:
+                            part = generate_numbers(rng, count, min_val, max_val)
+                            attempts += 1
                     generated.extend(part)
             else:
                 generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
