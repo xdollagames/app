@@ -427,11 +427,15 @@ class GPUSafePredictor:
         print(f"  GPU-SAFE PREDICTOR - {self.lottery_type.upper()}")
         print(f"{'='*70}\n")
         
-        num_cores = cpu_count()
-        print(f"🚀 GPU Thread: Va testa 1 RNG (xorshift_simple) cu TOT GPU-ul")
-        print(f"💻 CPU Thread: Va testa 20 RNG-uri SECVENȚIAL, fiecare cu TOATE cele {num_cores} cores")
-        print(f"🎯 Reverse Engineering: 6 LCG variants (INSTANT)")
-        print(f"⚡ GPU + CPU rulează în PARALEL (threading)!\n")
+        # Verificare cores ÎNAINTE
+        total_cores = cpu_count()
+        cpu_cores_to_use = max(1, total_cores - 3)
+        
+        print(f"💻 Total CPU cores: {total_cores}")
+        print(f"🚀 GPU Thread: 12 RNG-uri (TOT GPU-ul RTX 5090)")
+        print(f"💻 CPU Thread: 9 RNG-uri ({cpu_cores_to_use} cores, lasă 3 pentru GPU)")
+        print(f"🎯 Reverse Engineering: 6 LCG (INSTANT)")
+        print(f"⚡ GPU + CPU pornesc SIMULTAN (threading paralel)!\n")
         
         # Load
         if last_n:
