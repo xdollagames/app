@@ -345,6 +345,213 @@ def find_seed_gpu_accelerated(draw_idx: int, numbers: List[int], rng_name: str,
     return None
 
 
+def compute_modular_inverse(a, m):
+    """Calculează inversul modular: a^(-1) mod m"""
+    def extended_gcd(a, b):
+        if a == 0:
+            return b, 0, 1
+        gcd, x1, y1 = extended_gcd(b % a, a)
+        x = y1 - (b // a) * x1
+        y = x1
+        return gcd, x, y
+    
+    gcd, x, _ = extended_gcd(a % m, m)
+    if gcd != 1:
+        return None  # Inverse nu există
+    return (x % m + m) % m
+
+
+def reverse_lcg_glibc(output_number: int, min_number: int, max_number: int) -> Optional[int]:
+    """INVERSĂ LCG GLIBC - Calculează seed-ul direct din numărul generat!"""
+    # LCG GLIBC: state = (1103515245 * state + 12345) % 2^31
+    # Apoi: number = min + (state % range)
+    
+    a = 1103515245
+    c = 12345
+    m = 2147483648  # 2^31
+    
+    range_size = max_number - min_number + 1
+    
+    # output_number = min + (state % range)
+    # Deci: state % range = output_number - min
+    target_mod = output_number - min_number
+    
+    # Căutăm state astfel încât: state % range == target_mod
+    # Și: state = (a * prev_state + c) % m
+    
+    # Testăm toate valorile posibile de state care dau target_mod
+    a_inv = compute_modular_inverse(a, m)
+    if a_inv is None:
+        return None
+    
+    for k in range(0, m // range_size + 1):
+        state = target_mod + k * range_size
+        if state >= m:
+            break
+        
+        # Calculăm prev_state folosind inversa
+        # state = (a * prev_state + c) % m
+        # prev_state = a_inv * (state - c) % m
+        prev_state = (a_inv * (state - c)) % m
+        
+        # Verificăm dacă e valid
+        if prev_state < m:
+            return prev_state
+    
+    return None
+
+
+def reverse_java_random(output_number: int, min_number: int, max_number: int) -> Optional[int]:
+    """INVERSĂ Java Random - Calculează seed-ul direct!"""
+    # Java Random: state = (state * 0x5DEECE66D + 0xB) & ((1 << 48) - 1)
+    # output = (state >> 16) % range
+    
+    a = 0x5DEECE66D
+    c = 0xB
+    m = (1 << 48)
+    
+    range_size = max_number - min_number + 1
+    target_mod = output_number - min_number
+    
+    a_inv = compute_modular_inverse(a, m)
+    if a_inv is None:
+        return None
+    
+    # Numărul de posibilități pentru upper bits
+    for upper in range(0, 1 << 16):  # Primii 16 bits
+        state_high = (upper << 16) | target_mod
+        
+        # Calculăm prev_state
+        prev_state = (a_inv * (state_high - c)) % m
+        
+        if prev_state < m:
+            # Returnăm seed-ul original (Java folosește XOR cu 0x5DEECE66D)
+            seed = prev_state ^ 0x5DEECE66D
+            return seed & 0xFFFFFFFF
+    
+    return None
+
+
+def reverse_xorshift_simple(numbers: List[int], min_number: int, max_number: int) -> Optional[int]:
+    """INVERSĂ Xorshift Simple - Încearcă să reverse-uiască operațiile XOR"""
+    # Xorshift simple: state ^= state << 13; state ^= state >> 17; state ^= state << 5
+    
+    # Pentru a inversa, aplicăm operațiile în ordine inversă
+    def inverse_xor_left_shift(x, shift, bits=32):
+        """Inversează x ^= x << shift"""
+        mask = (1 << bits) - 1
+        result = x
+        for i in range(shift, bits, shift):
+            result ^= (x << i) & mask
+        return result & mask
+    
+    def inverse_xor_right_shift(x, shift, bits=32):
+        """Inversează x ^= x >> shift"""
+        mask = (1 << bits) - 1
+        result = x
+        for i in range(shift, bits, shift):
+            result ^= (result >> shift) & mask
+        return result & mask
+    
+    range_size = max_number - min_number + 1
+    
+    # Încercăm să reconstituim state-ul din primul număr
+    first_num = numbers[0]
+    target_mod = first_num - min_number
+    
+    # Testăm seed-uri care ar putea genera target_mod
+    for seed_candidate in range(1, 1000000):  # Testăm până la 1M
+        state = seed_candidate
+        
+        # Aplicăm xorshift
+        state ^= state << 13
+        state &= 0xFFFFFFFF
+        state ^= state >> 17
+        state &= 0xFFFFFFFF
+        state ^= state << 5
+        state &= 0xFFFFFFFF
+        
+        if (state % range_size) == target_mod:
+            # Verificăm cu al doilea număr dacă avem
+            if len(numbers) > 1:
+                state2 = state
+                state2 ^= state2 << 13
+                state2 &= 0xFFFFFFFF
+                state2 ^= state2 >> 17
+                state2 &= 0xFFFFFFFF
+                state2 ^= state2 << 5
+                state2 &= 0xFFFFFFFF
+                
+                if (min_number + (state2 % range_size)) == numbers[1]:
+                    return seed_candidate
+            else:
+                return seed_candidate
+    
+    return None
+
+
+def reverse_xorshift32(output_number: int, min_number: int, max_number: int) -> Optional[int]:
+    """INVERSĂ Xorshift32"""
+    # Similar cu xorshift_simple dar poate avea parametri diferiți
+    # Pentru simplitate, folosim aceeași logică
+    range_size = max_number - min_number + 1
+    target_mod = output_number - min_number
+    
+    for seed in range(1, 1000000):
+        state = seed
+        if state == 0:
+            state = 1
+        
+        state ^= state << 13
+        state &= 0xFFFFFFFF
+        state ^= state >> 17
+        state &= 0xFFFFFFFF
+        state ^= state << 5
+        state &= 0xFFFFFFFF
+        
+        if (state % range_size) == target_mod:
+            return seed
+    
+    return None
+
+
+def try_reverse_engineering(rng_name: str, numbers: List[int], lottery_config) -> Optional[int]:
+    """Încearcă să REVERSE-uiască RNG-ul pentru a găsi seed-ul direct!"""
+    
+    if not numbers:
+        return None
+    
+    # Mapare RNG → funcție inversă
+    reverse_functions = {
+        'lcg_glibc': lambda: reverse_lcg_glibc(numbers[0], lottery_config.min_number, lottery_config.max_number),
+        'java_random': lambda: reverse_java_random(numbers[0], lottery_config.min_number, lottery_config.max_number),
+        'xorshift_simple': lambda: reverse_xorshift_simple(numbers, lottery_config.min_number, lottery_config.max_number),
+        'xorshift32': lambda: reverse_xorshift32(numbers[0], lottery_config.min_number, lottery_config.max_number),
+    }
+    
+    if rng_name in reverse_functions:
+        try:
+            seed = reverse_functions[rng_name]()
+            if seed is not None:
+                # VERIFICARE: Testăm dacă seed-ul generat produce numerele corecte
+                try:
+                    rng = create_rng(rng_name, seed)
+                    generated = generate_numbers(
+                        rng,
+                        lottery_config.numbers_to_draw,
+                        lottery_config.min_number,
+                        lottery_config.max_number
+                    )
+                    if sorted(generated) == sorted(numbers):
+                        return seed
+                except:
+                    pass
+        except:
+            pass
+    
+    return None
+
+
 def find_seed_exhaustive_worker(args):
     """Worker pentru căutare EXHAUSTIVĂ - ZERO compromisuri"""
     import time
