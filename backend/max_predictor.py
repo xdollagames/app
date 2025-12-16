@@ -1065,18 +1065,32 @@ def try_reverse_engineering(rng_name: str, numbers: List[int], lottery_config) -
     if not numbers:
         return None
     
-    # Mapare RNG → funcție inversă - ACUM 11 RNG-URI CU REVERSE!
+    # Mapare RNG → funcție inversă - ACUM 16 RNG-URI CU REVERSE! (76% din total!)
     reverse_functions = {
+        # LCG/MCG (6 variante)
         'lcg_glibc': lambda: reverse_lcg_glibc(numbers[0], lottery_config.min_number, lottery_config.max_number),
         'lcg_minstd': lambda: reverse_mcg(numbers[0], lottery_config.min_number, lottery_config.max_number),
+        'lcg_randu': lambda: reverse_lcg_randu(numbers[0], lottery_config.min_number, lottery_config.max_number),
+        'lcg_borland': lambda: reverse_lcg_borland(numbers[0], lottery_config.min_number, lottery_config.max_number),
+        'lcg_weak': lambda: reverse_lcg_weak(numbers[0], lottery_config.min_number, lottery_config.max_number),
+        'php_rand': lambda: reverse_php_rand(numbers[0], lottery_config.min_number, lottery_config.max_number),
+        
+        # Java (LCG variant)
         'java_random': lambda: reverse_java_random(numbers[0], lottery_config.min_number, lottery_config.max_number),
+        
+        # Xorshift/Xoshiro family (6 variante)
         'xorshift_simple': lambda: reverse_xorshift_simple(numbers, lottery_config.min_number, lottery_config.max_number),
         'xorshift32': lambda: reverse_xorshift32(numbers[0], lottery_config.min_number, lottery_config.max_number),
         'xorshift64': lambda: reverse_xorshift64(numbers, lottery_config.min_number, lottery_config.max_number),
         'xorshift128': lambda: reverse_xorshift128(numbers, lottery_config.min_number, lottery_config.max_number),
+        'xoshiro256': lambda: reverse_xoshiro256(numbers, lottery_config.min_number, lottery_config.max_number),
+        'js_math_random': lambda: reverse_js_math_random(numbers, lottery_config.min_number, lottery_config.max_number),
+        
+        # PCG & SplitMix
         'pcg32': lambda: reverse_pcg32(numbers, lottery_config.min_number, lottery_config.max_number),
         'splitmix': lambda: reverse_splitmix64(numbers, lottery_config.min_number, lottery_config.max_number),
-        'xoshiro256': lambda: reverse_xoshiro256(numbers, lottery_config.min_number, lottery_config.max_number),
+        
+        # LFSR
         'lfsr': lambda: reverse_lfsr(numbers, lottery_config.min_number, lottery_config.max_number),
     }
     
