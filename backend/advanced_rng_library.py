@@ -320,6 +320,87 @@ class JavaRandom:
         return (self.state >> 16) & 0xFFFFFFFF
 
 
+class Xoshiro256PlusPlus:
+    """Xoshiro256++ - Modern, fast, high-quality PRNG (2018)"""
+    __slots__ = ['s0', 's1', 's2', 's3']
+    
+    def __init__(self, seed: int):
+        # Initialize state using SplitMix64 (recommended seeding)
+        sm = SplitMix64(seed)
+        self.s0 = sm.next() & 0xFFFFFFFFFFFFFFFF
+        self.s1 = sm.next() & 0xFFFFFFFFFFFFFFFF
+        self.s2 = sm.next() & 0xFFFFFFFFFFFFFFFF
+        self.s3 = sm.next() & 0xFFFFFFFFFFFFFFFF
+        
+        # Ensure non-zero state
+        if self.s0 == 0 and self.s1 == 0 and self.s2 == 0 and self.s3 == 0:
+            self.s0 = 1
+    
+    def next(self) -> int:
+        # Xoshiro256++ algorithm
+        result = self._rotl((self.s0 + self.s3) & 0xFFFFFFFFFFFFFFFF, 23)
+        result = (result + self.s0) & 0xFFFFFFFFFFFFFFFF
+        
+        t = (self.s1 << 17) & 0xFFFFFFFFFFFFFFFF
+        
+        self.s2 ^= self.s0
+        self.s3 ^= self.s1
+        self.s1 ^= self.s2
+        self.s0 ^= self.s3
+        
+        self.s2 ^= t
+        self.s3 = self._rotl(self.s3, 45)
+        
+        return (result >> 32) & 0xFFFFFFFF  # Return upper 32 bits
+    
+    @staticmethod
+    def _rotl(x: int, k: int) -> int:
+        """Rotate left 64-bit"""
+        x = x & 0xFFFFFFFFFFFFFFFF
+        return ((x << k) | (x >> (64 - k))) & 0xFFFFFFFFFFFFFFFF
+
+
+class JSMathRandom:
+    """JavaScript Math.random() - V8 Engine Implementation (Xorshift128+)"""
+    __slots__ = ['state0', 'state1']
+    
+    def __init__(self, seed: int):
+        # V8 uses Xorshift128+ with two 64-bit states
+        # Initialize using seed
+        self.state0 = seed & 0xFFFFFFFFFFFFFFFF
+        self.state1 = (seed >> 32) & 0xFFFFFFFFFFFFFFFF
+        
+        # Ensure non-zero states
+        if self.state0 == 0:
+            self.state0 = 1
+        if self.state1 == 0:
+            self.state1 = 2
+        
+        # Warm up the generator
+        for _ in range(10):
+            self._next64()
+    
+    def next(self) -> int:
+        """Return 32-bit random number"""
+        val = self._next64()
+        return (val >> 32) & 0xFFFFFFFF
+    
+    def _next64(self) -> int:
+        """Xorshift128+ algorithm (returns 64-bit)"""
+        s1 = self.state0
+        s0 = self.state1
+        
+        self.state0 = s0
+        s1 ^= (s1 << 23) & 0xFFFFFFFFFFFFFFFF
+        s1 ^= (s1 >> 17) & 0xFFFFFFFFFFFFFFFF
+        s1 ^= s0
+        s1 ^= (s0 >> 26) & 0xFFFFFFFFFFFFFFFF
+        
+        self.state1 = s1
+        
+        return (self.state0 + self.state1) & 0xFFFFFFFFFFFFFFFF
+
+
 # Factory pentru crearea RNG-urilor
 RNG_TYPES = {
     'lcg_glibc': LCG_GLIBC,
