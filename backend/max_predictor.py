@@ -263,6 +263,78 @@ from lottery_config import get_lottery_config
 from advanced_rng_library import RNG_TYPES, create_rng, generate_numbers
 
 
+def gpu_test_seeds_batch(rng_name: str, seeds: np.ndarray, target: List[int],
+                         numbers_to_draw: int, min_number: int, max_number: int) -> Optional[int]:
+    """Testează batch de seeds pe GPU - ULTRA FAST"""
+    if not GPU_AVAILABLE or rng_name not in GPU_RNG_KERNELS:
+        return None
+    
+    num_seeds = len(seeds)
+    target_sorted = sorted(target)
+    
+    # Pregătire date pentru GPU
+    if rng_name == 'java_random' or rng_name == 'xorshift64':
+        seeds_gpu = cp.array(seeds, dtype=cp.uint64)
+    else:
+        seeds_gpu = cp.array(seeds, dtype=cp.uint32)
+    
+    target_gpu = cp.array(target_sorted, dtype=cp.int32)
+    results_gpu = cp.zeros(num_seeds, dtype=cp.int32)
+    
+    # Launch kernel
+    threads_per_block = 256
+    blocks = (num_seeds + threads_per_block - 1) // threads_per_block
+    
+    try:
+        GPU_RNG_KERNELS[rng_name](
+            (blocks,), (threads_per_block,),
+            (seeds_gpu, num_seeds, target_gpu, numbers_to_draw, min_number, max_number, results_gpu)
+        )
+        
+        # Găsește match
+        results_cpu = cp.asnumpy(results_gpu)
+        matches = np.where(results_cpu == 1)[0]
+        
+        if len(matches) > 0:
+            return int(seeds[matches[0]])
+        
+        return None
+    except Exception as e:
+        print(f"\n  ⚠️  GPU error pentru {rng_name}: {e}")
+        return None
+
+
+def find_seed_gpu_accelerated(draw_idx: int, numbers: List[int], rng_name: str,
+                              lottery_config, seed_range: tuple, batch_size: int = 2000000) -> Optional[int]:
+    """Găsește seed folosind GPU cu batch processing MASIV"""
+    if not GPU_AVAILABLE or rng_name not in GPU_SUPPORTED_RNGS:
+        return None
+    
+    # Testează în batch-uri pe GPU
+    max_batches = 50  # Max 50 batch-uri = 100M seeds
+    
+    for batch_num in range(max_batches):
+        # Generează batch random
+        seeds_batch = np.random.randint(
+            seed_range[0], seed_range[1], 
+            size=batch_size, 
+            dtype=np.uint64 if rng_name in ['java_random', 'xorshift64'] else np.uint32
+        )
+        
+        # Test pe GPU
+        found_seed = gpu_test_seeds_batch(
+            rng_name, seeds_batch, numbers,
+            lottery_config.numbers_to_draw,
+            lottery_config.min_number,
+            lottery_config.max_number
+        )
+        
+        if found_seed is not None:
+            return found_seed
+    
+    return None
+
+
 def find_seed_exhaustive_worker(args):
     """Worker pentru căutare EXHAUSTIVĂ - ZERO compromisuri"""
     import time
