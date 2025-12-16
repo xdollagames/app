@@ -412,6 +412,8 @@ RNG_TYPES = {
     'xorshift64': Xorshift64,
     'xorshift128': Xorshift128,
     'xorshift_simple': XorshiftSimple,  # "not hacked" 1 din video
+    'xoshiro256': Xoshiro256PlusPlus,  # Modern Rust/C++ (2018)
+    'js_math_random': JSMathRandom,  # JavaScript V8 engine
     'complex_hash': ComplexHash,  # "not hacked" 2 din video
     'php_rand': PHPRand,  # PHP specific
     'java_random': JavaRandom,  # Java specific
