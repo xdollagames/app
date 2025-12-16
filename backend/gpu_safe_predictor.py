@@ -311,70 +311,315 @@ def cpu_multiprocessing_worker(data, lottery_config, seed_range, search_size, mi
     results_queue.put(('cpu', cpu_results))
 
 
-def analyze_patterns_with_gpu(seeds):
-    """Pattern analysis - folosește CuPy dacă e disponibil"""
+def analyze_patterns_parallel_gpu_cpu(seeds):
+    """Pattern analysis - GPU + CPU PARALEL cu TOATE 23 pattern-urile!"""
     if len(seeds) < 3:
         return {'pattern_type': 'insufficient', 'predicted_seed': None, 'confidence': 0}
     
+    print(f"  🎯 Analiză PARALEL: GPU patterns + CPU patterns SIMULTAN...")
+    
     x = np.arange(len(seeds))
     y = np.array(seeds)
-    patterns = {}
     
-    # Încearcă cu GPU
-    try:
-        import cupy as cp
-        x_gpu = cp.asarray(x, dtype=cp.float64)
-        y_gpu = cp.asarray(y, dtype=cp.float64)
-        
-        for deg in [1, 2, 3, 4]:
-            if len(seeds) >= deg + 1:
+    all_patterns = {}
+    pattern_queue = Queue()
+    
+    # === GPU THREAD pentru pattern-uri simple ===
+    def gpu_patterns_thread():
+        gpu_patt = {}
+        try:
+            import cupy as cp
+            x_gpu = cp.asarray(x, dtype=cp.float64)
+            y_gpu = cp.asarray(y, dtype=cp.float64)
+            
+            # 1-4: Polynomial (LINEAR, POLY2, POLY3, POLY4)
+            for deg in [1, 2, 3, 4]:
+                if len(seeds) >= deg + 1:
+                    try:
+                        coeffs = cp.polyfit(x_gpu, y_gpu, deg)
+                        pred = float(cp.asnumpy(cp.poly1d(coeffs)(len(seeds))))
+                        error = float(cp.asnumpy(cp.mean(cp.abs(y_gpu - cp.poly1d(coeffs)(x_gpu)))))
+                        name = 'linear' if deg == 1 else f'poly_{deg}'
+                        gpu_patt[name] = {'pred': pred, 'error': error, 'formula': f'poly(deg={deg})'}
+                    except:
+                        pass
+            
+            # 5. Logarithmic
+            if len(seeds) >= 2:
                 try:
-                    coeffs = cp.polyfit(x_gpu, y_gpu, deg)
-                    pred = float(cp.asnumpy(cp.poly1d(coeffs)(len(seeds))))
-                    error = float(cp.asnumpy(cp.mean(cp.abs(y_gpu - cp.poly1d(coeffs)(x_gpu)))))
-                    name = 'linear' if deg == 1 else f'poly_{deg}'
-                    patterns[name] = {'pred': pred, 'error': error}
+                    log_x = cp.log(x_gpu + 1)
+                    log_c = cp.polyfit(log_x, y_gpu, 1)
+                    pred = float(cp.asnumpy(log_c[0] * cp.log(len(seeds) + 1) + log_c[1]))
+                    error = float(cp.asnumpy(cp.mean(cp.abs(y_gpu - (log_c[0] * log_x + log_c[1])))))
+                    gpu_patt['logarithmic'] = {'pred': pred, 'error': error, 'formula': 'log(x)'}
                 except:
                     pass
-    except:
-        # Fallback CPU
+            
+            # 6. Const Diff
+            if len(seeds) >= 2:
+                try:
+                    diffs = cp.diff(y_gpu)
+                    avg_diff = cp.mean(diffs)
+                    pred = float(y_gpu[-1] + avg_diff)
+                    error = float(cp.std(diffs))
+                    gpu_patt['const_diff'] = {'pred': pred, 'error': error, 'formula': 'S(n+1)=S(n)+const'}
+                except:
+                    pass
+            
+            # 7. Const Ratio
+            if len(seeds) >= 2 and all(s > 0 for s in seeds):
+                try:
+                    ratios = y_gpu[1:] / y_gpu[:-1]
+                    avg_ratio = cp.mean(ratios)
+                    pred = float(y_gpu[-1] * avg_ratio)
+                    error = float(cp.std(ratios) * y_gpu[-1])
+                    gpu_patt['const_ratio'] = {'pred': pred, 'error': error, 'formula': 'S(n+1)=S(n)*ratio'}
+                except:
+                    pass
+            
+            print(f"  ✅ GPU: {len(gpu_patt)} patterns calculați")
+        except:
+            print(f"  ⚠️ GPU patterns: fallback CPU")
+        
+        pattern_queue.put(('gpu', gpu_patt))
+    
+    # === CPU THREAD pentru pattern-uri complexe (16 pattern-uri!) ===
+    def cpu_patterns_thread():
+        cpu_patt = {}
+        
+        # 8. Exponential
         try:
-            coeffs = np.polyfit(x, y, 1)
-            pred = np.poly1d(coeffs)(len(seeds))
-            patterns['linear'] = {'pred': pred, 'error': np.mean(np.abs(y - np.poly1d(coeffs)(x)))}
+            def exp_func(x, a, b, c):
+                return a * np.exp(b * x) + c
+            popt, _ = curve_fit(exp_func, x, y, maxfev=3000)
+            pred = exp_func(len(seeds), *popt)
+            error = np.mean(np.abs(y - exp_func(x, *popt)))
+            cpu_patt['exponential'] = {'pred': pred, 'error': error, 'formula': 'exponential'}
         except:
             pass
-    
-    # LCG Chain (IMPORTANT!)
-    if len(seeds) >= 2:
+        
+        # 9. Fibonacci
+        if len(seeds) >= 3:
+            try:
+                A = np.array([[seeds[i-1], seeds[i-2]] for i in range(2, len(seeds))])
+                B = np.array([seeds[i] for i in range(2, len(seeds))])
+                coeffs, _, _, _ = np.linalg.lstsq(A, B, rcond=None)
+                a, b = coeffs
+                pred = a * seeds[-1] + b * seeds[-2]
+                errors = [abs(a * seeds[i-1] + b * seeds[i-2] - seeds[i]) for i in range(2, len(seeds))]
+                cpu_patt['fibonacci'] = {'pred': pred, 'error': np.mean(errors), 'formula': f'Fib: {a:.4f}*S(n-1)+{b:.4f}*S(n-2)'}
+            except:
+                pass
+        
+        # 10. LCG Chain (IMPORTANT!)
+        if len(seeds) >= 2:
+            try:
+                m = 2147483648
+                X = np.array([[seeds[i-1], 1] for i in range(1, len(seeds))])
+                Y = np.array([seeds[i] for i in range(1, len(seeds))])
+                coeffs, _, _, _ = np.linalg.lstsq(X, Y, rcond=None)
+                a, c = coeffs
+                pred = (a * seeds[-1] + c) % m
+                errors = [abs((a * seeds[i-1] + c) % m - seeds[i]) for i in range(1, len(seeds))]
+                cpu_patt['lcg_chain'] = {'pred': pred, 'error': np.mean(errors), 'formula': f'S(n+1)=({a:.4f}*S(n)+{c:.2f})mod{m}'}
+            except:
+                pass
+        
+        # 11. Modular
+        if len(seeds) >= 2:
+            try:
+                diffs = np.diff(seeds)
+                avg_diff = np.mean(diffs)
+                m = 2147483648
+                pred = (seeds[-1] + avg_diff) % m
+                errors = [abs((seeds[i-1] + avg_diff) % m - seeds[i]) for i in range(1, len(seeds))]
+                cpu_patt['modular'] = {'pred': pred, 'error': np.mean(errors), 'formula': f'S(n+1)=(S(n)+{avg_diff:.2f})mod{m}'}
+            except:
+                pass
+        
+        # 12. Power Law
         try:
-            m = 2147483648
-            X = np.array([[seeds[i-1], 1] for i in range(1, len(seeds))])
-            Y = np.array([seeds[i] for i in range(1, len(seeds))])
-            coeffs, _, _, _ = np.linalg.lstsq(X, Y, rcond=None)
-            a, c = coeffs
-            lcg_pred = (a * seeds[-1] + c) % m
-            errors = [abs((a * seeds[i-1] + c) % m - seeds[i]) for i in range(1, len(seeds))]
-            patterns['lcg_chain'] = {'pred': lcg_pred, 'error': np.mean(errors), 'formula': f'S(n+1)=({a:.4f}*S(n)+{c:.2f})mod{m}'}
+            def power_func(x, a, b, c):
+                return a * np.power(x + 1, b) + c
+            popt, _ = curve_fit(power_func, x, y, maxfev=3000, bounds=([0, -10, -np.inf], [np.inf, 10, np.inf]))
+            pred = power_func(len(seeds), *popt)
+            error = np.mean(np.abs(y - power_func(x, *popt)))
+            cpu_patt['power_law'] = {'pred': pred, 'error': error, 'formula': 'power_law'}
         except:
             pass
-    
-    # Modular
-    if len(seeds) >= 2:
+        
+        # 13. QCG (Quadratic Congruential)
+        if len(seeds) >= 3:
+            try:
+                m = 2147483648
+                X = np.array([[seeds[i-1]**2, seeds[i-1], 1] for i in range(1, len(seeds))])
+                Y = np.array([seeds[i] for i in range(1, len(seeds))])
+                coeffs, _, _, _ = np.linalg.lstsq(X, Y, rcond=None)
+                a, b, c = coeffs
+                pred = (a * seeds[-1]**2 + b * seeds[-1] + c) % m
+                errors = [abs((a * seeds[i-1]**2 + b * seeds[i-1] + c) % m - seeds[i]) for i in range(1, len(seeds))]
+                cpu_patt['qcg'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'QCG'}
+            except:
+                pass
+        
+        # 14. Multiplicative
+        if len(seeds) >= 2:
+            try:
+                m = 2147483648
+                ratios = [seeds[i] / seeds[i-1] for i in range(1, len(seeds)) if seeds[i-1] != 0]
+                if ratios:
+                    a = np.mean(ratios)
+                    pred = (a * seeds[-1]) % m
+                    errors = [abs((a * seeds[i-1]) % m - seeds[i]) for i in range(1, len(seeds))]
+                    cpu_patt['multiplicative'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'multiplicative'}
+            except:
+                pass
+        
+        # 15. Lag-3
+        if len(seeds) >= 4:
+            try:
+                A = np.array([[seeds[i-1], seeds[i-2], seeds[i-3]] for i in range(3, len(seeds))])
+                B = np.array([seeds[i] for i in range(3, len(seeds))])
+                coeffs, _, _, _ = np.linalg.lstsq(A, B, rcond=None)
+                a, b, c = coeffs
+                pred = a * seeds[-1] + b * seeds[-2] + c * seeds[-3]
+                errors = [abs(a * seeds[i-1] + b * seeds[i-2] + c * seeds[i-3] - seeds[i]) for i in range(3, len(seeds))]
+                cpu_patt['lag3'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'lag3'}
+            except:
+                pass
+        
+        # 16. Hyperbolic
         try:
-            diffs = np.diff(seeds)
-            avg_diff = np.mean(diffs)
-            m = 2147483648
-            mod_pred = (seeds[-1] + avg_diff) % m
-            errors = [abs((seeds[i-1] + avg_diff) % m - seeds[i]) for i in range(1, len(seeds))]
-            patterns['modular'] = {'pred': mod_pred, 'error': np.mean(errors), 'formula': f'S(n+1)=(S(n)+{avg_diff:.2f})mod{m}'}
+            def hyp_func(x, a, b, c):
+                return a / (x + b + 1) + c
+            popt, _ = curve_fit(hyp_func, x, y, maxfev=3000)
+            pred = hyp_func(len(seeds), *popt)
+            error = np.mean(np.abs(y - hyp_func(x, *popt)))
+            cpu_patt['hyperbolic'] = {'pred': pred, 'error': error, 'formula': 'hyperbolic'}
         except:
             pass
+        
+        # 17. XOR Chain
+        if len(seeds) >= 2:
+            try:
+                max_val = max(seeds) * 4 if max(seeds) > 0 else 0xFFFFFFFF
+                best_err = float('inf')
+                best_pred = None
+                for sa in [5, 7, 13]:
+                    for sb in [5, 7, 13]:
+                        errors = [abs((seeds[i-1] ^ ((seeds[i-1] << sa) % max_val) ^ (seeds[i-1] >> sb)) - seeds[i]) for i in range(1, len(seeds))]
+                        err = np.mean(errors)
+                        if err < best_err:
+                            best_err = err
+                            best_pred = seeds[-1] ^ ((seeds[-1] << sa) % max_val) ^ (seeds[-1] >> sb)
+                cpu_patt['xor_chain'] = {'pred': best_pred, 'error': best_err, 'formula': 'xor_chain'}
+            except:
+                pass
+        
+        # 18. Combined LCG
+        if len(seeds) >= 3:
+            try:
+                m = 2147483648
+                X = np.array([[seeds[i-1], i, 1] for i in range(1, len(seeds))])
+                Y = np.array([seeds[i] for i in range(1, len(seeds))])
+                coeffs, _, _, _ = np.linalg.lstsq(X, Y, rcond=None)
+                a, b, c = coeffs
+                pred = (a * seeds[-1] + b * len(seeds) + c) % m
+                errors = [abs((a * seeds[i-1] + b * i + c) % m - seeds[i]) for i in range(1, len(seeds))]
+                cpu_patt['combined_lcg'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'combined_lcg'}
+            except:
+                pass
+        
+        # 19. Hash Mix
+        if len(seeds) >= 2:
+            try:
+                c1, r1, c2 = 0xcc9e2d51, 15, 0x1b873593
+                errors = [abs((((seeds[i-1] * c1) & 0xFFFFFFFF) ^ (seeds[i-1] >> r1)) * c2 & 0xFFFFFFFF - seeds[i]) for i in range(1, len(seeds))]
+                pred = (((seeds[-1] * c1) & 0xFFFFFFFF) ^ (seeds[-1] >> r1)) * c2 & 0xFFFFFFFF
+                cpu_patt['hash_mix'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'hash_mix'}
+            except:
+                pass
+        
+        # 20. Hash Rotate
+        if len(seeds) >= 2:
+            try:
+                k, c = 13, 0x9e3779b9
+                errors = [abs((((seeds[i-1] << k) | (seeds[i-1] >> (32 - k))) & 0xFFFFFFFF) ^ c - seeds[i]) for i in range(1, len(seeds))]
+                pred = (((seeds[-1] << k) | (seeds[-1] >> (32 - k))) & 0xFFFFFFFF) ^ c
+                cpu_patt['hash_rotate'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'hash_rotate'}
+            except:
+                pass
+        
+        # 21. Hash Weyl
+        if len(seeds) >= 2:
+            try:
+                weyl = 0x9e3779b97f4a7c15
+                pred = (seeds[-1] + weyl) & 0xFFFFFFFF
+                errors = [abs((seeds[i-1] + weyl) & 0xFFFFFFFF - seeds[i]) for i in range(1, len(seeds))]
+                cpu_patt['hash_weyl'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'hash_weyl'}
+            except:
+                pass
+        
+        # 22. Hash Combine (SplitMix)
+        if len(seeds) >= 2:
+            try:
+                gamma = 0x9e3779b97f4a7c15
+                z = (seeds[-1] + gamma) & 0xFFFFFFFFFFFFFFFF
+                z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9 & 0xFFFFFFFFFFFFFFFF
+                z = (z ^ (z >> 27)) * 0x94d049bb133111eb & 0xFFFFFFFFFFFFFFFF
+                pred = (z ^ (z >> 31)) & 0xFFFFFFFF
+                errors = []
+                for i in range(1, len(seeds)):
+                    z = (seeds[i-1] + gamma) & 0xFFFFFFFFFFFFFFFF
+                    z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9 & 0xFFFFFFFFFFFFFFFF
+                    z = (z ^ (z >> 27)) * 0x94d049bb133111eb & 0xFFFFFFFFFFFFFFFF
+                    p = (z ^ (z >> 31)) & 0xFFFFFFFF
+                    errors.append(abs(p - seeds[i]))
+                cpu_patt['hash_combine'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'hash_combine'}
+            except:
+                pass
+        
+        # 23. Hash Avalanche
+        if len(seeds) >= 2:
+            try:
+                def avalanche(x):
+                    x = (x ^ (x >> 30)) & 0xFFFFFFFFFFFFFFFF
+                    x = (x * 0xbf58476d1ce4e5b9) & 0xFFFFFFFFFFFFFFFF
+                    x = (x ^ (x >> 27)) & 0xFFFFFFFFFFFFFFFF
+                    x = (x * 0x94d049bb133111eb) & 0xFFFFFFFFFFFFFFFF
+                    return (x ^ (x >> 31)) & 0xFFFFFFFF
+                
+                errors = [abs(avalanche(seeds[i-1]) - seeds[i]) for i in range(1, len(seeds))]
+                pred = avalanche(seeds[-1])
+                cpu_patt['hash_avalanche'] = {'pred': pred, 'error': np.mean(errors), 'formula': 'hash_avalanche'}
+            except:
+                pass
+        
+        print(f"  ✅ CPU: {len(cpu_patt)} patterns calculați")
+        pattern_queue.put(('cpu', cpu_patt))
     
-    # Best
-    valid = {k: v for k, v in patterns.items() if v.get('pred') and v.get('error') != float('inf')}
+    # Launch BOTH threads SIMULTAN
+    gpu_t = threading.Thread(target=gpu_patterns_thread)
+    cpu_t = threading.Thread(target=cpu_patterns_thread)
+    
+    gpu_t.start()
+    cpu_t.start()
+    
+    gpu_t.join()
+    cpu_t.join()
+    
+    # Colectează
+    while not pattern_queue.empty():
+        source, patterns = pattern_queue.get()
+        all_patterns.update(patterns)
+    
+    print(f"  ✅ Total: {len(all_patterns)} patterns analizați\n")
+    
+    # Best pattern
+    valid = {k: v for k, v in all_patterns.items() if v.get('pred') and v.get('error') != float('inf')}
+    
     if not valid:
-        return {'pattern_type': 'none', 'predicted_seed': None, 'confidence': 0}
+        return {'pattern_type': 'none', 'predicted_seed': None, 'confidence': 0, 'all_patterns': all_patterns}
     
     best_name = min(valid, key=lambda k: valid[k]['error'])
     best = valid[best_name]
@@ -386,7 +631,7 @@ def analyze_patterns_with_gpu(seeds):
         'confidence': round(confidence, 2),
         'formula': best.get('formula', best_name),
         'error': round(best['error'], 2),
-        'all_patterns': patterns
+        'all_patterns': all_patterns
     }
 
 
