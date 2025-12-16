@@ -666,7 +666,8 @@ class CPUOnlyPredictor:
                         print(f"  [{i+1}/{len(tasks)}] ({progress:.1f}%)... {len(seeds_found)} seeds găsite{cache_info}", end='\r')
             
             success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
-            print(f"\n  ✅ {len(seeds_found)}/{len(data)} ({success_rate:.1%})", end='')
+            cache_msg = f" ({cached_count} INSTANT din cache!)" if cached_count > 0 else ""
+            print(f"\n  ✅ {len(seeds_found)}/{len(data)} ({success_rate:.1%}){cache_msg}", end='')
             
             if success_rate >= min_success_rate:
                 print(f" - ✅ PESTE 66%!")
