@@ -1788,65 +1788,94 @@ class MaxPredictor:
             print(f"\n❌ Niciun RNG nu a trecut de threshold!")
             return
         
-        # Analiză EXHAUSTIVĂ pattern-uri
+        # Analiză și predicții - PARALEL pentru MULTIPLE RNG-uri!
         print(f"\n{'='*70}")
-        print(f"  FAZA 2: ANALIZĂ EXHAUSTIVĂ PATTERN-URI")
+        print(f"  FAZA 2: PATTERN ANALYSIS - PARALLEL pe MULTIPLE RNG-uri")
         print(f"{'='*70}\n")
         
+        print(f"🔥 RNG-uri găsite: {len(rng_results)}")
+        print(f"⚡ Analiză SIMULTANĂ pentru toate RNG-urile!\n")
+        
+        def analyze_single_rng(args):
+            """Analizează un singur RNG - rulează în paralel cu altele"""
+            rng_name, result = args
+            
+            try:
+                # Analiză pattern (deja are GPU+CPU paralel intern)
+                pattern_analysis = analyze_all_patterns_parallel_gpu(result['seeds'])
+                
+                # Generare predicție
+                predicted_numbers = None
+                if pattern_analysis['predicted_seed'] is not None:
+                    try:
+                        rng = create_rng(rng_name, pattern_analysis['predicted_seed'])
+                        predicted_numbers = generate_numbers(
+                            rng, self.config.numbers_to_draw,
+                            self.config.min_number, self.config.max_number
+                        )
+                    except:
+                        pass
+                
+                return {
+                    'rng': rng_name,
+                    'success_rate': result['success_rate'],
+                    'pattern_analysis': pattern_analysis,
+                    'predicted_numbers': sorted(predicted_numbers) if predicted_numbers else None
+                }
+            except Exception as e:
+                print(f"  ❌ Error pentru {rng_name}: {e}")
+                return None
+        
+        # Rulare PARALLEL pentru toate RNG-urile găsite
         predictions = []
         
-        for rng_name, result in sorted(rng_results.items(), key=lambda x: x[1]['success_rate'], reverse=True):
+        if len(rng_results) > 1:
+            # PARALEL - multiple RNG-uri simultan
+            with Pool(processes=min(cpu_count(), len(rng_results))) as pool:
+                tasks = [(rng_name, result) for rng_name, result in sorted(rng_results.items(), key=lambda x: x[1]['success_rate'], reverse=True)]
+                results = pool.map(analyze_single_rng, tasks)
+                
+                for res in results:
+                    if res is not None:
+                        predictions.append(res)
+        else:
+            # Un singur RNG - nu e nevoie de paralel
+            for rng_name, result in sorted(rng_results.items(), key=lambda x: x[1]['success_rate'], reverse=True):
+                res = analyze_single_rng((rng_name, result))
+                if res is not None:
+                    predictions.append(res)
+        
+        # Afișare rezultate
+        for pred in predictions:
             print(f"\n{'='*70}")
-            print(f"RNG: {rng_name.upper()}")
-            print(f"Success Rate: {result['success_rate']:.1%}")
+            print(f"RNG: {pred['rng'].upper()}")
+            print(f"Success Rate: {pred['success_rate']:.1%}")
             print(f"{'='*70}\n")
             
-            # Analiză TOATE pattern-urile
-            pattern_analysis = analyze_all_patterns_parallel_gpu(result['seeds'])
+            pa = pred['pattern_analysis']
             
-            print(f"🏆 BEST PATTERN: {pattern_analysis['pattern_type'].upper()}")
-            print(f"📐 Formula: {pattern_analysis['formula']}")
-            print(f"🎯 Confidence: {pattern_analysis['confidence']:.2f}%")
-            print(f"❌ Error: {pattern_analysis.get('error', 'N/A')}\n")
+            print(f"🏆 BEST PATTERN: {pa['pattern_type'].upper()}")
+            print(f"📐 Formula: {pa['formula']}")
+            print(f"🎯 Confidence: {pa['confidence']:.2f}%")
+            print(f"❌ Error: {pa.get('error', 'N/A')}\n")
             
             # Afișează TOATE pattern-urile
-            print(f"📊 TOATE PATTERN-URILE ANALIZATE:")
-            for pattern_name, pattern_data in pattern_analysis.get('all_patterns', {}).items():
-                error_str = f"{pattern_data['error']}" if pattern_data['error'] != 'inf' else "∞"
-                pred_str = f"{pattern_data['pred']:,}" if pattern_data['pred'] is not None else "N/A"
-                print(f"   {pattern_name:20s}: Error={error_str:>10s} | Pred={pred_str:>15s} | {pattern_data['formula']}")
-            print()
+            if 'all_patterns' in pa:
+                print(f"📊 TOATE PATTERN-URILE:")
+                for pname, pdata in pa['all_patterns'].items():
+                    error_str = f"{pdata['error']}" if pdata['error'] != 'inf' else "∞"
+                    pred_str = f"{pdata['pred']:,}" if pdata['pred'] is not None else "N/A"
+                    print(f"   {pname:20s}: Error={error_str:>10s} | {pdata['formula']}")
+                print()
             
-            # Generare predicție
-            if pattern_analysis['predicted_seed'] is not None:
-                try:
-                    rng = create_rng(rng_name, pattern_analysis['predicted_seed'])
-                    predicted_numbers = generate_numbers(
-                        rng,
-                        self.config.numbers_to_draw,
-                        self.config.min_number,
-                        self.config.max_number
-                    )
-                    
-                    print(f"{'='*70}")
-                    print(f"  🎯 PREDICȚIE FINALĂ")
-                    print(f"{'='*70}")
-                    print(f"  Seed Prezis: {pattern_analysis['predicted_seed']:,}")
-                    print(f"  NUMERE PREZISE: {sorted(predicted_numbers)}")
-                    print(f"{'='*70}\n")
-                    
-                    predictions.append({
-                        'rng': rng_name,
-                        'success_rate': result['success_rate'],
-                        'pattern': pattern_analysis['pattern_type'],
-                        'formula': pattern_analysis['formula'],
-                        'confidence': pattern_analysis['confidence'],
-                        'seed': pattern_analysis['predicted_seed'],
-                        'numbers': sorted(predicted_numbers),
-                        'all_patterns': pattern_analysis.get('all_patterns', {})
-                    })
-                except Exception as e:
-                    print(f"❌ Eroare la generare predicție: {e}\n")
+            # Predicție finală
+            if pred['predicted_numbers']:
+                print(f"{'='*70}")
+                print(f"  🎯 PREDICȚIE")
+                print(f"{'='*70}")
+                print(f"  Seed: {pa['predicted_seed']:,}")
+                print(f"  NUMERE: {pred['predicted_numbers']}")
+                print(f"{'='*70}\n")
         
         # SUMAR FINAL
         if predictions:
