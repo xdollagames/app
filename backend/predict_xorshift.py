@@ -166,7 +166,8 @@ class XorshiftInvestigator:
             'all_errors': {k: round(v, 2) for k, v in errors.items()}
         }
     
-    def run_investigation(self, start_year: int = 2010, end_year: int = 2025):
+    def run_investigation(self, start_year: int = 2010, end_year: int = 2025, 
+                         seed_range: tuple = (0, 10000000), search_size: int = 2000000):
         """Rulează investigația completă"""
         num_cores = cpu_count()
         
@@ -175,7 +176,9 @@ class XorshiftInvestigator:
         print(f"{'='*70}\n")
         
         print(f"💻 CPU cores utilizate: {num_cores}")
-        print(f"📊 Încărcare date pentru perioada {start_year}-{end_year}...")
+        print(f"🔍 Seed range: {seed_range[0]:,} - {seed_range[1]:,}")
+        print(f"📊 Search size: {search_size:,} seeds testate per extragere")
+        print(f"📅 Încărcare date pentru perioada {start_year}-{end_year}...")
         data = self.load_data(start_year, end_year)
         print(f"✅ {len(data)} extrageri încărcate\n")
         
@@ -187,7 +190,7 @@ class XorshiftInvestigator:
         for i, entry in enumerate(data):
             numbers = entry.get('numere', [])
             if len(numbers) == self.config.numbers_to_draw:
-                tasks.append((i, numbers, self.config, 1000000))
+                tasks.append((i, numbers, self.config, seed_range, search_size))
         
         # Rulează parallel
         seeds_found = []
