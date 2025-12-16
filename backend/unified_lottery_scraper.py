@@ -184,9 +184,37 @@ class UnifiedLotteryScraper:
     
     def save_to_json(self, data: List[Dict], filename: str):
         """
-        Salvează datele în format JSON
+        Salvează datele în format JSON cu MERGE INCREMENTAL
         """
         data_sorted = sorted(data, key=lambda x: x['date'])
+        
+        # SALVARE cu MERGE INCREMENTAL
+        # Dacă fișierul există, păstrăm extragerile vechi și adăugăm doar pe cele noi
+        existing_draws = []
+        try:
+            with open(filename, 'r', encoding='utf-8') as f:
+                existing_data = json.load(f)
+                existing_draws = existing_data.get('draws', [])
+                print(f"\n📦 Fișier existent găsit: {len(existing_draws)} extrageri vechi")
+        except:
+            print(f"\n📦 Fișier nou - nu există date anterioare")
+        
+        # Merge: adaugă doar extragerile NOI (pe bază de dată)
+        existing_dates = {d.get('date', d.get('date_str')): d for d in existing_draws}
+        new_count = 0
+        
+        for draw in data_sorted:
+            draw_date = draw.get('date', draw.get('date_str'))
+            if draw_date not in existing_dates:
+                # Nou!
+                existing_draws.append(draw)
+                new_count += 1
+            else:
+                # Actualizează (poate au fost corecții)
+                existing_dates[draw_date] = draw
+        
+        # Sortează după dată
+        existing_draws.sort(key=lambda x: x.get('date', x.get('date_str', '')))
         
         output = {
             'lottery_type': self.config.short_name,
@@ -197,17 +225,21 @@ class UnifiedLotteryScraper:
                 'max_number': self.config.max_number,
                 'is_composite': self.config.is_composite
             },
-            'total_draws': len(data_sorted),
-            'years': sorted(list(set([d['year'] for d in data_sorted]))),
+            'total_draws': len(existing_draws),
+            'years': sorted(list(set([d['year'] for d in existing_draws]))),
             'extracted_at': datetime.now().isoformat(),
-            'draws': data_sorted
+            'draws': existing_draws
         }
         
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(output, f, ensure_ascii=False, indent=2)
         
         print(f"\n✓ Date salvate în: {filename}")
-        print(f"  Total extrageri: {len(data_sorted)}")
+        print(f"  Total extrageri: {len(existing_draws)}")
+        if new_count > 0:
+            print(f"  ✅ Extrageri NOI adăugate: {new_count}")
+        else:
+            print(f"  ℹ️  Nicio extragere nouă (totul up-to-date)")
 
 
 def main():
