@@ -1132,9 +1132,8 @@ def find_seed_exhaustive_worker(args):
         return (draw_idx, reversed_seed)
     
     # Dacă reverse engineering nu merge, folosim brute force
-    # Timeout GENEROS pentru Mersenne (15 minute per extragere)
+    # FĂRĂ TIMEOUT pentru Mersenne - las-mă să caute cât vrea!
     start_time = time.time()
-    timeout_seconds = 900 if rng_type == 'mersenne' else 999999
     
     # Search size MAXIM - 10M seeds
     actual_search_size = search_size
