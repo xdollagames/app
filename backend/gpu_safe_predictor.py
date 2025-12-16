@@ -710,13 +710,22 @@ class GPUSafePredictor:
         
         # Verificare cores ÎNAINTE
         total_cores = cpu_count()
-        cpu_cores_to_use = max(1, total_cores - 3)
         
-        print(f"💻 Total CPU cores: {total_cores}")
-        print(f"🚀 GPU Thread: 1 RNG (xorshift_simple - kernel CORECT)")
-        print(f"💻 CPU Thread: 20 RNG-uri ({cpu_cores_to_use} cores, lasă 3 pentru GPU)")
+        try:
+            import psutil
+            physical_cores = psutil.cpu_count(logical=False)
+        except:
+            physical_cores = total_cores // 2 if total_cores > 32 else total_cores
+        
+        cpu_cores_to_use = max(1, physical_cores - 1)  # TOATE minus 1
+        
+        print(f"💻 Cores logice totale: {total_cores}")
+        print(f"💻 Cores fizice totale: {physical_cores}")
+        print(f"💻 Cores folosite: {cpu_cores_to_use}/{physical_cores} (100% - 1 core)")
+        print(f"🚀 GPU Thread: 1 RNG (xorshift_simple)")
+        print(f"💻 CPU Thread: 20 RNG-uri ({cpu_cores_to_use} cores per RNG)")
         print(f"🎯 Reverse Engineering: 6 LCG (INSTANT)")
-        print(f"⚡ GPU + CPU pornesc SIMULTAN (threading paralel)!\n")
+        print(f"⚡ GPU + CPU pornesc SIMULTAN!\n")
         
         # Load
         if last_n:
