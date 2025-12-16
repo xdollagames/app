@@ -21,42 +21,12 @@ import random
 import threading
 from queue import Queue
 
-# FIX MULTIPROCESSING: Forțează 'fork' method pentru a păstra environment variables
-multiprocessing.set_start_method('fork', force=True)
+# ❌ NU setăm 'fork' - folosim 'spawn' (default pe multe sisteme)
+# ❌ NU importăm CuPy aici - doar în thread-ul GPU!
 
-# FIX: Setează LD_LIBRARY_PATH înainte de import CuPy
-# Asigură că toate child processes-urile găsesc librăriile CUDA
-if 'LD_LIBRARY_PATH' not in os.environ or '/usr/local/cuda' not in os.environ.get('LD_LIBRARY_PATH', ''):
-    cuda_paths = [
-        '/usr/local/cuda-13.0/lib64',
-        '/usr/local/cuda/lib64',
-        '/usr/lib/x86_64-linux-gnu',
-    ]
-    for path in cuda_paths:
-        if os.path.exists(path):
-            current_ld = os.environ.get('LD_LIBRARY_PATH', '')
-            if path not in current_ld:
-                os.environ['LD_LIBRARY_PATH'] = f"{path}:{current_ld}" if current_ld else path
-
-# Check GPU availability - DOAR în main thread, NU în workers!
+# GPU va fi inițializat DOAR în thread dedicat, NU global!
 GPU_AVAILABLE = False
 GPU_SUPPORTED_RNGS = []
-
-def initialize_gpu():
-    """Inițializează GPU doar în thread-ul principal"""
-    global GPU_AVAILABLE, cp
-    try:
-        import cupy as cp
-        # Test rapid
-        _ = cp.array([1, 2, 3])
-        GPU_AVAILABLE = True
-        print("✅ GPU detectat! Se va folosi accelerare CUDA")
-        return True
-    except Exception as e:
-        GPU_AVAILABLE = False
-        print(f"⚠️  GPU nu e disponibil: {e}")
-        import numpy as cp
-        return False
 
 # GPU Kernels pentru RNG-uri simple - SE CREEAZĂ DOAR DUPĂ initialize_gpu()
 GPU_RNG_KERNELS = {}
