@@ -701,8 +701,8 @@ class GPUSafePredictor:
         cpu_cores_to_use = max(1, total_cores - 3)
         
         print(f"💻 Total CPU cores: {total_cores}")
-        print(f"🚀 GPU Thread: 12 RNG-uri (TOT GPU-ul RTX 5090)")
-        print(f"💻 CPU Thread: 9 RNG-uri ({cpu_cores_to_use} cores, lasă 3 pentru GPU)")
+        print(f"🚀 GPU Thread: 1 RNG (xorshift_simple - kernel CORECT)")
+        print(f"💻 CPU Thread: 20 RNG-uri ({cpu_cores_to_use} cores, lasă 3 pentru GPU)")
         print(f"🎯 Reverse Engineering: 6 LCG (INSTANT)")
         print(f"⚡ GPU + CPU pornesc SIMULTAN (threading paralel)!\n")
         
