@@ -615,24 +615,55 @@ def analyze_patterns_parallel_gpu_cpu(seeds):
     
     print(f"  ✅ Total: {len(all_patterns)} patterns analizați\n")
     
-    # Best pattern
+    # Găsește pattern-uri valide
     valid = {k: v for k, v in all_patterns.items() if v.get('pred') and v.get('error') != float('inf')}
     
     if not valid:
-        return {'pattern_type': 'none', 'predicted_seed': None, 'confidence': 0, 'all_patterns': all_patterns}
+        return {'pattern_type': 'none', 'predicted_seed': None, 'confidence': 0, 'all_patterns': all_patterns, 'top_patterns': []}
     
-    best_name = min(valid, key=lambda k: valid[k]['error'])
-    best = valid[best_name]
-    confidence = max(0, min(100, 100 * (1 - best['error'] / np.mean(y)))) if np.mean(y) > 0 else 0
+    # Calculează confidence pentru fiecare
+    patterns_with_confidence = []
+    mean_y = np.mean(y)
     
-    return {
-        'pattern_type': best_name,
-        'predicted_seed': int(round(best['pred'])),
-        'confidence': round(confidence, 2),
-        'formula': best.get('formula', best_name),
-        'error': round(best['error'], 2),
-        'all_patterns': all_patterns
-    }
+    for name, patt in valid.items():
+        conf = max(0, min(100, 100 * (1 - patt['error'] / mean_y))) if mean_y > 0 else 0
+        patterns_with_confidence.append({
+            'name': name,
+            'pred': int(round(patt['pred'])),
+            'error': round(patt['error'], 2),
+            'confidence': round(conf, 2),
+            'formula': patt.get('formula', name)
+        })
+    
+    # Sortează după confidence
+    patterns_with_confidence.sort(key=lambda x: x['confidence'], reverse=True)
+    
+    # Verifică dacă există pattern-uri cu 100% confidence
+    perfect_patterns = [p for p in patterns_with_confidence if p['confidence'] == 100.0]
+    
+    if perfect_patterns:
+        # RETURNEAZĂ TOATE cu 100%
+        return {
+            'pattern_type': 'multiple_perfect' if len(perfect_patterns) > 1 else perfect_patterns[0]['name'],
+            'predicted_seed': perfect_patterns[0]['pred'],  # Primul seed (toate ar trebui să fie identice dacă sunt perfect)
+            'confidence': 100.0,
+            'formula': perfect_patterns[0]['formula'],
+            'error': 0.0,
+            'all_patterns': all_patterns,
+            'top_patterns': perfect_patterns  # TOATE cu 100%
+        }
+    else:
+        # Returnează doar cel mai bun
+        best = patterns_with_confidence[0]
+        return {
+            'pattern_type': best['name'],
+            'predicted_seed': best['pred'],
+            'confidence': best['confidence'],
+            'formula': best['formula'],
+            'error': best['error'],
+            'all_patterns': all_patterns,
+            'top_patterns': [best]  # Doar cel mai bun
+        }
 
 
 class GPUSafePredictor:
