@@ -1579,109 +1579,54 @@ class MaxPredictor:
             print(f"  {i}. {entry['data']:15s} → {entry['numere']}")
         print()
         
-        # Test TOATE RNG-urile - HYBRID GPU + CPU
+        # Test TOATE RNG-urile - PARALEL REAL GPU + CPU SIMULTAN!
         print(f"\n{'='*70}")
-        print(f"  FAZA 1: TESTARE EXHAUSTIVĂ - HYBRID GPU + CPU")
+        print(f"  FAZA 1: TESTARE SIMULTANĂ GPU + CPU")
         print(f"{'='*70}\n")
         
         if GPU_AVAILABLE:
-            print(f"🚀 GPU Mode: Activ pentru {len(GPU_SUPPORTED_RNGS)} RNG-uri simple")
-            print(f"   GPU RNG-uri: {', '.join(GPU_SUPPORTED_RNGS)}")
-        print(f"💻 CPU Mode: {num_cores} cores pentru RNG-uri complexe\n")
+            print(f"🚀 GPU Thread: {len(GPU_SUPPORTED_RNGS)} RNG-uri pe RTX 5090")
+            print(f"💻 CPU Thread: {len([r for r in RNG_TYPES.keys() if r not in GPU_SUPPORTED_RNGS])} RNG-uri pe {num_cores} cores")
+            print(f"⚡ AMBELE rulează SIMULTAN!\n")
+        else:
+            print(f"💻 CPU Mode: {num_cores} cores\n")
         
+        # Queue pentru rezultate
+        results_queue = Queue()
+        
+        # Create threads
+        threads = []
+        
+        if GPU_AVAILABLE and len(GPU_SUPPORTED_RNGS) > 0:
+            gpu_thread = threading.Thread(
+                target=self.test_gpu_rngs_parallel,
+                args=(data, seed_range, search_size, results_queue)
+            )
+            threads.append(gpu_thread)
+        
+        cpu_thread = threading.Thread(
+            target=self.test_cpu_rngs_parallel,
+            args=(data, seed_range, search_size, results_queue)
+        )
+        threads.append(cpu_thread)
+        
+        # Start SIMULTAN!
+        print(f"🚀 PORNIRE SIMULTANĂ GPU + CPU...\n")
+        for thread in threads:
+            thread.start()
+        
+        # Așteaptă să termine AMBELE
+        for thread in threads:
+            thread.join()
+        
+        print(f"\n✅ AMBELE THREAD-URI COMPLETE!\n")
+        
+        # Colectează rezultate din queue
         rng_results = {}
-        
-        for idx, rng_name in enumerate(RNG_TYPES.keys(), 1):
-            print(f"\n{'='*70}")
-            print(f"[{idx}/{len(RNG_TYPES)}] RNG: {rng_name.upper()}")
-            
-            # Decide: GPU sau CPU?
-            use_gpu = GPU_AVAILABLE and rng_name in GPU_SUPPORTED_RNGS
-            
-            if use_gpu:
-                print(f"🚀 Mode: GPU ACCELERATED")
-            else:
-                print(f"💻 Mode: CPU MULTICORE")
-            
-            print(f"{'='*70}")
-            
-            seeds_found = []
-            draws_with_seeds = []
-            
-            if use_gpu:
-                # ===== GPU MODE =====
-                for i, entry in enumerate(data):
-                    numbers = entry.get('numere', [])
-                    if len(numbers) != self.config.numbers_to_draw:
-                        continue
-                    
-                    # GPU batch processing - 2M seeds per încercare
-                    found_seed = find_seed_gpu_accelerated(
-                        i, numbers, rng_name, self.config, seed_range, batch_size=2000000
-                    )
-                    
-                    if found_seed is not None:
-                        seeds_found.append(found_seed)
-                        draws_with_seeds.append({
-                            'idx': i,
-                            'date': entry['data'],
-                            'numbers': numbers,
-                            'seed': found_seed
-                        })
-                    
-                    # Progress
-                    progress = 100 * (i + 1) / len(data)
-                    print(f"  [{i + 1}/{len(data)}] ({progress:.1f}%)... {len(seeds_found)} seeds găsite", end='\r')
-                
-                print(f"\n✅ Seeds găsite (GPU): {len(seeds_found)}/{len(data)} ({len(seeds_found)/len(data):.1%})")
-            
-            else:
-                # ===== CPU MODE =====
-                tasks = []
-                for i, entry in enumerate(data):
-                    numbers = entry.get('numere', [])
-                    if len(numbers) == self.config.numbers_to_draw:
-                        tasks.append((i, numbers, rng_name, self.config, seed_range, search_size))
-                
-                with Pool(processes=num_cores) as pool:
-                    optimal_chunksize = max(1, len(tasks) // (num_cores * 4))
-                    for i, result in enumerate(pool.imap_unordered(find_seed_exhaustive_worker, tasks, chunksize=optimal_chunksize)):
-                        idx_task, seed = result
-                        
-                        if seed is not None:
-                            seeds_found.append(seed)
-                            draws_with_seeds.append({
-                                'idx': idx_task,
-                                'date': data[idx_task]['data'],
-                                'numbers': data[idx_task]['numere'],
-                                'seed': seed
-                            })
-                        
-                        # Progress
-                        if (i + 1) % 2 == 0 or (i + 1) == len(tasks):
-                            progress = 100 * (i + 1) / len(tasks)
-                            print(f"  [{i + 1}/{len(tasks)}] ({progress:.1f}%)... {len(seeds_found)} seeds găsite", end='\r')
-                
-                print(f"\n✅ Seeds găsite (CPU): {len(seeds_found)}/{len(data)} ({len(seeds_found)/len(data):.1%})")
-            
-            success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
-            
-            print(f"📊 Success Rate: {success_rate:.1%}")
-            
-            if success_rate >= min_success_rate:
-                print(f"✅ SUCCESS RATE PESTE THRESHOLD!")
-                
-                # SORTARE CRONOLOGICĂ - CRITIC pentru analiza pattern-ului!
-                draws_with_seeds.sort(key=lambda x: x['idx'])
-                seeds_found = [d['seed'] for d in draws_with_seeds]
-                
-                rng_results[rng_name] = {
-                    'seeds': seeds_found,
-                    'draws': draws_with_seeds,
-                    'success_rate': success_rate
-                }
-            else:
-                print(f"⚠️  Sub threshold ({success_rate:.1%} < {min_success_rate:.1%})")
+        while not results_queue.empty():
+            source, results = results_queue.get()
+            print(f"📊 Colectare rezultate din {source.upper()}: {len(results)} RNG-uri găsite")
+            rng_results.update(results)
         
         if not rng_results:
             print(f"\n❌ Niciun RNG nu a trecut de threshold!")
