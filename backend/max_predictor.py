@@ -827,6 +827,181 @@ def analyze_all_patterns(seeds: List[int]) -> Dict:
     else:
         all_patterns['combined_lcg'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
     
+    # 19. Pattern HASH MIX (MurmurHash style): S(n+1) = ((S(n) * c1) ^ (S(n) >> r1)) * c2
+    if len(seeds) >= 2:
+        try:
+            # Constante tipice pentru hash mixing
+            test_configs = [
+                (0xcc9e2d51, 15, 0x1b873593),  # MurmurHash3 style
+                (0x85ebca6b, 13, 0xc2b2ae35),  # Variație 1
+                (0x9e3779b9, 16, 0x6a09e667),  # Golden ratio based
+            ]
+            
+            best_hash = None
+            best_hash_error = float('inf')
+            
+            for c1, r1, c2 in test_configs:
+                errors = []
+                for i in range(1, len(seeds)):
+                    # Hash mixing formula
+                    s = seeds[i-1]
+                    h = ((s * c1) & 0xFFFFFFFF) ^ ((s >> r1) & 0xFFFFFFFF)
+                    pred_val = (h * c2) & 0xFFFFFFFF
+                    errors.append(abs(pred_val - seeds[i]))
+                
+                hash_error = np.mean(errors)
+                if hash_error < best_hash_error:
+                    best_hash_error = hash_error
+                    hash_pred = (((seeds[-1] * c1) & 0xFFFFFFFF) ^ ((seeds[-1] >> r1) & 0xFFFFFFFF)) * c2
+                    hash_pred = hash_pred & 0xFFFFFFFF
+                    best_hash = {
+                        'pred': hash_pred,
+                        'error': hash_error,
+                        'formula': f"S(n+1) = ((S(n) * 0x{c1:08x}) ^ (S(n) >> {r1})) * 0x{c2:08x}"
+                    }
+            
+            all_patterns['hash_mix'] = best_hash if best_hash else {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        except:
+            all_patterns['hash_mix'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    else:
+        all_patterns['hash_mix'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+    
+    # 20. Pattern HASH ROTATE: S(n+1) = rotl(S(n), k) XOR c
+    if len(seeds) >= 2:
+        try:
+            best_rotate = None
+            best_rotate_error = float('inf')
+            
+            # Test diverse rotații și constante
+            for k in [5, 7, 13, 17, 23]:
+                for c in [0x9e3779b9, 0x6a09e667, 0xbb67ae85]:  # Constante matematice cunoscute
+                    errors = []
+                    for i in range(1, len(seeds)):
+                        s = seeds[i-1]
+                        # Rotate left simulation
+                        rotated = ((s << k) | (s >> (32 - k))) & 0xFFFFFFFF
+                        pred_val = rotated ^ c
+                        errors.append(abs(pred_val - seeds[i]))
+                    
+                    rotate_error = np.mean(errors)
+                    if rotate_error < best_rotate_error:
+                        best_rotate_error = rotate_error
+                        rotated = ((seeds[-1] << k) | (seeds[-1] >> (32 - k))) & 0xFFFFFFFF
+                        rotate_pred = rotated ^ c
+                        best_rotate = {
+                            'pred': rotate_pred,
+                            'error': rotate_error,
+                            'formula': f"S(n+1) = rotl(S(n), {k}) XOR 0x{c:08x}"
+                        }
+            
+            all_patterns['hash_rotate'] = best_rotate if best_rotate else {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        except:
+            all_patterns['hash_rotate'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    else:
+        all_patterns['hash_rotate'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+    
+    # 21. Pattern HASH COMBINE (SplitMix style): S(n+1) = hash(S(n) + gamma)
+    if len(seeds) >= 2:
+        try:
+            # Gamma golden ratio variant
+            gamma_values = [0x9e3779b97f4a7c15, 0x6a09e667f3bcc908, 0xbb67ae8584caa73b]
+            
+            best_combine = None
+            best_combine_error = float('inf')
+            
+            for gamma in gamma_values:
+                errors = []
+                for i in range(1, len(seeds)):
+                    z = (seeds[i-1] + gamma) & 0xFFFFFFFFFFFFFFFF
+                    z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9
+                    z = (z ^ (z >> 27)) * 0x94d049bb133111eb
+                    pred_val = (z ^ (z >> 31)) & 0xFFFFFFFF
+                    errors.append(abs(pred_val - seeds[i]))
+                
+                combine_error = np.mean(errors)
+                if combine_error < best_combine_error:
+                    best_combine_error = combine_error
+                    z = (seeds[-1] + gamma) & 0xFFFFFFFFFFFFFFFF
+                    z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9
+                    z = (z ^ (z >> 27)) * 0x94d049bb133111eb
+                    combine_pred = (z ^ (z >> 31)) & 0xFFFFFFFF
+                    best_combine = {
+                        'pred': combine_pred,
+                        'error': combine_error,
+                        'formula': f"S(n+1) = SplitMix64(S(n) + 0x{gamma:016x})"
+                    }
+            
+            all_patterns['hash_combine'] = best_combine if best_combine else {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        except:
+            all_patterns['hash_combine'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    else:
+        all_patterns['hash_combine'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+    
+    # 22. Pattern HASH AVALANCHE: S(n+1) = avalanche(S(n))
+    if len(seeds) >= 2:
+        try:
+            # Avalanche function (David Stafford's Mix13)
+            def avalanche(x):
+                x = (x ^ (x >> 30)) & 0xFFFFFFFFFFFFFFFF
+                x = (x * 0xbf58476d1ce4e5b9) & 0xFFFFFFFFFFFFFFFF
+                x = (x ^ (x >> 27)) & 0xFFFFFFFFFFFFFFFF
+                x = (x * 0x94d049bb133111eb) & 0xFFFFFFFFFFFFFFFF
+                x = (x ^ (x >> 31)) & 0xFFFFFFFF
+                return x
+            
+            errors = []
+            for i in range(1, len(seeds)):
+                pred_val = avalanche(seeds[i-1])
+                errors.append(abs(pred_val - seeds[i]))
+            
+            avalanche_error = np.mean(errors)
+            avalanche_pred = avalanche(seeds[-1])
+            
+            all_patterns['hash_avalanche'] = {
+                'pred': avalanche_pred,
+                'error': avalanche_error,
+                'formula': "S(n+1) = Avalanche(S(n)) [Stafford Mix13]"
+            }
+        except:
+            all_patterns['hash_avalanche'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    else:
+        all_patterns['hash_avalanche'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+    
+    # 23. Pattern HASH WEYL: S(n+1) = S(n) + WEYL_CONSTANT
+    if len(seeds) >= 2:
+        try:
+            # Weyl sequence (folosit în PCG)
+            weyl_constants = [
+                0x9e3779b97f4a7c15,  # Golden ratio * 2^64
+                0x61c8864680b583eb,  # Plastic constant
+                0x27bb2ee687b0b0fd,  # Alt variant
+            ]
+            
+            best_weyl = None
+            best_weyl_error = float('inf')
+            
+            for weyl in weyl_constants:
+                errors = []
+                for i in range(1, len(seeds)):
+                    pred_val = (seeds[i-1] + weyl) & 0xFFFFFFFFFFFFFFFF
+                    errors.append(abs((pred_val & 0xFFFFFFFF) - seeds[i]))
+                
+                weyl_error = np.mean(errors)
+                if weyl_error < best_weyl_error:
+                    best_weyl_error = weyl_error
+                    weyl_pred = (seeds[-1] + weyl) & 0xFFFFFFFF
+                    best_weyl = {
+                        'pred': weyl_pred,
+                        'error': weyl_error,
+                        'formula': f"S(n+1) = S(n) + 0x{weyl:016x} [Weyl sequence]"
+                    }
+            
+            all_patterns['hash_weyl'] = best_weyl if best_weyl else {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        except:
+            all_patterns['hash_weyl'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    else:
+        all_patterns['hash_weyl'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+    
     # Selectare cel mai bun pattern
     valid_patterns = {k: v for k, v in all_patterns.items() 
                      if v['pred'] is not None and not np.isnan(v['error']) and v['error'] != float('inf')}
