@@ -1866,24 +1866,13 @@ class MaxPredictor:
                 print(f"  ❌ Error pentru {rng_name}: {e}")
                 return None
         
-        # Rulare PARALLEL pentru toate RNG-urile găsite
+        # Analiză RNG-uri - SECVENȚIAL pentru a evita probleme GPU
         predictions = []
         
-        if len(rng_results) > 1:
-            # PARALEL - multiple RNG-uri simultan
-            with Pool(processes=min(cpu_count(), len(rng_results))) as pool:
-                tasks = [(rng_name, result) for rng_name, result in sorted(rng_results.items(), key=lambda x: x[1]['success_rate'], reverse=True)]
-                results = pool.map(analyze_single_rng, tasks)
-                
-                for res in results:
-                    if res is not None:
-                        predictions.append(res)
-        else:
-            # Un singur RNG - nu e nevoie de paralel
-            for rng_name, result in sorted(rng_results.items(), key=lambda x: x[1]['success_rate'], reverse=True):
-                res = analyze_single_rng((rng_name, result))
-                if res is not None:
-                    predictions.append(res)
+        for rng_name, result in sorted(rng_results.items(), key=lambda x: x[1]['success_rate'], reverse=True):
+            res = analyze_single_rng((rng_name, result))
+            if res is not None:
+                predictions.append(res)
         
         # Afișare rezultate
         for pred in predictions:
