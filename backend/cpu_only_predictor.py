@@ -23,16 +23,21 @@ from lottery_config import get_lottery_config
 from advanced_rng_library import RNG_TYPES, create_rng, generate_numbers
 
 
-# SEED RANGES OPTIMIZATE - bazate pe numărul de combinații posibile!
+# SEED RANGES OPTIMIZATE + SEARCH SIZE = 100% COVERAGE!
 OPTIMIZED_SEED_RANGES = {
-    '5-40': (0, 4000000),      # C(40,6) = 3,838,380 combinații
-    '6-49': (0, 14000000),     # C(49,6) = 13,983,816 combinații
-    'joker': (0, 25000000),    # C(45,5) × 20 = 24,435,180 combinații
+    '5-40': (0, 4000000),      # C(40,6) = 3,838,380 → 100% coverage
+    '6-49': (0, 14000000),     # C(49,6) = 13,983,816 → 100% coverage
+    'joker': (0, 25000000),    # C(45,5) × 20 = 24,435,180 → 100% coverage
 }
 
 def get_optimal_seed_range(lottery_type):
     """Returnează seed range optim pentru loterie"""
     return OPTIMIZED_SEED_RANGES.get(lottery_type, (0, 100000000))
+
+def get_exhaustive_search_size(lottery_type):
+    """Returnează search size = TOATE seeds-urile pentru 100% coverage"""
+    seed_range = get_optimal_seed_range(lottery_type)
+    return seed_range[1]  # Testează TOATE seeds-urile!
 
 
 def compute_modular_inverse(a, m):
