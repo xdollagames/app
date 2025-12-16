@@ -138,7 +138,66 @@ def try_reverse_engineering(rng_name, numbers, lottery_config):
     return None
 
 
-def cpu_worker(args):
+def cpu_worker_chunked(args):
+    """Worker CPU - procesează un CHUNK de seeds pentru o extragere"""
+    import time
+    
+    draw_idx, numbers, rng_name, lottery_config, seed_chunk_start, seed_chunk_end, timeout_minutes, lottery_type, date_str = args
+    target_sorted = sorted(numbers)
+    start_time = time.time()
+    
+    # VERIFICĂ CACHE MAI ÎNTÂI
+    cached_seed = get_cached_seed(lottery_type, date_str, rng_name)
+    if cached_seed is not None and seed_chunk_start <= cached_seed < seed_chunk_end:
+        try:
+            rng = create_rng(rng_name, cached_seed)
+            if lottery_config.is_composite:
+                generated = []
+                for count, min_val, max_val in lottery_config.composite_parts:
+                    part = generate_numbers(rng, count, min_val, max_val)
+                    generated.extend(part)
+            else:
+                generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
+            
+            if sorted(generated) == target_sorted:
+                return (draw_idx, cached_seed, True)
+        except:
+            pass
+    
+    # Reverse engineering (doar dacă chunk-ul e primul)
+    if seed_chunk_start == 0:
+        reversed_seed = try_reverse_engineering(rng_name, numbers, lottery_config)
+        if reversed_seed is not None:
+            cache_seed(lottery_type, date_str, rng_name, reversed_seed)
+            return (draw_idx, reversed_seed, False)
+    
+    # Timeout pentru Mersenne
+    timeout_seconds = timeout_minutes * 60 if rng_name == 'mersenne' else 99999999
+    
+    # Exhaustive search pe acest CHUNK
+    for seed in range(seed_chunk_start, seed_chunk_end):
+        if rng_name == 'mersenne':
+            if (time.time() - start_time) > timeout_seconds:
+                return (draw_idx, None, False)
+        
+        try:
+            rng = create_rng(rng_name, seed)
+            
+            if lottery_config.is_composite:
+                generated = []
+                for count, min_val, max_val in lottery_config.composite_parts:
+                    part = generate_numbers(rng, count, min_val, max_val)
+                    generated.extend(part)
+            else:
+                generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
+            
+            if sorted(generated) == target_sorted:
+                cache_seed(lottery_type, date_str, rng_name, seed)
+                return (draw_idx, seed, False)
+        except:
+            continue
+    
+    return (draw_idx, None, False)
     """Worker CPU - cu CACHE pentru seeds deja găsite!"""
     import time
     
