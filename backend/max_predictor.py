@@ -388,7 +388,17 @@ def find_seed_exhaustive_worker(args):
     return (draw_idx, None)
 
 
-def analyze_all_patterns(seeds: List[int]) -> Dict:
+def analyze_pattern_worker(args):
+    """Worker pentru analiza unui singur pattern în paralel"""
+    pattern_name, pattern_func, seeds = args
+    try:
+        result = pattern_func(seeds)
+        return (pattern_name, result)
+    except Exception as e:
+        return (pattern_name, {'pred': None, 'error': float('inf'), 'formula': f'error: {str(e)}'})
+
+
+def analyze_all_patterns_parallel(seeds: List[int]) -> Dict:
     """Analizează TOATE cele 10 pattern-uri - EXHAUSTIV"""
     if len(seeds) < 3:
         return {
