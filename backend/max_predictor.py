@@ -37,7 +37,7 @@ def setup_gpu_in_thread():
         import cupy as cp
         
         # Kernel pentru xorshift_simple
-    GPU_RNG_KERNELS['xorshift_simple'] = cp.RawKernel(r'''
+        GPU_RNG_KERNELS['xorshift_simple'] = cp.RawKernel(r'''
     extern "C" __global__
     void test_seeds(
         const unsigned int* seeds, const int num_seeds,
