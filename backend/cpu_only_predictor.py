@@ -886,8 +886,14 @@ class CPUOnlyPredictor:
                         
                         if self.config.is_composite:
                             nums = []
-                            for count, min_val, max_val in self.config.composite_parts:
+                            for part_idx, (count, min_val, max_val) in enumerate(self.config.composite_parts):
                                 part = generate_numbers(rng, count, min_val, max_val)
+                                # Evită duplicate pentru joker
+                                if part_idx > 0:
+                                    attempts = 0
+                                    while any(num in nums for num in part) and attempts < 100:
+                                        part = generate_numbers(rng, count, min_val, max_val)
+                                        attempts += 1
                                 nums.extend(part)
                         else:
                             nums = generate_numbers(rng, self.config.numbers_to_draw, self.config.min_number, self.config.max_number)
