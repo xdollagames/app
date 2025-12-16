@@ -85,14 +85,12 @@ def try_reverse_engineering(rng_name, numbers, lottery_config):
 
 
 def cpu_worker(args):
-    """Worker CPU - DETERMINIST cu random seed"""
+    """Worker CPU - random sampling DIFERIT la fiecare rulare (explorare mai bună)"""
     draw_idx, numbers, rng_name, lottery_config, seed_range, base_search_size, num_extractions = args
     target_sorted = sorted(numbers)
     
-    # SETARE RANDOM SEED pentru reproducibilitate!
-    # Fiecare worker va avea același seed bazat pe draw_idx + rng_name
-    worker_seed = hash((draw_idx, rng_name)) % (2**32)
-    random.seed(worker_seed)
+    # NU setăm random seed - fiecare rulare explorează diferit!
+    # Acest lucru permite găsirea de seeds diferite la rulări multiple
     
     # Încercăm REVERSE mai întâi
     reversed_seed = try_reverse_engineering(rng_name, numbers, lottery_config)
