@@ -553,17 +553,23 @@ def try_reverse_engineering(rng_name: str, numbers: List[int], lottery_config) -
 
 
 def find_seed_exhaustive_worker(args):
-    """Worker pentru căutare EXHAUSTIVĂ - ZERO compromisuri"""
+    """Worker pentru căutare EXHAUSTIVĂ - cu REVERSE ENGINEERING când e posibil"""
     import time
     
     draw_idx, numbers, rng_type, lottery_config, seed_range, search_size = args
     target_sorted = sorted(numbers)
     
+    # ÎNCERCĂM MAI ÎNTÂI REVERSE ENGINEERING! (INSTANT)
+    reversed_seed = try_reverse_engineering(rng_type, numbers, lottery_config)
+    if reversed_seed is not None:
+        return (draw_idx, reversed_seed)
+    
+    # Dacă reverse engineering nu merge, folosim brute force
     # Timeout GENEROS pentru Mersenne (15 minute per extragere)
     start_time = time.time()
-    timeout_seconds = 900 if rng_type == 'mersenne' else 999999  # 15 min pentru Mersenne
+    timeout_seconds = 900 if rng_type == 'mersenne' else 999999
     
-    # Search size MAXIM - fără reduceri
+    # Search size MAXIM - 10M seeds
     actual_search_size = search_size
     
     # Generează seed-uri random
@@ -572,10 +578,8 @@ def find_seed_exhaustive_worker(args):
     
     seeds_tested = 0
     for seed in test_seeds:
-        # Check timeout doar pentru Mersenne
         if rng_type == 'mersenne':
             if (time.time() - start_time) > timeout_seconds:
-                print(f"\n  ⏰ Mersenne timeout după {seeds_tested:,} seeds testate pentru extragere #{draw_idx}")
                 return (draw_idx, None)
         
         try:
