@@ -248,15 +248,13 @@ def cpu_multiprocessing_worker(data, lottery_config, seed_range, search_size, mi
     print(f"💻 [CPU Thread] Total cores: {total_cores}")
     print(f"💻 [CPU Thread] Folosește: {num_cores} cores (lasă 3 pentru GPU)")
     
-    # RNG-uri CPU (exclude cele 12 de pe GPU)
-    gpu_rngs = ['xorshift_simple', 'lcg_glibc', 'java_random', 'xorshift32', 
-               'xorshift64', 'pcg32', 'splitmix', 'xoshiro256', 'xorshift128', 
-               'mersenne', 'lfsr', 'lcg_minstd']
+    # RNG-uri CPU (exclude doar xorshift_simple testat pe GPU)
+    gpu_rngs = ['xorshift_simple']  # Doar acesta are kernel corect!
     
     cpu_rngs = [r for r in RNG_TYPES.keys() if r not in gpu_rngs]
     
-    print(f"💻 [CPU] Va testa {len(cpu_rngs)} RNG-uri SECVENȚIAL")
-    print(f"   RNG-uri CPU: {', '.join(cpu_rngs)}\n")
+    print(f"💻 [CPU] Va testa {len(cpu_rngs)} RNG-uri SECVENȚIAL (fiecare cu {num_cores} cores)")
+    print(f"   RNG-uri CPU: {', '.join(cpu_rngs[:5])}... (+{len(cpu_rngs)-5} altele)\n")
     
     cpu_results = {}
     
