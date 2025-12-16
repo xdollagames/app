@@ -928,7 +928,20 @@ class CPUOnlyPredictor:
                         print(f"  🎯 PREDICȚIE PENTRU URMĂTOAREA EXTRAGERE")
                         print(f"  {'='*66}")
                         print(f"  Seed prezis: {p['pred']:,}")
-                        print(f"  NUMERE PREZISE: {sorted(nums)}")
+                        
+                        # Afișare SPECIALĂ pentru Joker
+                        if self.config.is_composite:
+                            # Joker: primele 5 + ultimul separat
+                            main_nums = sorted(nums[:-1])  # Primele 5
+                            joker_num = nums[-1]           # Ultimul = Joker
+                            print(f"  NUMERE PRINCIPALE: {main_nums}  (5 din 1-45)")
+                            print(f"  🎰 JOKER: {joker_num}  (1 din 1-20)")
+                            print(f"  ──────────────────────────────────────────────")
+                            print(f"  COMPLET: {main_nums} + [{joker_num}]")
+                        else:
+                            # 5/40 și 6/49: afișare normală
+                            print(f"  NUMERE PREZISE: {sorted(nums)}")
+                        
                         print(f"  {'='*66}\n")
                         
                         predictions.append({
