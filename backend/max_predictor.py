@@ -941,12 +941,19 @@ def try_reverse_engineering(rng_name: str, numbers: List[int], lottery_config) -
     if not numbers:
         return None
     
-    # Mapare RNG → funcție inversă
+    # Mapare RNG → funcție inversă - ACUM 11 RNG-URI!
     reverse_functions = {
         'lcg_glibc': lambda: reverse_lcg_glibc(numbers[0], lottery_config.min_number, lottery_config.max_number),
+        'lcg_minstd': lambda: reverse_mcg(numbers[0], lottery_config.min_number, lottery_config.max_number),
         'java_random': lambda: reverse_java_random(numbers[0], lottery_config.min_number, lottery_config.max_number),
         'xorshift_simple': lambda: reverse_xorshift_simple(numbers, lottery_config.min_number, lottery_config.max_number),
         'xorshift32': lambda: reverse_xorshift32(numbers[0], lottery_config.min_number, lottery_config.max_number),
+        'xorshift64': lambda: reverse_xorshift64(numbers, lottery_config.min_number, lottery_config.max_number),
+        'xorshift128': lambda: reverse_xorshift128(numbers, lottery_config.min_number, lottery_config.max_number),
+        'pcg32': lambda: reverse_pcg32(numbers, lottery_config.min_number, lottery_config.max_number),
+        'splitmix': lambda: reverse_splitmix64(numbers, lottery_config.min_number, lottery_config.max_number),
+        'xoshiro256': lambda: reverse_xoshiro256(numbers, lottery_config.min_number, lottery_config.max_number),
+        # LFSR nu e în RNG_TYPES dar îl adăugăm dacă există
     }
     
     if rng_name in reverse_functions:
