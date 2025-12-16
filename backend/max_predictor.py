@@ -1926,7 +1926,7 @@ class MaxPredictor:
                 print(f"  ❌ Error pentru {rng_name}: {e}")
                 return None
         
-        # Analiză RNG-uri - SECVENȚIAL pentru a evita probleme GPU
+        # Analiză RNG-uri - SECVENȚIAL (pattern analysis deja are GPU+CPU paralel intern)
         predictions = []
         
         for rng_name, result in sorted(rng_results.items(), key=lambda x: x[1]['success_rate'], reverse=True):
