@@ -1998,16 +1998,7 @@ class MaxPredictor:
 if __name__ == "__main__":
     import argparse
     
-    # INIȚIALIZARE GPU înainte de orice altceva!
-    print("\n" + "="*70)
-    print("  INIȚIALIZARE GPU + KERNELS")
-    print("="*70 + "\n")
-    
-    gpu_ok = initialize_gpu()
-    if gpu_ok:
-        setup_gpu_kernels()
-    
-    print()
+    # ❌ NU inițializăm GPU aici - se va face în thread-ul GPU!
     
     parser = argparse.ArgumentParser(description='ULTIMATE MAX Predictor - ZERO compromisuri')
     parser.add_argument('--lottery', default='5-40', choices=['5-40', '6-49', 'joker'])
