@@ -485,8 +485,58 @@ if GPU_AVAILABLE:
         results[idx] = all_match ? 1 : 0;
     }
     ''', 'test_seeds')
+    
+    # Kernel pentru LFSR
+    GPU_RNG_KERNELS['lfsr'] = cp.RawKernel(r'''
+    extern "C" __global__
+    void test_seeds(
+        const unsigned int* seeds, const int num_seeds,
+        const int* target, const int target_size,
+        const int min_num, const int max_num,
+        int* results
+    ) {
+        int idx = blockDim.x * blockIdx.x + threadIdx.x;
+        if (idx >= num_seeds) return;
+        
+        unsigned int state = seeds[idx] & 0xFFFF;
+        if (state == 0) state = 1;
+        
+        int range_size = max_num - min_num + 1;
+        
+        int generated[10];
+        for (int i = 0; i < target_size; i++) {
+            // LFSR with taps [16, 14, 13, 11]
+            unsigned int bit = ((state >> 15) ^ (state >> 13) ^ (state >> 12) ^ (state >> 10)) & 1;
+            state = ((state << 1) | bit) & 0xFFFF;
+            
+            generated[i] = min_num + (state % range_size);
+        }
+        
+        // Sortare
+        for (int i = 0; i < target_size - 1; i++) {
+            for (int j = 0; j < target_size - i - 1; j++) {
+                if (generated[j] > generated[j + 1]) {
+                    int temp = generated[j];
+                    generated[j] = generated[j + 1];
+                    generated[j + 1] = temp;
+                }
+            }
+        }
+        
+        // Compare
+        int all_match = 1;
+        for (int i = 0; i < target_size; i++) {
+            if (generated[i] != target[i]) {
+                all_match = 0;
+                break;
+            }
+        }
+        
+        results[idx] = all_match ? 1 : 0;
+    }
+    ''', 'test_seeds')
 
-# RNG-uri suportate pe GPU - ACUM 10 RNG-URI!
+# RNG-uri suportate pe GPU - ACUM 11 RNG-URI!
 GPU_SUPPORTED_RNGS = list(GPU_RNG_KERNELS.keys()) if GPU_AVAILABLE else []
 
 from lottery_config import get_lottery_config
