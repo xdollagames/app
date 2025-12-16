@@ -530,25 +530,6 @@ class CPUOnlyPredictor:
         print(f"📈 Search: {search_size:,} seeds (100% EXHAUSTIVE!)")
         print(f"⏰ Mersenne timeout: {mersenne_timeout} min per extragere")
         
-        # Calculează search size ajustat
-        import math
-        if last_n:
-            num_extractions = last_n
-        elif start_year and end_year:
-            num_extractions = (end_year - start_year + 1) * 50  # Estimare
-        else:
-            num_extractions = 10
-        
-        scale_factor = math.sqrt(max(1, num_extractions))
-        adjusted_search = int(search_size / scale_factor)
-        mersenne_search = min(50000, adjusted_search // 10)
-        
-        print(f"📉 Optimizare dinamică:")
-        print(f"   {num_extractions} extrageri → scale factor: {scale_factor:.2f}")
-        print(f"   Search ajustat RNG normale: ~{adjusted_search:,} seeds (MAX 5M pentru 3 extrageri)")
-        print(f"   Search Mersenne: ~{mersenne_search:,} seeds (MAX 100K)")
-        print()
-        
         # Load
         if last_n:
             print(f"📊 Încărcare ultimele {last_n} extrageri...")
