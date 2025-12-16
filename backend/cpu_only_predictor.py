@@ -94,22 +94,27 @@ def cpu_worker(args):
     if reversed_seed is not None:
         return (draw_idx, reversed_seed)
     
-    # OPTIMIZARE DINAMICĂ: cu cât mai multe extrageri, cu atât mai puțin căutăm
-    # Formula: search_size = base_search / sqrt(num_extractions)
-    # Exemplu: 3 extrageri: 10M / 1.73 = 5.7M
-    #          10 extrageri: 10M / 3.16 = 3.1M
-    #          50 extrageri: 10M / 7.07 = 1.4M
+    # OPTIMIZARE RADICALĂ: cu cât mai multe extrageri, cu atât mai puțin căutăm
+    # PLUS: Reduce DRAMATIC pentru toate RNG-urile
     
     import math
-    scale_factor = math.sqrt(max(1, num_extractions))
+    scale_factor = math.sqrt(max(1, num_extractions)) * 2  # Dublu factor pentru viteză
     adjusted_search = int(base_search_size / scale_factor)
     
-    # MERSENNE - reducere EXTRA (e foarte lent)
-    if rng_name == 'mersenne':
-        adjusted_search = min(50000, adjusted_search // 10)  # Reducere de 10x pentru Mersenne
+    # LIMITE STRICTE pentru viteză:
+    if num_extractions <= 3:
+        adjusted_search = min(adjusted_search, 500000)  # MAX 500K pentru 3 extrageri
+    elif num_extractions <= 5:
+        adjusted_search = min(adjusted_search, 1000000)  # MAX 1M pentru 5
+    elif num_extractions <= 10:
+        adjusted_search = min(adjusted_search, 2000000)  # MAX 2M pentru 10
     
-    # Minimum 10K seeds
-    actual_search_size = max(10000, adjusted_search)
+    # MERSENNE - MEGA reducere
+    if rng_name == 'mersenne':
+        adjusted_search = min(10000, adjusted_search // 50)  # Doar 10K pentru Mersenne!
+    
+    # Minimum 5K seeds
+    actual_search_size = max(5000, adjusted_search)
     
     # Brute force
     test_seeds = random.sample(range(seed_range[0], seed_range[1]), 
