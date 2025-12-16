@@ -329,8 +329,17 @@ if __name__ == "__main__":
                       help='An început (default: 2010)')
     parser.add_argument('--end-year', type=int, default=2025,
                       help='An sfârșit (default: 2025)')
+    parser.add_argument('--seed-range', type=int, nargs=2, default=[0, 10000000],
+                      help='Range seed-uri (default: 0 10000000)')
+    parser.add_argument('--search-size', type=int, default=2000000,
+                      help='Câte seeds să testeze per extragere (default: 2000000)')
     
     args = parser.parse_args()
     
     investigator = XorshiftInvestigator(args.lottery)
-    investigator.run_investigation(args.start_year, args.end_year)
+    investigator.run_investigation(
+        args.start_year, 
+        args.end_year,
+        tuple(args.seed_range),
+        args.search_size
+    )
