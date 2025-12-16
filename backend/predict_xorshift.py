@@ -25,18 +25,45 @@ class XorshiftInvestigator:
         """Încarcă datele și filtrează după perioadă"""
         try:
             with open(self.data_file, 'r') as f:
-                all_data = json.load(f)
+                data = json.load(f)
         except FileNotFoundError:
             print(f"❌ Fișierul {self.data_file} nu există!")
+            print(f"\n💡 Trebuie să scrape-zi datele mai întâi:")
+            print(f"   python3 unified_lottery_scraper.py --lottery {self.lottery_type} --year all\n")
+            sys.exit(1)
+        
+        # Detectează formatul datelor
+        if isinstance(data, dict) and 'draws' in data:
+            # Format nou cu wrapper
+            all_data = data['draws']
+        elif isinstance(data, list):
+            # Format vechi, listă directă
+            all_data = data
+        else:
+            print(f"❌ Format de date necunoscut în {self.data_file}")
             sys.exit(1)
             
         filtered_data = []
         for entry in all_data:
             try:
-                date_str = entry.get('data', '')
-                year = int(date_str.split('.')[-1])
+                # Suport pentru ambele formate de dată
+                date_str = entry.get('data', entry.get('date', ''))
+                
+                # Extrage anul din diverse formate
+                if '.' in date_str:
+                    year = int(date_str.split('.')[-1])
+                elif '-' in date_str:
+                    year = int(date_str.split('-')[0])
+                else:
+                    year = entry.get('year', 0)
+                    
                 if start_year <= year <= end_year:
-                    filtered_data.append(entry)
+                    # Normalizează formatul
+                    normalized = {
+                        'data': date_str,
+                        'numere': entry.get('numere', entry.get('numbers', entry.get('numbers_sorted', [])))
+                    }
+                    filtered_data.append(normalized)
             except (ValueError, IndexError):
                 continue
                 
