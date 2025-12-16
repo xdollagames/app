@@ -188,9 +188,12 @@ class XorshiftInvestigator:
         seeds_found = []
         draws_with_seeds = []
         
+        # Optimizare chunksize pentru numărul de core-uri
+        optimal_chunksize = max(1, len(tasks) // (num_cores * 4))
+        
         with Pool(processes=num_cores) as pool:
             results = []
-            for i, result in enumerate(pool.imap_unordered(find_seed_worker, tasks, chunksize=5)):
+            for i, result in enumerate(pool.imap_unordered(find_seed_worker, tasks, chunksize=optimal_chunksize)):
                 idx, seed = result
                 
                 if seed is not None:
@@ -201,9 +204,11 @@ class XorshiftInvestigator:
                         'seed': seed
                     })
                 
-                # Progress update
-                if (i + 1) % 50 == 0 or (i + 1) == len(tasks):
-                    print(f"  Procesate {i + 1}/{len(tasks)} extrageri... ({len(seeds_found)} seed-uri găsite)")
+                # Progress update (mai frecvent pentru mai multe core-uri)
+                update_freq = max(10, len(tasks) // 20)
+                if (i + 1) % update_freq == 0 or (i + 1) == len(tasks):
+                    progress = 100 * (i + 1) / len(tasks)
+                    print(f"  Procesate {i + 1}/{len(tasks)} extrageri ({progress:.1f}%)... {len(seeds_found)} seed-uri găsite")
         
         print(f"\n✅ Procesare completă!")
         print(f"📈 Seed-uri găsite: {len(seeds_found)}/{len(data)} ({100*len(seeds_found)/len(data):.1f}%)\n")
