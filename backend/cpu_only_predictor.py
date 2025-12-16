@@ -698,17 +698,35 @@ class CPUOnlyPredictor:
             else:
                 print(f"[{idx}/21] 💻 {rng_name.upper()} (EXHAUSTIVE - toate {search_size:,} seeds)")
             
-            tasks = [(i, e['numere'], rng_name, self.config, seed_range, search_size, mersenne_timeout, self.lottery_type, e['data']) 
-                    for i, e in enumerate(data) if len(e['numere']) == self.config.numbers_to_draw]
+            # Creează CHUNKS pentru a folosi TOATE cores-urile!
+            # Cu 3 extrageri × 31 chunks = 93 tasks → 31 cores lucrează simultan!
+            chunk_size = max(1000, search_size // num_cores)
+            
+            tasks = []
+            for i, e in enumerate(data):
+                if len(e['numere']) != self.config.numbers_to_draw:
+                    continue
+                
+                # Împarte seed range în chunks
+                for chunk_start in range(seed_range[0], search_size, chunk_size):
+                    chunk_end = min(chunk_start + chunk_size, search_size)
+                    tasks.append((i, e['numere'], rng_name, self.config, chunk_start, chunk_end, 
+                                mersenne_timeout, self.lottery_type, e['data']))
+            
+            print(f"  🔥 {len(tasks)} task-uri (chunks) → {min(num_cores, len(tasks))} cores active")
             
             seeds_found = []
             draws_with_seeds = []
             cached_count = 0
+            seeds_by_draw = {}  # Track seeds per draw
             
             with Pool(processes=num_cores) as pool:
-                for i, result in enumerate(pool.imap_unordered(cpu_worker, tasks)):
+                for result in pool.imap_unordered(cpu_worker_chunked, tasks):
                     idx_task, seed, from_cache = result
-                    if seed is not None:
+                    
+                    if seed is not None and idx_task not in seeds_by_draw:
+                        # Prima dată găsit pentru această extragere
+                        seeds_by_draw[idx_task] = seed
                         seeds_found.append(seed)
                         draws_with_seeds.append({
                             'idx': idx_task,
@@ -719,10 +737,10 @@ class CPUOnlyPredictor:
                         if from_cache:
                             cached_count += 1
                     
-                    if (i + 1) % 2 == 0 or (i + 1) == len(tasks):
-                        progress = 100 * (i + 1) / len(tasks)
-                        cache_info = f" ({cached_count} din cache)" if cached_count > 0 else ""
-                        print(f"  [{i+1}/{len(tasks)}] ({progress:.1f}%)... {len(seeds_found)} seeds găsite{cache_info}", end='\r')
+                    completed = len(seeds_by_draw)
+                    progress = 100 * completed / len(data)
+                    cache_info = f" ({cached_count} cache)" if cached_count > 0 else ""
+                    print(f"  [{completed}/{len(data)}] ({progress:.1f}%)... {len(seeds_found)} seeds{cache_info}", end='\r')
             
             success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
             cache_msg = f" ({cached_count} INSTANT din cache!)" if cached_count > 0 else ""
