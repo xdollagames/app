@@ -18,11 +18,16 @@ from advanced_rng_library import create_rng, generate_numbers
 
 
 def find_seed_worker(args):
-    """Worker function pentru multiprocessing"""
-    idx, numbers, lottery_config, max_seed = args
+    """Worker function pentru multiprocessing - căutare optimizată"""
+    idx, numbers, lottery_config, seed_range, search_size = args
     target_sorted = sorted(numbers)
     
-    for seed in range(1, max_seed):
+    # Generează seed-uri random în loc să caute secvențial (mult mai eficient)
+    import random
+    test_seeds = random.sample(range(seed_range[0], seed_range[1]), 
+                              min(search_size, seed_range[1] - seed_range[0]))
+    
+    for seed in test_seeds:
         try:
             rng = create_rng('xorshift_simple', seed)
             generated = generate_numbers(
