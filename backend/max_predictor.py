@@ -735,6 +735,206 @@ def reverse_xorshift32(output_number: int, min_number: int, max_number: int) -> 
     return None
 
 
+def reverse_xorshift64(numbers: List[int], min_number: int, max_number: int) -> Optional[int]:
+    """INVERSĂ Xorshift64 - Reverse XOR operations"""
+    def inverse_xor_shift(x, shift, bits=64, left=True):
+        """Inversează operația x ^= x << shift sau x ^= x >> shift"""
+        if left:
+            for i in range(shift, bits, shift):
+                x ^= (x << shift) & ((1 << bits) - 1)
+        else:
+            for i in range(shift, bits, shift):
+                x ^= x >> shift
+        return x & ((1 << bits) - 1)
+    
+    range_size = max_number - min_number + 1
+    target_mod = numbers[0] - min_number
+    
+    # Testăm seed-uri
+    for seed in range(1, 10000000):
+        state = seed if seed != 0 else 1
+        
+        # Forward xorshift64
+        state ^= state << 13
+        state &= 0xFFFFFFFFFFFFFFFF
+        state ^= state >> 7
+        state &= 0xFFFFFFFFFFFFFFFF
+        state ^= state << 17
+        state &= 0xFFFFFFFFFFFFFFFF
+        
+        if (state % range_size) == target_mod:
+            # Verificare cu al doilea număr
+            if len(numbers) > 1:
+                state2 = state
+                state2 ^= state2 << 13
+                state2 &= 0xFFFFFFFFFFFFFFFF
+                state2 ^= state2 >> 7
+                state2 &= 0xFFFFFFFFFFFFFFFF
+                state2 ^= state2 << 17
+                state2 &= 0xFFFFFFFFFFFFFFFF
+                
+                if (min_number + (state2 % range_size)) == numbers[1]:
+                    return seed
+            else:
+                return seed
+    
+    return None
+
+
+def reverse_xorshift128(numbers: List[int], min_number: int, max_number: int) -> Optional[int]:
+    """INVERSĂ Xorshift128"""
+    range_size = max_number - min_number + 1
+    target_mod = numbers[0] - min_number
+    
+    for seed in range(1, 5000000):
+        # Initialize state
+        x = seed
+        y = seed ^ 0x159a55e5
+        z = seed ^ 0x1f83d9ab
+        w = seed ^ 0x5be0cd19
+        
+        # First iteration
+        t = x ^ (x << 11)
+        x = y
+        y = z
+        z = w
+        w = w ^ (w >> 19) ^ (t ^ (t >> 8))
+        
+        if (w % range_size) == target_mod:
+            return seed
+    
+    return None
+
+
+def reverse_pcg32(numbers: List[int], min_number: int, max_number: int) -> Optional[int]:
+    """INVERSĂ PCG32 - calculează seed-ul invers"""
+    range_size = max_number - min_number + 1
+    target_mod = numbers[0] - min_number
+    
+    # PCG32 e mai complex, dar putem încerca reverse parțial
+    # PCG: output = permute((oldstate >> 18) ^ oldstate)
+    # Complicat pentru full reverse, dar putem testa seed-uri smart
+    
+    # Testăm seed-uri în zone probabile
+    for seed in range(1, 10000000, 100):  # Skip pentru viteză
+        state = seed
+        inc = 1442695040888963407
+        
+        oldstate = state
+        state = (oldstate * 6364136223846793005 + inc) & ((1 << 64) - 1)
+        
+        xorshifted = ((oldstate >> 18) ^ oldstate) >> 27
+        rot = oldstate >> 59
+        output = ((xorshifted >> rot) | (xorshifted << ((-rot) & 31))) & 0xFFFFFFFF
+        
+        if (output % range_size) == target_mod:
+            return seed
+    
+    return None
+
+
+def reverse_splitmix64(numbers: List[int], min_number: int, max_number: int) -> Optional[int]:
+    """INVERSĂ SplitMix64"""
+    range_size = max_number - min_number + 1
+    target_mod = numbers[0] - min_number
+    
+    # SplitMix64 poate fi reversat parțial
+    gamma = 0x9e3779b97f4a7c15
+    
+    for seed in range(1, 10000000):
+        state = seed + gamma
+        z = state
+        z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9
+        z = (z ^ (z >> 27)) * 0x94d049bb133111eb
+        z = z ^ (z >> 31)
+        
+        output = z & 0xFFFFFFFF
+        
+        if (output % range_size) == target_mod:
+            return seed
+    
+    return None
+
+
+def reverse_mcg(output_number: int, min_number: int, max_number: int) -> Optional[int]:
+    """INVERSĂ MCG (Multiplicative Congruential Generator)"""
+    # MCG: state = (a * state) % m
+    # Inverse: state_prev = (state * a_inv) % m
+    
+    a = 48271  # MINSTD multiplier
+    m = 2147483647  # 2^31 - 1
+    
+    range_size = max_number - min_number + 1
+    target_mod = output_number - min_number
+    
+    a_inv = compute_modular_inverse(a, m)
+    if a_inv is None:
+        return None
+    
+    # Testăm toate state-urile care ar putea da target_mod
+    for k in range(0, m // range_size + 1):
+        state = target_mod + k * range_size
+        if state >= m:
+            break
+        
+        # Calculăm prev_state
+        prev_state = (state * a_inv) % m
+        
+        if 0 < prev_state < m:
+            return prev_state
+    
+    return None
+
+
+def reverse_xoshiro256(numbers: List[int], min_number: int, max_number: int) -> Optional[int]:
+    """INVERSĂ Xoshiro256++ - reverse complex dar posibil"""
+    range_size = max_number - min_number + 1
+    target_mod = numbers[0] - min_number
+    
+    # Xoshiro256++ e complex dar putem testa seed-uri
+    for seed in range(1, 5000000):
+        s0 = seed
+        s1 = seed + 0x9e3779b97f4a7c15
+        s2 = seed + 0x3c6ef372fe94f82a
+        s3 = seed + 0x78dde6e5fd29f044
+        
+        # rotl function
+        def rotl(x, k):
+            return ((x << k) | (x >> (64 - k))) & 0xFFFFFFFFFFFFFFFF
+        
+        result = (rotl(s0 + s3, 23) + s0) & 0xFFFFFFFFFFFFFFFF
+        
+        if (result % range_size) == target_mod:
+            return seed
+    
+    return None
+
+
+def reverse_lfsr(numbers: List[int], min_number: int, max_number: int, taps: List[int] = [16, 14, 13, 11]) -> Optional[int]:
+    """INVERSĂ LFSR (Linear Feedback Shift Register) - REVERSIBIL PERFECT!"""
+    # LFSR e perfect reversibil pentru că operațiile sunt liniare!
+    range_size = max_number - min_number + 1
+    target_mod = numbers[0] - min_number
+    
+    # Testăm seed-uri
+    for seed in range(1, 10000000):
+        state = seed
+        if state == 0:
+            state = 1
+        
+        # LFSR forward cu taps
+        bit = 0
+        for tap in taps:
+            bit ^= (state >> tap) & 1
+        
+        state = ((state << 1) | bit) & 0xFFFF
+        
+        if (state % range_size) == target_mod:
+            return seed
+    
+    return None
+
+
 def try_reverse_engineering(rng_name: str, numbers: List[int], lottery_config) -> Optional[int]:
     """Încearcă să REVERSE-uiască RNG-ul pentru a găsi seed-ul direct!"""
     
