@@ -85,11 +85,11 @@ def try_reverse_engineering(rng_name, numbers, lottery_config):
 
 
 def cpu_worker(args):
-    """Worker CPU - cu reverse engineering + brute force"""
+    """Worker CPU - cu reverse engineering + brute force + SUPORT COMPOSITE!"""
     draw_idx, numbers, rng_name, lottery_config, seed_range, search_size = args
     target_sorted = sorted(numbers)
     
-    # Încercăm REVERSE mai întâi (INSTANT pentru LCG-uri!)
+    # Încercăm REVERSE mai întâi
     reversed_seed = try_reverse_engineering(rng_name, numbers, lottery_config)
     if reversed_seed is not None:
         return (draw_idx, reversed_seed)
@@ -100,7 +100,16 @@ def cpu_worker(args):
     for seed in test_seeds:
         try:
             rng = create_rng(rng_name, seed)
-            generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
+            
+            # Check dacă e composite (Joker)
+            if lottery_config.is_composite:
+                generated = []
+                for count, min_val, max_val in lottery_config.composite_parts:
+                    part = generate_numbers(rng, count, min_val, max_val)
+                    generated.extend(part)
+            else:
+                generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
+            
             if sorted(generated) == target_sorted:
                 return (draw_idx, seed)
         except:
