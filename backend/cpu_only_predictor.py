@@ -139,14 +139,34 @@ def try_reverse_engineering(rng_name, numbers, lottery_config):
 
 
 def cpu_worker(args):
-    """Worker CPU - EXHAUSTIVE search cu timeout pentru Mersenne"""
+    """Worker CPU - cu CACHE pentru seeds deja găsite!"""
     import time
     
-    draw_idx, numbers, rng_name, lottery_config, seed_range, search_size_total, timeout_minutes = args
+    draw_idx, numbers, rng_name, lottery_config, seed_range, search_size_total, timeout_minutes, lottery_type, date_str = args
     target_sorted = sorted(numbers)
     start_time = time.time()
     
-    # Încercăm REVERSE mai întâi (INSTANT pentru LCG!)
+    # VERIFICĂ CACHE MAI ÎNTÂI! (INSTANT dacă există!)
+    cached_seed = get_cached_seed(lottery_type, date_str, rng_name)
+    if cached_seed is not None:
+        # Verifică că seed-ul e încă valid
+        try:
+            rng = create_rng(rng_name, cached_seed)
+            if lottery_config.is_composite:
+                generated = []
+                for count, min_val, max_val in lottery_config.composite_parts:
+                    part = generate_numbers(rng, count, min_val, max_val)
+                    generated.extend(part)
+            else:
+                generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
+            
+            if sorted(generated) == target_sorted:
+                # CACHE HIT! Returnează instant
+                return (draw_idx, cached_seed, True)  # True = din cache
+        except:
+            pass
+    
+    # Încercăm REVERSE
     reversed_seed = try_reverse_engineering(rng_name, numbers, lottery_config)
     if reversed_seed is not None:
         return (draw_idx, reversed_seed)
