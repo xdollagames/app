@@ -1821,32 +1821,30 @@ class MaxPredictor:
             print(f"  {i}. {entry['data']:15s} → {entry['numere']}")
         print()
         
-        # Test TOATE RNG-urile - PARALEL REAL GPU + CPU SIMULTAN!
+        # Test TOATE RNG-urile - GPU Thread + CPU Multiprocessing PARALEL!
         print(f"\n{'='*70}")
-        print(f"  FAZA 1: TESTARE SIMULTANĂ GPU + CPU")
+        print(f"  FAZA 1: RNG TESTING - GPU Thread + CPU Multiprocessing")
         print(f"{'='*70}\n")
         
-        if GPU_AVAILABLE:
-            print(f"🚀 GPU Thread: {len(GPU_SUPPORTED_RNGS)} RNG-uri pe RTX 5090")
-            print(f"💻 CPU Thread: {len([r for r in RNG_TYPES.keys() if r not in GPU_SUPPORTED_RNGS])} RNG-uri pe {num_cores} cores")
-            print(f"⚡ AMBELE rulează SIMULTAN!")
-            print(f"🎯 Reverse Engineering: Activ pentru 16 RNG-uri\n")
-        else:
-            print(f"💻 CPU Mode: {num_cores} cores\n")
+        print(f"🚀 GPU Thread: Va inițializa GPU și testa 11 RNG-uri")
+        print(f"💻 CPU Multiprocessing: {num_cores} cores pentru 10 RNG-uri")
+        print(f"⚡ AMBELE pornesc SIMULTAN!")
+        print(f"🎯 Reverse Engineering: 16 RNG-uri (INSTANT)\n")
         
         # Queue pentru rezultate
         results_queue = Queue()
         
-        # Create threads
+        # Create threads - GPU se inițializează ÎN THREAD, nu aici!
         threads = []
         
-        if GPU_AVAILABLE and len(GPU_SUPPORTED_RNGS) > 0:
-            gpu_thread = threading.Thread(
-                target=self.test_gpu_rngs_parallel,
-                args=(data, seed_range, search_size, results_queue)
-            )
-            threads.append(gpu_thread)
+        # GPU thread - va face setup_gpu_in_thread() intern
+        gpu_thread = threading.Thread(
+            target=self.test_gpu_rngs_parallel,
+            args=(data, seed_range, search_size, results_queue)
+        )
+        threads.append(gpu_thread)
         
+        # CPU thread - folosește multiprocessing (spawn, nu fork!)
         cpu_thread = threading.Thread(
             target=self.test_cpu_rngs_parallel,
             args=(data, seed_range, search_size, results_queue)
@@ -1854,7 +1852,7 @@ class MaxPredictor:
         threads.append(cpu_thread)
         
         # Start SIMULTAN!
-        print(f"🚀 PORNIRE SIMULTANĂ GPU + CPU...\n")
+        print(f"🚀 PORNIRE SIMULTANĂ GPU Thread + CPU Multiprocessing...\n")
         for thread in threads:
             thread.start()
         
@@ -1862,7 +1860,7 @@ class MaxPredictor:
         for thread in threads:
             thread.join()
         
-        print(f"\n✅ AMBELE THREAD-URI COMPLETE!\n")
+        print(f"\n✅ AMBELE COMPLETE!\n")
         
         # Colectează rezultate din queue
         rng_results = {}
