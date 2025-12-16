@@ -82,11 +82,11 @@ def setup_gpu_in_thread():
         }
         
         results[idx] = all_match ? 1 : 0;
-    }
-    ''', 'test_seeds')
-    
-    # Kernel pentru LCG GLIBC
-    GPU_RNG_KERNELS['lcg_glibc'] = cp.RawKernel(r'''
+        }
+        ''', 'test_seeds')
+        
+        # Kernel pentru LCG GLIBC
+        GPU_RNG_KERNELS['lcg_glibc'] = cp.RawKernel(r'''
     extern "C" __global__
     void test_seeds(
         const unsigned int* seeds, const int num_seeds,
