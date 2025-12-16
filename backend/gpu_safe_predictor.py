@@ -111,18 +111,17 @@ def cpu_worker(args):
 
 
 def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
-    """GPU Thread - Import CuPy AICI, testează MULTIPLE RNG-uri cu GPU"""
+    """GPU Thread - testează RNG-uri SECVENȚIAL dar cu TOT GPU-ul"""
     try:
         import cupy as cp
         print("🚀 [GPU Thread] CuPy importat cu succes!")
         
-        # RNG-uri simple pentru GPU - TOATE cu kernels
-        gpu_rngs_to_test = ['xorshift_simple', 'lcg_glibc', 'java_random', 'xorshift32', 
-                           'xorshift64', 'pcg32', 'splitmix', 'xoshiro256', 'xorshift128', 'lfsr']
+        # RNG-uri pentru GPU
+        gpu_rngs_to_test = ['xorshift_simple']  # Adaugă altele când ai kernels
         
-        print(f"🚀 [GPU] Va testa {len(gpu_rngs_to_test)} RNG-uri cu CUDA batching")
+        print(f"🚀 [GPU] Va testa {len(gpu_rngs_to_test)} RNG-uri SECVENȚIAL (folosește TOT GPU-ul)\n")
         
-        # CUDA Kernel simplu pentru testare rapidă - xorshift
+        # CUDA Kernel simplu pentru xorshift
         test_kernel = cp.RawKernel(r'''
         extern "C" __global__
         void test_xorshift(unsigned int* seeds, int num_seeds, int* target, int target_size, 
@@ -164,9 +163,8 @@ def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
         
         gpu_results = {}
         
-        # Test TOATE RNG-urile GPU (pentru demo doar xorshift, dar ai kernel-ul ready)
-        for rng_name in ['xorshift_simple']:  # Adaugă altele când ai kernels
-            print(f"🚀 [GPU] Testing: {rng_name}")
+        for rng_name in gpu_rngs_to_test:
+            print(f"🚀 [GPU] Testing: {rng_name.upper()}")
             
             seeds_found = []
             draws_with_seeds = []
@@ -177,19 +175,17 @@ def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
                     continue
                 
                 target_sorted = sorted(numbers)
-                
-                # Batch GPU testing - 2M seeds per batch
-                batch_size = 2000000
-                max_batches = 50
                 found = False
                 
-                for batch in range(max_batches):
-                    # Generează batch random
+                # GPU batch testing
+                batch_size = 2000000
+                max_batches = 50
+                
+                for batch_num in range(max_batches):
                     seeds_batch = cp.random.randint(0, seed_range[1], size=batch_size, dtype=cp.uint32)
                     target_gpu = cp.array(target_sorted, dtype=cp.int32)
                     results_gpu = cp.zeros(batch_size, dtype=cp.int32)
                     
-                    # Launch kernel
                     threads = 256
                     blocks = (batch_size + threads - 1) // threads
                     
@@ -197,7 +193,6 @@ def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
                                (seeds_batch, batch_size, target_gpu, len(target_sorted),
                                 lottery_config.min_number, lottery_config.max_number, results_gpu))
                     
-                    # Check results
                     matches = cp.where(results_gpu == 1)[0]
                     
                     if len(matches) > 0:
@@ -212,12 +207,14 @@ def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
                         found = True
                         break
                 
-                print(f"  [{draw_idx+1}/{len(data)}] Seeds: {len(seeds_found)}", end='\r')
+                progress = 100 * (draw_idx + 1) / len(data)
+                print(f"  [{draw_idx+1}/{len(data)}] ({progress:.1f}%)... {len(seeds_found)} seeds găsite", end='\r')
             
             success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
             print(f"\n✅ [GPU] {rng_name}: {len(seeds_found)}/{len(data)} ({success_rate:.1%})")
             
-            if success_rate > 0:
+            if success_rate >= 0.66:  # 66% threshold
+                print(f"  ✅ Peste threshold 66%!")
                 draws_with_seeds.sort(key=lambda x: x['idx'])
                 seeds_found = [d['seed'] for d in draws_with_seeds]
                 gpu_results[rng_name] = {
@@ -225,11 +222,17 @@ def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
                     'draws': draws_with_seeds,
                     'success_rate': success_rate
                 }
+            else:
+                print(f"  ❌ Sub threshold ({success_rate:.1%} < 66%)")
+            
+            print()
         
         results_queue.put(('gpu', gpu_results))
         
     except Exception as e:
         print(f"⚠️  [GPU Thread] Error: {e}")
+        import traceback
+        traceback.print_exc()
         results_queue.put(('gpu', {}))
 
 
