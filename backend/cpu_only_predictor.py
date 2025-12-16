@@ -169,7 +169,9 @@ def cpu_worker(args):
     # Încercăm REVERSE
     reversed_seed = try_reverse_engineering(rng_name, numbers, lottery_config)
     if reversed_seed is not None:
-        return (draw_idx, reversed_seed)
+        # Salvează în cache pentru viitor!
+        cache_seed(lottery_type, date_str, rng_name, reversed_seed)
+        return (draw_idx, reversed_seed, False)  # False = nu din cache
     
     # EXHAUSTIVE search - testează TOATE seeds-urile (sau până la timeout pentru Mersenne)
     # Pentru Mersenne: TIMEOUT de 10 minute per extragere
