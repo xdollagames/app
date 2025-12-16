@@ -639,15 +639,16 @@ class CPUOnlyPredictor:
             else:
                 print(f"[{idx}/21] 💻 {rng_name.upper()} (EXHAUSTIVE - toate {search_size:,} seeds)")
             
-            tasks = [(i, e['numere'], rng_name, self.config, seed_range, search_size, mersenne_timeout) 
+            tasks = [(i, e['numere'], rng_name, self.config, seed_range, search_size, mersenne_timeout, self.lottery_type, e['data']) 
                     for i, e in enumerate(data) if len(e['numere']) == self.config.numbers_to_draw]
             
             seeds_found = []
             draws_with_seeds = []
+            cached_count = 0
             
             with Pool(processes=num_cores) as pool:
                 for i, result in enumerate(pool.imap_unordered(cpu_worker, tasks)):
-                    idx_task, seed = result
+                    idx_task, seed, from_cache = result
                     if seed is not None:
                         seeds_found.append(seed)
                         draws_with_seeds.append({
@@ -656,10 +657,13 @@ class CPUOnlyPredictor:
                             'numbers': data[idx_task]['numere'],
                             'seed': seed
                         })
+                        if from_cache:
+                            cached_count += 1
                     
                     if (i + 1) % 2 == 0 or (i + 1) == len(tasks):
                         progress = 100 * (i + 1) / len(tasks)
-                        print(f"  [{i+1}/{len(tasks)}] ({progress:.1f}%)... {len(seeds_found)} seeds găsite", end='\r')
+                        cache_info = f" ({cached_count} din cache)" if cached_count > 0 else ""
+                        print(f"  [{i+1}/{len(tasks)}] ({progress:.1f}%)... {len(seeds_found)} seeds găsite{cache_info}", end='\r')
             
             success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
             print(f"\n  ✅ {len(seeds_found)}/{len(data)} ({success_rate:.1%})", end='')
