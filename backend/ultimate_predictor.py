@@ -18,18 +18,29 @@ from advanced_rng_library import RNG_TYPES, create_rng, generate_numbers
 
 def find_seed_for_draw_worker(args):
     """Worker pentru găsirea seed-ului pentru o extragere cu un RNG specific"""
+    import time
+    
     draw_idx, numbers, rng_type, lottery_config, seed_range, search_size = args
     target_sorted = sorted(numbers)
     
-    # Skip Mersenne dacă durează prea mult (e foarte lent)
+    # Timeout strict pentru Mersenne (5 minute = 300 secunde pentru TOATE extragerile)
+    # Deci per extragere = 300/num_draws, dar e sigur să punem 30 secunde per extragere
+    start_time = time.time()
+    timeout_seconds = 30 if rng_type == 'mersenne' else 999999
+    
+    # Reduce dramatic search pentru Mersenne
     if rng_type == 'mersenne':
-        search_size = min(search_size, 100000)  # Reduce dramatic pentru Mersenne
+        search_size = min(search_size, 50000)
     
     # Generează seed-uri random
     test_seeds = random.sample(range(seed_range[0], seed_range[1]), 
                               min(search_size, seed_range[1] - seed_range[0]))
     
     for seed in test_seeds:
+        # Check timeout pentru Mersenne
+        if rng_type == 'mersenne' and (time.time() - start_time) > timeout_seconds:
+            return (draw_idx, None)  # Timeout - skip această extragere
+        
         try:
             rng = create_rng(rng_type, seed)
             generated = generate_numbers(
