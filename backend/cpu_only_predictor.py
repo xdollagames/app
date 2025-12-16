@@ -825,9 +825,16 @@ if __name__ == "__main__":
     parser.add_argument('--mersenne-timeout', type=int, default=10,
                       help='Timeout pentru Mersenne în minute (default: 10)')
     parser.add_argument('--min-success-rate', type=float, default=0.66,
-                      help='Success rate minim (default: 0.66)')
+                      help='Success rate minim (default: 0.66). Folosește 1.0 pentru doar RNG-uri PERFECTE (100%%)')
+    parser.add_argument('--only-perfect', action='store_true',
+                      help='Acceptă doar RNG-uri cu 100%% success rate (shortcut pentru --min-success-rate 1.0)')
     
     args = parser.parse_args()
+    
+    # Override success rate dacă --only-perfect
+    if args.only_perfect:
+        args.min_success_rate = 1.0
+        print("🎯 Mod ONLY-PERFECT activat: doar RNG-uri cu 100%!\n")
     
     if not args.last_n and not (args.start_year and args.end_year):
         print("❌ Specifică --last-n SAU (--start-year și --end-year)!")
