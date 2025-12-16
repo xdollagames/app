@@ -768,9 +768,12 @@ if __name__ == "__main__":
     parser.add_argument('--last-n', type=int, help='Ultimele N extrageri')
     parser.add_argument('--start-year', type=int)
     parser.add_argument('--end-year', type=int)
-    parser.add_argument('--seed-range', type=int, nargs=2, default=[0, 100000000])
-    parser.add_argument('--search-size', type=int, default=10000000)
-    parser.add_argument('--min-success-rate', type=float, default=0.66)
+    parser.add_argument('--seed-range', type=int, nargs=2, default=None,
+                      help='Seed range (default: auto-optimizat pentru fiecare joc)')
+    parser.add_argument('--search-size', type=int, default=10000000,
+                      help='Base search size (default: 10000000, va fi ajustat dinamic)')
+    parser.add_argument('--min-success-rate', type=float, default=0.66,
+                      help='Success rate minim (default: 0.66 = 66%%)')
     
     args = parser.parse_args()
     
@@ -783,7 +786,7 @@ if __name__ == "__main__":
         last_n=args.last_n,
         start_year=args.start_year,
         end_year=args.end_year,
-        seed_range=tuple(args.seed_range),
+        seed_range=tuple(args.seed_range) if args.seed_range else None,  # None = auto-optimizat
         search_size=args.search_size,
         min_success_rate=args.min_success_rate
     )
