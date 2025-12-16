@@ -1159,8 +1159,9 @@ def try_reverse_engineering(rng_name: str, numbers: List[int], lottery_config) -
 
 
 def find_seed_exhaustive_worker(args):
-    """Worker pentru căutare EXHAUSTIVĂ - cu REVERSE ENGINEERING când e posibil"""
+    """Worker pentru căutare EXHAUSTIVĂ - FĂRĂ GPU (doar CPU)"""
     import time
+    # NU importăm CuPy aici - doar CPU!
     
     draw_idx, numbers, rng_type, lottery_config, seed_range, search_size = args
     target_sorted = sorted(numbers)
