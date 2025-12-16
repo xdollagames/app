@@ -401,6 +401,30 @@ class JSMathRandom:
         return (self.state0 + self.state1) & 0xFFFFFFFFFFFFFFFF
 
 
+class LFSR:
+    """Linear Feedback Shift Register - PERFECT REVERSIBIL!"""
+    __slots__ = ['state', 'taps']
+    
+    def __init__(self, seed: int, taps: List[int] = None):
+        self.state = seed & 0xFFFF  # 16-bit LFSR
+        if self.state == 0:
+            self.state = 1
+        
+        # Taps pentru maximal-length LFSR (16-bit)
+        self.taps = taps if taps else [16, 14, 13, 11]
+    
+    def next(self) -> int:
+        # Calculăm feedback bit
+        bit = 0
+        for tap in self.taps:
+            bit ^= (self.state >> (tap - 1)) & 1
+        
+        # Shift și insert
+        self.state = ((self.state << 1) | bit) & 0xFFFF
+        
+        return self.state
+
+
 # Factory pentru crearea RNG-urilor
 RNG_TYPES = {
     'lcg_glibc': LCG_GLIBC,
@@ -423,6 +447,7 @@ RNG_TYPES = {
     'fibonacci': LaggedFibonacci,
     'splitmix': SplitMix64,
     'middlesquare': MiddleSquare,
+    'lfsr': LFSR,  # LINEAR FEEDBACK SHIFT REGISTER - NOU!
 }
 
 
