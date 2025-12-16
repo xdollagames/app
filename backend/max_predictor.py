@@ -1265,7 +1265,7 @@ class MaxPredictor:
             print(f"{'='*70}\n")
             
             # Analiză TOATE pattern-urile
-            pattern_analysis = analyze_all_patterns(result['seeds'])
+            pattern_analysis = analyze_all_patterns_parallel(result['seeds'])
             
             print(f"🏆 BEST PATTERN: {pattern_analysis['pattern_type'].upper()}")
             print(f"📐 Formula: {pattern_analysis['formula']}")
