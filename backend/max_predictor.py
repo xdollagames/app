@@ -38,15 +38,25 @@ if 'LD_LIBRARY_PATH' not in os.environ or '/usr/local/cuda' not in os.environ.ge
             if path not in current_ld:
                 os.environ['LD_LIBRARY_PATH'] = f"{path}:{current_ld}" if current_ld else path
 
-# Check GPU availability
-try:
-    import cupy as cp
-    GPU_AVAILABLE = True
-    print("✅ GPU detectat! Se va folosi accelerare CUDA")
-except ImportError:
-    GPU_AVAILABLE = False
-    print("⚠️  CuPy nu e instalat. Se va folosi CPU multicore")
-    import numpy as cp
+# Check GPU availability - DOAR în main thread, NU în workers!
+GPU_AVAILABLE = False
+GPU_SUPPORTED_RNGS = []
+
+def initialize_gpu():
+    """Inițializează GPU doar în thread-ul principal"""
+    global GPU_AVAILABLE, cp
+    try:
+        import cupy as cp
+        # Test rapid
+        _ = cp.array([1, 2, 3])
+        GPU_AVAILABLE = True
+        print("✅ GPU detectat! Se va folosi accelerare CUDA")
+        return True
+    except Exception as e:
+        GPU_AVAILABLE = False
+        print(f"⚠️  GPU nu e disponibil: {e}")
+        import numpy as cp
+        return False
 
 # GPU Kernels pentru RNG-uri simple
 GPU_RNG_KERNELS = {}
