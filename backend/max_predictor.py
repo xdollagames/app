@@ -840,70 +840,164 @@ def analyze_all_patterns_parallel_gpu(seeds: List[int]) -> Dict:
             'all_patterns': {}
         }
     
+    print(f"  🚀 Pattern Analysis: GPU + CPU PARALLEL mode...")
+    
     x = np.arange(len(seeds))
     y = np.array(seeds)
     
+    # Convertim la GPU pentru calcule rapide
+    if GPU_AVAILABLE:
+        x_gpu = cp.asarray(x, dtype=cp.float64)
+        y_gpu = cp.asarray(y, dtype=cp.float64)
+        print(f"  ✅ Date transferate pe GPU: {len(seeds)} seeds")
+    
     all_patterns = {}
     
-    # 1. Pattern LINEAR: y = a*x + b
-    try:
-        linear_coeffs = np.polyfit(x, y, 1)
-        linear_pred = np.poly1d(linear_coeffs)(len(seeds))
-        linear_error = np.mean(np.abs(y - np.poly1d(linear_coeffs)(x)))
-        all_patterns['linear'] = {
-            'pred': linear_pred,
-            'error': linear_error,
-            'formula': f"y = {linear_coeffs[0]:.4f}*x + {linear_coeffs[1]:.2f}"
-        }
-    except:
-        all_patterns['linear'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
-    
-    # 2. Pattern POLINOMIAL grad 2: y = a*x² + b*x + c
-    try:
-        poly_coeffs = np.polyfit(x, y, 2)
-        poly_pred = np.poly1d(poly_coeffs)(len(seeds))
-        poly_error = np.mean(np.abs(y - np.poly1d(poly_coeffs)(x)))
-        all_patterns['polynomial_2'] = {
-            'pred': poly_pred,
-            'error': poly_error,
-            'formula': f"y = {poly_coeffs[0]:.4e}*x² + {poly_coeffs[1]:.4f}*x + {poly_coeffs[2]:.2f}"
-        }
-    except:
-        all_patterns['polynomial_2'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
-    
-    # 3. Pattern POLINOMIAL grad 3: y = a*x³ + b*x² + c*x + d
-    if len(seeds) >= 4:
+    # === PATTERN-URI PE GPU (BATCH) ===
+    if GPU_AVAILABLE:
         try:
-            poly3_coeffs = np.polyfit(x, y, 3)
-            poly3_pred = np.poly1d(poly3_coeffs)(len(seeds))
-            poly3_error = np.mean(np.abs(y - np.poly1d(poly3_coeffs)(x)))
-            all_patterns['polynomial_3'] = {
-                'pred': poly3_pred,
-                'error': poly3_error,
-                'formula': f"y = {poly3_coeffs[0]:.4e}*x³ + ... (grad 3)"
-            }
-        except:
-            all_patterns['polynomial_3'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
-    else:
-        all_patterns['polynomial_3'] = {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
-    
-    # 4. Pattern EXPONENȚIAL: y = a*e^(b*x) + c
-    try:
-        def exp_func(x, a, b, c):
-            return a * np.exp(b * x) + c
+            # 1-4: Polynomial fits (LINEAR, POLY2, POLY3, POLY4) - GPU BATCH
+            for degree in [1, 2, 3, 4]:
+                if len(seeds) >= degree + 1:
+                    try:
+                        coeffs_gpu = cp.polyfit(x_gpu, y_gpu, degree)
+                        pred_gpu = cp.poly1d(coeffs_gpu)(len(seeds))
+                        error_gpu = cp.mean(cp.abs(y_gpu - cp.poly1d(coeffs_gpu)(x_gpu)))
+                        
+                        pred = float(cp.asnumpy(pred_gpu))
+                        error = float(cp.asnumpy(error_gpu))
+                        coeffs = cp.asnumpy(coeffs_gpu)
+                        
+                        pattern_name = 'linear' if degree == 1 else f'polynomial_{degree}'
+                        all_patterns[pattern_name] = {
+                            'pred': pred,
+                            'error': error,
+                            'formula': f"y = poly(degree={degree})"
+                        }
+                    except:
+                        pattern_name = 'linear' if degree == 1 else f'polynomial_{degree}'
+                        all_patterns[pattern_name] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+            
+            # 5. Logarithmic - GPU
+            try:
+                log_x_gpu = cp.log(x_gpu + 1)
+                log_coeffs_gpu = cp.polyfit(log_x_gpu, y_gpu, 1)
+                log_pred_gpu = log_coeffs_gpu[0] * cp.log(len(seeds) + 1) + log_coeffs_gpu[1]
+                log_error_gpu = cp.mean(cp.abs(y_gpu - (log_coeffs_gpu[0] * log_x_gpu + log_coeffs_gpu[1])))
+                
+                all_patterns['logarithmic'] = {
+                    'pred': float(cp.asnumpy(log_pred_gpu)),
+                    'error': float(cp.asnumpy(log_error_gpu)),
+                    'formula': "y = log(x)"
+                }
+            except:
+                all_patterns['logarithmic'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+            
+            # 6-7: Const Diff/Ratio - GPU
+            if len(seeds) >= 2:
+                try:
+                    diffs_gpu = cp.diff(y_gpu)
+                    avg_diff_gpu = cp.mean(diffs_gpu)
+                    const_diff_pred = float(y_gpu[-1] + avg_diff_gpu)
+                    const_diff_error = float(cp.std(diffs_gpu))
+                    
+                    all_patterns['const_diff'] = {
+                        'pred': const_diff_pred,
+                        'error': const_diff_error,
+                        'formula': "S(n+1) = S(n) + const"
+                    }
+                except:
+                    all_patterns['const_diff'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+            
+            print(f"  ✅ GPU patterns: {len([p for p in all_patterns.values() if p['pred'] is not None])} calculați")
         
-        popt, _ = curve_fit(exp_func, x, y, maxfev=10000)
-        exp_pred = exp_func(len(seeds), *popt)
-        exp_error = np.mean(np.abs(y - exp_func(x, *popt)))
-        all_patterns['exponential'] = {
-            'pred': exp_pred,
-            'error': exp_error,
-            'formula': f"y = {popt[0]:.4e}*e^({popt[1]:.6f}*x) + {popt[2]:.2f}"
-        }
-    except:
-        all_patterns['exponential'] = {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+        except Exception as e:
+            print(f"  ⚠️  GPU batch error: {e}, fallback la CPU")
     
-    # 5. Pattern FIBONACCI-like: S(n) = a*S(n-1) + b*S(n-2)
+    # === PATTERN-URI PE CPU (PARALLEL cu multiprocessing) ===
+    
+    def pattern_worker(args):
+        pattern_name, pattern_func = args
+        try:
+            return (pattern_name, pattern_func(seeds))
+        except:
+            return (pattern_name, {'pred': None, 'error': float('inf'), 'formula': 'error'})
+    
+    def exponential_pattern(seeds):
+        try:
+            def exp_func(x, a, b, c):
+                return a * np.exp(b * x) + c
+            popt, _ = curve_fit(exp_func, x, y, maxfev=3000)
+            exp_pred = exp_func(len(seeds), *popt)
+            exp_error = np.mean(np.abs(y - exp_func(x, *popt)))
+            return {'pred': exp_pred, 'error': exp_error, 'formula': "y = a*e^(bx) + c"}
+        except:
+            return {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    
+    def fibonacci_pattern(seeds):
+        if len(seeds) < 3:
+            return {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+        try:
+            A = np.array([[seeds[i-1], seeds[i-2]] for i in range(2, len(seeds))])
+            B = np.array([seeds[i] for i in range(2, len(seeds))])
+            coeffs, _, _, _ = np.linalg.lstsq(A, B, rcond=None)
+            a, b = coeffs
+            fib_pred = a * seeds[-1] + b * seeds[-2]
+            errors = [abs(a * seeds[i-1] + b * seeds[i-2] - seeds[i]) for i in range(2, len(seeds))]
+            fib_error = np.mean(errors) if errors else float('inf')
+            return {'pred': fib_pred, 'error': fib_error, 'formula': f"S(n) = {a:.4f}*S(n-1) + {b:.4f}*S(n-2)"}
+        except:
+            return {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    
+    def lcg_chain_pattern(seeds):
+        if len(seeds) < 2:
+            return {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+        try:
+            m_estimate = 2147483648
+            X = np.array([[seeds[i-1], 1] for i in range(1, len(seeds))])
+            Y = np.array([seeds[i] for i in range(1, len(seeds))])
+            coeffs, _, _, _ = np.linalg.lstsq(X, Y, rcond=None)
+            a, c = coeffs
+            lcg_pred = (a * seeds[-1] + c) % m_estimate
+            errors = [abs((a * seeds[i-1] + c) % m_estimate - seeds[i]) for i in range(1, len(seeds))]
+            lcg_error = np.mean(errors) if errors else float('inf')
+            return {'pred': lcg_pred, 'error': lcg_error, 'formula': f"S(n+1) = LCG mod {int(m_estimate)}"}
+        except:
+            return {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    
+    def modular_pattern(seeds):
+        if len(seeds) < 2:
+            return {'pred': None, 'error': float('inf'), 'formula': 'insufficient_data'}
+        try:
+            diffs = np.diff(seeds)
+            avg_diff = np.mean(diffs)
+            m_estimate = 2147483648
+            modular_pred = (seeds[-1] + avg_diff) % m_estimate
+            errors = [abs((seeds[i-1] + avg_diff) % m_estimate - seeds[i]) for i in range(1, len(seeds))]
+            modular_error = np.mean(errors)
+            return {'pred': modular_pred, 'error': modular_error, 'formula': "S(n+1) = (S(n) + const) mod m"}
+        except:
+            return {'pred': None, 'error': float('inf'), 'formula': 'failed'}
+    
+    # Pattern functions pentru CPU parallel
+    cpu_patterns = {
+        'exponential': exponential_pattern,
+        'fibonacci': fibonacci_pattern,
+        'lcg_chain': lcg_chain_pattern,
+        'modular': modular_pattern,
+        'const_ratio': lambda s: {'pred': s[-1] * (s[-1]/s[-2] if len(s) >= 2 and s[-2] != 0 else 1), 'error': 0, 'formula': 'ratio'} if len(s) >= 2 else {'pred': None, 'error': float('inf'), 'formula': 'insufficient'},
+    }
+    
+    # Rulare PARALLEL pe CPU
+    print(f"  💻 CPU patterns: {len(cpu_patterns)} în paralel...")
+    with Pool(processes=min(cpu_count(), len(cpu_patterns))) as pool:
+        results = pool.map(pattern_worker, [(name, func) for name, func in cpu_patterns.items()])
+        for pattern_name, pattern_result in results:
+            all_patterns[pattern_name] = pattern_result
+    
+    print(f"  ✅ Total patterns calculați: {len(all_patterns)}")
+    
+    # Selectare cel mai bun pattern
     if len(seeds) >= 3:
         try:
             A = np.array([[seeds[i-1], seeds[i-2]] for i in range(2, len(seeds))])
