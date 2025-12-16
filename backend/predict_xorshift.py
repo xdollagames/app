@@ -163,39 +163,47 @@ class XorshiftInvestigator:
     
     def run_investigation(self, start_year: int = 2010, end_year: int = 2025):
         """Rulează investigația completă"""
+        num_cores = cpu_count()
+        
         print(f"\n{'='*70}")
         print(f"  INVESTIGAȚIE XORSHIFT_SIMPLE - {self.lottery_type.upper()}")
         print(f"{'='*70}\n")
         
+        print(f"💻 CPU cores utilizate: {num_cores}")
         print(f"📊 Încărcare date pentru perioada {start_year}-{end_year}...")
         data = self.load_data(start_year, end_year)
         print(f"✅ {len(data)} extrageri încărcate\n")
         
-        print("🔍 Căutare seed-uri pentru fiecare extragere...")
+        print("🔍 Căutare seed-uri PARALLEL pe toate cores-urile...")
         print("(Aceasta poate dura câteva minute...)\n")
         
+        # Pregătește task-urile pentru multiprocessing
+        tasks = []
+        for i, entry in enumerate(data):
+            numbers = entry.get('numere', [])
+            if len(numbers) == self.config.numbers_to_draw:
+                tasks.append((i, numbers, self.config, 1000000))
+        
+        # Rulează parallel
         seeds_found = []
         draws_with_seeds = []
         
-        for i, entry in enumerate(data):
-            numbers = entry.get('numere', [])
-            date_str = entry.get('data', 'N/A')
-            
-            if len(numbers) != self.config.numbers_to_draw:
-                continue
-            
-            seed = self.find_seed_for_draw(numbers)
-            
-            if seed is not None:
-                seeds_found.append(seed)
-                draws_with_seeds.append({
-                    'date': date_str,
-                    'numbers': numbers,
-                    'seed': seed
-                })
+        with Pool(processes=num_cores) as pool:
+            results = []
+            for i, result in enumerate(pool.imap_unordered(find_seed_worker, tasks, chunksize=5)):
+                idx, seed = result
                 
-            if (i + 1) % 50 == 0:
-                print(f"  Procesate {i + 1}/{len(data)} extrageri... ({len(seeds_found)} seed-uri găsite)")
+                if seed is not None:
+                    seeds_found.append(seed)
+                    draws_with_seeds.append({
+                        'date': data[idx]['data'],
+                        'numbers': data[idx]['numere'],
+                        'seed': seed
+                    })
+                
+                # Progress update
+                if (i + 1) % 50 == 0 or (i + 1) == len(tasks):
+                    print(f"  Procesate {i + 1}/{len(tasks)} extrageri... ({len(seeds_found)} seed-uri găsite)")
         
         print(f"\n✅ Procesare completă!")
         print(f"📈 Seed-uri găsite: {len(seeds_found)}/{len(data)} ({100*len(seeds_found)/len(data):.1f}%)\n")
