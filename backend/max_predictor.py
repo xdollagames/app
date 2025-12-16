@@ -15,10 +15,14 @@ from datetime import datetime
 from typing import List, Dict, Optional
 import numpy as np
 from scipy.optimize import curve_fit
+import multiprocessing
 from multiprocessing import Pool, cpu_count
 import random
 import threading
 from queue import Queue
+
+# FIX MULTIPROCESSING: Forțează 'fork' method pentru a păstra environment variables
+multiprocessing.set_start_method('fork', force=True)
 
 # FIX: Setează LD_LIBRARY_PATH înainte de import CuPy
 # Asigură că toate child processes-urile găsesc librăriile CUDA
