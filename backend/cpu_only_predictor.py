@@ -497,39 +497,77 @@ class CPUOnlyPredictor:
                 err_str = f"{pd.get('error', 0):.2f}" if pd.get('error') != float('inf') else "∞"
                 print(f"    {pn:20s}: error={err_str}")
             
-            # Predicție
-            if pattern['predicted_seed']:
-                try:
-                    rng = create_rng(rng_name, pattern['predicted_seed'])
-                    
-                    # Suport COMPOSITE (Joker)
-                    if self.config.is_composite:
-                        nums = []
-                        for count, min_val, max_val in self.config.composite_parts:
-                            part = generate_numbers(rng, count, min_val, max_val)
-                            nums.extend(part)
-                    else:
-                        nums = generate_numbers(rng, self.config.numbers_to_draw, self.config.min_number, self.config.max_number)
-                    
+            # Predicție - GENEREAZĂ PENTRU TOATE PATTERN-URILE CU 100%!
+            if pattern.get('top_patterns'):
+                # Verifică dacă sunt multiple cu 100%
+                if len(pattern['top_patterns']) > 1:
                     print(f"\n  {'='*66}")
-                    print(f"  🎯 PREDICȚIE PENTRU URMĂTOAREA EXTRAGERE")
-                    print(f"  {'='*66}")
-                    print(f"  Seed prezis: {pattern['predicted_seed']:,}")
-                    print(f"  NUMERE PREZISE: {sorted(nums)}")
+                    print(f"  🎯 PREDICȚII ({len(pattern['top_patterns'])} PATTERN-URI PERFECTE)")
                     print(f"  {'='*66}\n")
                     
-                    predictions.append({
-                        'rng': rng_name,
-                        'success_rate': result['success_rate'],
-                        'pattern': pattern['pattern_type'],
-                        'formula': pattern['formula'],
-                        'confidence': pattern['confidence'],
-                        'seed': pattern['predicted_seed'],
-                        'numbers': sorted(nums),
-                        'top_patterns': pattern.get('top_patterns', [])
-                    })
-                except Exception as e:
-                    print(f"  ❌ Eroare predicție: {e}")
+                    for i, p in enumerate(pattern['top_patterns'], 1):
+                        try:
+                            rng = create_rng(rng_name, p['pred'])
+                            
+                            if self.config.is_composite:
+                                nums = []
+                                for count, min_val, max_val in self.config.composite_parts:
+                                    part = generate_numbers(rng, count, min_val, max_val)
+                                    nums.extend(part)
+                            else:
+                                nums = generate_numbers(rng, self.config.numbers_to_draw, self.config.min_number, self.config.max_number)
+                            
+                            print(f"  {i}. {p['name'].upper()}:")
+                            print(f"     Seed: {p['pred']:,}")
+                            print(f"     NUMERE: {sorted(nums)}")
+                            print()
+                            
+                            predictions.append({
+                                'rng': rng_name,
+                                'success_rate': result['success_rate'],
+                                'pattern': p['name'],
+                                'formula': p['formula'],
+                                'confidence': p['confidence'],
+                                'seed': p['pred'],
+                                'numbers': sorted(nums)
+                            })
+                        except Exception as e:
+                            print(f"  ❌ Eroare predicție {p['name']}: {e}")
+                    
+                    print(f"  {'='*66}\n")
+                
+                elif pattern['top_patterns']:
+                    # Un singur pattern
+                    p = pattern['top_patterns'][0]
+                    try:
+                        rng = create_rng(rng_name, p['pred'])
+                        
+                        if self.config.is_composite:
+                            nums = []
+                            for count, min_val, max_val in self.config.composite_parts:
+                                part = generate_numbers(rng, count, min_val, max_val)
+                                nums.extend(part)
+                        else:
+                            nums = generate_numbers(rng, self.config.numbers_to_draw, self.config.min_number, self.config.max_number)
+                        
+                        print(f"\n  {'='*66}")
+                        print(f"  🎯 PREDICȚIE PENTRU URMĂTOAREA EXTRAGERE")
+                        print(f"  {'='*66}")
+                        print(f"  Seed prezis: {p['pred']:,}")
+                        print(f"  NUMERE PREZISE: {sorted(nums)}")
+                        print(f"  {'='*66}\n")
+                        
+                        predictions.append({
+                            'rng': rng_name,
+                            'success_rate': result['success_rate'],
+                            'pattern': p['name'],
+                            'formula': p['formula'],
+                            'confidence': p['confidence'],
+                            'seed': p['pred'],
+                            'numbers': sorted(nums)
+                        })
+                    except Exception as e:
+                        print(f"  ❌ Eroare predicție: {e}")
         
         # Salvare
         if predictions:
