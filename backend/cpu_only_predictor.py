@@ -102,49 +102,36 @@ def try_reverse_engineering(rng_name, numbers, lottery_config):
 
 
 def cpu_worker(args):
-    """Worker CPU - random sampling DIFERIT la fiecare rulare (explorare mai bună)"""
-    draw_idx, numbers, rng_name, lottery_config, seed_range, base_search_size, num_extractions = args
+    """Worker CPU - EXHAUSTIVE search cu timeout pentru Mersenne"""
+    import time
+    
+    draw_idx, numbers, rng_name, lottery_config, seed_range, search_size_total, timeout_minutes = args
     target_sorted = sorted(numbers)
+    start_time = time.time()
     
-    # NU setăm random seed - fiecare rulare explorează diferit!
-    # Acest lucru permite găsirea de seeds diferite la rulări multiple
-    
-    # Încercăm REVERSE mai întâi
+    # Încercăm REVERSE mai întâi (INSTANT pentru LCG!)
     reversed_seed = try_reverse_engineering(rng_name, numbers, lottery_config)
     if reversed_seed is not None:
         return (draw_idx, reversed_seed)
     
-    # OPTIMIZARE ECHILIBRATĂ: reducere pentru viteză DAR suficient pentru acuratețe
-    # x5 pentru mai multe seeds găsite
+    # EXHAUSTIVE search - testează TOATE seeds-urile (sau până la timeout pentru Mersenne)
+    # Pentru Mersenne: TIMEOUT de 10 minute per extragere
+    timeout_seconds = timeout_minutes * 60 if rng_name == 'mersenne' else 99999999
     
-    import math
-    scale_factor = math.sqrt(max(1, num_extractions)) * 2
-    adjusted_search = int(base_search_size / scale_factor)
+    seeds_to_test = range(seed_range[0], min(seed_range[1], search_size_total))
     
-    # LIMITE ECHILIBRATE (x5 pentru acuratețe):
-    if num_extractions <= 3:
-        adjusted_search = min(adjusted_search, 5000000)  # 5M pentru 3 extrageri
-    elif num_extractions <= 5:
-        adjusted_search = min(adjusted_search, 10000000)  # 10M pentru 5
-    elif num_extractions <= 10:
-        adjusted_search = min(adjusted_search, 20000000)  # 20M pentru 10
-    
-    # MERSENNE - reducere dar x5 față de înainte
-    if rng_name == 'mersenne':
-        adjusted_search = min(100000, adjusted_search // 50)  # 100K pentru Mersenne
-    
-    # Minimum 50K seeds
-    actual_search_size = max(50000, adjusted_search)
-    
-    # Brute force
-    test_seeds = random.sample(range(seed_range[0], seed_range[1]), 
-                              min(actual_search_size, seed_range[1] - seed_range[0]))
-    
-    for seed in test_seeds:
+    for seed in seeds_to_test:
+        # Check timeout pentru Mersenne
+        if rng_name == 'mersenne':
+            elapsed = time.time() - start_time
+            if elapsed > timeout_seconds:
+                # Timeout - returnează None
+                return (draw_idx, None)
+        
         try:
             rng = create_rng(rng_name, seed)
             
-            # Check dacă e composite (Joker)
+            # Composite support
             if lottery_config.is_composite:
                 generated = []
                 for count, min_val, max_val in lottery_config.composite_parts:
