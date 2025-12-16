@@ -180,10 +180,12 @@ class XorshiftInvestigator:
         # Generare numere prezise
         predicted_seed = pattern_analysis['predicted_seed']
         if predicted_seed:
-            predicted_numbers = self.rng_lib.xorshift_simple(
-                predicted_seed,
-                self.config['numbers_to_draw'],
-                self.config['max_number']
+            rng = create_rng('xorshift_simple', predicted_seed)
+            predicted_numbers = generate_numbers(
+                rng,
+                self.config.numbers_to_draw,
+                self.config.min_number,
+                self.config.max_number
             )
         else:
             predicted_numbers = []
