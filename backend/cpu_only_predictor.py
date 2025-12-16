@@ -159,24 +159,24 @@ def cpu_worker_chunked(args):
         if seed_chunk_start <= cached_result < seed_chunk_end:
             try:
                 rng = create_rng(rng_name, cached_result)
-            if lottery_config.is_composite:
-                generated = []
-                for part_idx, (count, min_val, max_val) in enumerate(lottery_config.composite_parts):
-                    part = generate_numbers(rng, count, min_val, max_val)
-                    # Evită duplicate pentru joker
-                    if part_idx > 0:
-                        attempts = 0
-                        while any(num in generated for num in part) and attempts < 100:
-                            part = generate_numbers(rng, count, min_val, max_val)
-                            attempts += 1
-                    generated.extend(part)
-            else:
-                generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
-            
-            if sorted(generated) == target_sorted:
-                return (draw_idx, cached_seed, True)
-        except:
-            pass
+                if lottery_config.is_composite:
+                    generated = []
+                    for part_idx, (count, min_val, max_val) in enumerate(lottery_config.composite_parts):
+                        part = generate_numbers(rng, count, min_val, max_val)
+                        # Evită duplicate pentru joker
+                        if part_idx > 0:
+                            attempts = 0
+                            while any(num in generated for num in part) and attempts < 100:
+                                part = generate_numbers(rng, count, min_val, max_val)
+                                attempts += 1
+                        generated.extend(part)
+                else:
+                    generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
+                
+                if sorted(generated) == target_sorted:
+                    return (draw_idx, cached_result, True)
+            except:
+                pass
     
     # Reverse engineering (doar dacă chunk-ul e primul)
     if seed_chunk_start == 0:
