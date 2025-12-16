@@ -58,10 +58,15 @@ def initialize_gpu():
         import numpy as cp
         return False
 
-# GPU Kernels pentru RNG-uri simple
+# GPU Kernels pentru RNG-uri simple - SE CREEAZĂ DOAR DUPĂ initialize_gpu()
 GPU_RNG_KERNELS = {}
 
-if GPU_AVAILABLE:
+def setup_gpu_kernels():
+    """Setup GPU kernels - apelat DOAR după initialize_gpu()"""
+    global GPU_RNG_KERNELS, GPU_SUPPORTED_RNGS
+    
+    if not GPU_AVAILABLE:
+        return
     # Kernel pentru xorshift_simple
     GPU_RNG_KERNELS['xorshift_simple'] = cp.RawKernel(r'''
     extern "C" __global__
