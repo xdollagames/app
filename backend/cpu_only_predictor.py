@@ -143,7 +143,7 @@ def cpu_worker_chunked(args):
     """Worker CPU - procesează un CHUNK de seeds pentru o extragere"""
     import time
     
-    draw_idx, numbers, rng_name, lottery_config, seed_chunk_start, seed_chunk_end, timeout_minutes, lottery_type, date_str = args
+    draw_idx, numbers, rng_name, lottery_config, seed_chunk_start, seed_chunk_end, timeout_minutes, lottery_type, date_str, seed_range_tuple = args
     target_sorted = sorted(numbers)
     start_time = time.time()
     
