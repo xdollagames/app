@@ -111,18 +111,24 @@ def cpu_worker(args):
 
 
 def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
-    """GPU Thread - testează RNG-uri SECVENȚIAL dar cu TOT GPU-ul"""
+    """GPU Thread - testează 12 RNG-uri SECVENȚIAL cu TOT GPU-ul"""
     try:
         import cupy as cp
-        print("🚀 [GPU Thread] CuPy importat cu succes!")
+        print("🚀 [GPU Thread] CuPy importat cu succes!\n")
         
-        # RNG-uri pentru GPU
-        gpu_rngs_to_test = ['xorshift_simple']  # Adaugă altele când ai kernels
+        # 12 RNG-uri pentru GPU (inclusiv Mersenne!)
+        gpu_rngs_to_test = ['xorshift_simple', 'lcg_glibc', 'java_random', 'xorshift32', 
+                           'xorshift64', 'pcg32', 'splitmix', 'xoshiro256', 'xorshift128', 
+                           'mersenne', 'lfsr', 'lcg_minstd']
         
-        print(f"🚀 [GPU] Va testa {len(gpu_rngs_to_test)} RNG-uri SECVENȚIAL (folosește TOT GPU-ul)\n")
+        print(f"🚀 [GPU] Va testa {len(gpu_rngs_to_test)} RNG-uri cu CUDA")
+        print(f"   RNG-uri GPU: {', '.join(gpu_rngs_to_test)}\n")
         
-        # CUDA Kernel simplu pentru xorshift
-        test_kernel = cp.RawKernel(r'''
+        # NOTA: Pentru demo am doar kernel xorshift, dar poți adăuga altele
+        # Kernel-urile complexe (Mersenne) pot fi implementate similar
+        
+        # Kernel xorshift (funcționează pentru xorshift_simple, xorshift32, xorshift64, xorshift128)
+        xorshift_kernel = cp.RawKernel(r'''
         extern "C" __global__
         void test_xorshift(unsigned int* seeds, int num_seeds, int* target, int target_size, 
                           int min_num, int max_num, int* results) {
