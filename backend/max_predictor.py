@@ -17,6 +17,16 @@ from scipy.optimize import curve_fit
 from multiprocessing import Pool, cpu_count
 import random
 
+# Check GPU availability
+try:
+    import cupy as cp
+    GPU_AVAILABLE = True
+    print("✅ GPU detectat! Se va folosi accelerare CUDA")
+except ImportError:
+    GPU_AVAILABLE = False
+    print("⚠️  CuPy nu e instalat. Se va folosi CPU multicore")
+    import numpy as cp
+
 # GPU Kernels pentru RNG-uri simple
 GPU_RNG_KERNELS = {}
 
