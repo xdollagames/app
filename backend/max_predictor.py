@@ -1570,13 +1570,13 @@ def analyze_all_patterns_parallel_gpu(seeds: List[int]) -> Dict:
             'hash_avalanche': hash_avalanche_p,
         }
         
-        # Rulare PARALLEL pe CPU (în interiorul thread-ului)
+        # Rulare CPU patterns - SECVENȚIAL (nu multiprocessing pentru a evita probleme GPU)
         cpu_patterns = {}
-        with Pool(processes=min(cpu_count(), len(cpu_pattern_funcs))) as pool:
-            tasks = [(name, func) for name, func in cpu_pattern_funcs.items()]
-            results = pool.starmap(lambda n, f: (n, f()), tasks)
-            for pattern_name, pattern_result in results:
-                cpu_patterns[pattern_name] = pattern_result
+        for pattern_name, pattern_func in cpu_pattern_funcs.items():
+            try:
+                cpu_patterns[pattern_name] = pattern_func()
+            except:
+                cpu_patterns[pattern_name] = {'pred': None, 'error': float('inf'), 'formula': 'error'}
         
         pattern_queue.put(('cpu', cpu_patterns))
     
