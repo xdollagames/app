@@ -360,7 +360,11 @@ class CPUOnlyPredictor:
         rng_results = {}
         
         for idx, rng_name in enumerate(RNG_TYPES.keys(), 1):
-            print(f"[{idx}/21] 💻 {rng_name.upper()}")
+            # Afișare cu warning pentru Mersenne
+            if rng_name == 'mersenne':
+                print(f"[{idx}/21] 💻 {rng_name.upper()} (⚠️  LENT - doar 50K seeds)")
+            else:
+                print(f"[{idx}/21] 💻 {rng_name.upper()}")
             
             tasks = [(i, e['numere'], rng_name, self.config, seed_range, search_size) 
                     for i, e in enumerate(data) if len(e['numere']) == self.config.numbers_to_draw]
