@@ -2020,6 +2020,17 @@ class MaxPredictor:
 if __name__ == "__main__":
     import argparse
     
+    # INIȚIALIZARE GPU înainte de orice altceva!
+    print("\n" + "="*70)
+    print("  INIȚIALIZARE GPU + KERNELS")
+    print("="*70 + "\n")
+    
+    gpu_ok = initialize_gpu()
+    if gpu_ok:
+        setup_gpu_kernels()
+    
+    print()
+    
     parser = argparse.ArgumentParser(description='ULTIMATE MAX Predictor - ZERO compromisuri')
     parser.add_argument('--lottery', default='5-40', choices=['5-40', '6-49', 'joker'])
     parser.add_argument('--last-n', type=int, help='Ultimele N extrageri')
