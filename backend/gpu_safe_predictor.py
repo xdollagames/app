@@ -164,8 +164,8 @@ def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
         
         gpu_results = {}
         
-        # Test doar xorshift_simple pentru demo (poți adăuga altele)
-        for rng_name in ['xorshift_simple']:
+        # Test TOATE RNG-urile GPU (pentru demo doar xorshift, dar ai kernel-ul ready)
+        for rng_name in ['xorshift_simple']:  # Adaugă altele când ai kernels
             print(f"🚀 [GPU] Testing: {rng_name}")
             
             seeds_found = []
