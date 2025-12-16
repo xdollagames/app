@@ -111,15 +111,18 @@ def cpu_worker(args):
 
 
 def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
-    """GPU Thread - Import CuPy AICI, testează RNG-uri cu GPU batching"""
+    """GPU Thread - Import CuPy AICI, testează MULTIPLE RNG-uri cu GPU"""
     try:
         import cupy as cp
         print("🚀 [GPU Thread] CuPy importat cu succes!")
         
-        # Lista RNG-uri simple pentru GPU
-        gpu_rngs = ['xorshift_simple', 'lcg_glibc', 'java_random', 'xorshift32', 'xorshift64']
+        # RNG-uri simple pentru GPU - TOATE cu kernels
+        gpu_rngs_to_test = ['xorshift_simple', 'lcg_glibc', 'java_random', 'xorshift32', 
+                           'xorshift64', 'pcg32', 'splitmix', 'xoshiro256', 'xorshift128', 'lfsr']
         
-        # CUDA Kernel simplu pentru testare rapidă
+        print(f"🚀 [GPU] Va testa {len(gpu_rngs_to_test)} RNG-uri cu CUDA batching")
+        
+        # CUDA Kernel simplu pentru testare rapidă - xorshift
         test_kernel = cp.RawKernel(r'''
         extern "C" __global__
         void test_xorshift(unsigned int* seeds, int num_seeds, int* target, int target_size, 
