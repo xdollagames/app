@@ -237,32 +237,31 @@ def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
 
 
 def cpu_multiprocessing_worker(data, lottery_config, seed_range, search_size, min_success_rate, results_queue):
-    """CPU Thread - testează TOATE RNG-urile CPU PARALEL (nu secvențial!)"""
-    # Rezervăm 3-4 cores pentru GPU thread
-    num_cores = max(1, cpu_count() - 4)
+    """CPU Thread - testează RNG-uri SECVENȚIAL cu TOATE cores-urile (multiprocessing spawn)"""
+    num_cores = cpu_count()
     
-    print(f"💻 [CPU] Folosește {num_cores} cores (lasă 4 pentru GPU thread)")
+    print(f"💻 [CPU Thread] Folosește TOATE cele {num_cores} cores")
     
-    # RNG-uri CPU (exclude cele de pe GPU)
-    cpu_rngs = [r for r in RNG_TYPES.keys() if r not in ['xorshift_simple', 'lcg_glibc', 'java_random', 
-                                                           'xorshift32', 'xorshift64', 'pcg32', 
-                                                           'splitmix', 'xoshiro256', 'xorshift128', 'lfsr']]
+    # RNG-uri CPU (exclude cele testate pe GPU)
+    cpu_rngs = [r for r in RNG_TYPES.keys() if r != 'xorshift_simple']
     
-    print(f"💻 [CPU] Va testa {len(cpu_rngs)} RNG-uri PARALEL\n")
+    print(f"💻 [CPU] Va testa {len(cpu_rngs)} RNG-uri SECVENȚIAL (fiecare cu {num_cores} cores)\n")
     
-    def test_one_rng(rng_name):
-        """Testează UN RNG pe toate extragerile"""
+    cpu_results = {}
+    
+    for rng_name in cpu_rngs:
+        print(f"💻 [CPU] Testing: {rng_name.upper()}")
+        
         tasks = [(i, e['numere'], rng_name, lottery_config, seed_range, search_size) 
                 for i, e in enumerate(data) if len(e['numere']) == lottery_config.numbers_to_draw]
         
         seeds_found = []
         draws_with_seeds = []
         
-        # Sub-pool pentru acest RNG (împarte cores-urile disponibile)
-        cores_per_rng = max(1, num_cores // len(cpu_rngs))
-        
-        with Pool(processes=cores_per_rng) as pool:
-            for idx_task, seed in pool.imap_unordered(cpu_worker, tasks):
+        # Folosește TOATE cores-urile pentru acest RNG
+        with Pool(processes=num_cores) as pool:
+            for i, result in enumerate(pool.imap_unordered(cpu_worker, tasks)):
+                idx_task, seed = result
                 if seed is not None:
                     seeds_found.append(seed)
                     draws_with_seeds.append({
@@ -271,35 +270,27 @@ def cpu_multiprocessing_worker(data, lottery_config, seed_range, search_size, mi
                         'numbers': data[idx_task]['numere'],
                         'seed': seed
                     })
+                
+                if (i + 1) % 2 == 0 or (i + 1) == len(tasks):
+                    progress = 100 * (i + 1) / len(tasks)
+                    print(f"  [{i+1}/{len(tasks)}] ({progress:.1f}%)... {len(seeds_found)} seeds găsite", end='\r')
         
         success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
+        print(f"\n✅ [CPU] {rng_name}: {len(seeds_found)}/{len(data)} ({success_rate:.1%})")
         
         if success_rate >= min_success_rate:
+            print(f"  ✅ Peste threshold {min_success_rate:.1%}!")
             draws_with_seeds.sort(key=lambda x: x['idx'])
             seeds_found = [d['seed'] for d in draws_with_seeds]
-            return (rng_name, {
+            cpu_results[rng_name] = {
                 'seeds': seeds_found,
                 'draws': draws_with_seeds,
                 'success_rate': success_rate
-            })
+            }
+        else:
+            print(f"  ❌ Sub threshold ({success_rate:.1%} < {min_success_rate:.1%})")
         
-        return (rng_name, None)
-    
-    # Testează TOATE RNG-urile PARALEL cu ThreadPool
-    from concurrent.futures import ThreadPoolExecutor
-    
-    cpu_results = {}
-    
-    with ThreadPoolExecutor(max_workers=len(cpu_rngs)) as executor:
-        futures = {executor.submit(test_one_rng, rng): rng for rng in cpu_rngs}
-        
-        for future in futures:
-            rng_name, result = future.result()
-            if result:
-                print(f"✅ [CPU] {rng_name}: {len(result['seeds'])}/{len(data)} ({result['success_rate']:.1%})")
-                cpu_results[rng_name] = result
-            else:
-                print(f"❌ [CPU] {rng_name}: < 66%")
+        print()
     
     results_queue.put(('cpu', cpu_results))
 
