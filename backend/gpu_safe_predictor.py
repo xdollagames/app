@@ -781,7 +781,18 @@ class GPUSafePredictor:
         predictions = []
         
         for rng_name, result in sorted(rng_results.items(), key=lambda x: x[1]['success_rate'], reverse=True):
-            print(f"\n{rng_name.upper()} ({result['success_rate']:.1%}):")
+            print(f"\n{'='*70}")
+            print(f"{rng_name.upper()} ({result['success_rate']:.1%}):")
+            print(f"{'='*70}")
+            
+            # VERIFICARE ORDINE SEEDS
+            print(f"\n  📋 Seeds găsite (ordine cronologică):")
+            for i, draw in enumerate(result['draws'][:5]):  # Primele 5
+                print(f"    {i+1}. {draw['date']:15s} → seed: {draw['seed']:>10,}")
+            if len(result['draws']) > 5:
+                print(f"    ... (+{len(result['draws'])-5} seeds)")
+            print(f"    → Ultimul seed (cel mai nou): {result['seeds'][-1]:,}")
+            print(f"    → Pattern-urile vor prezice: seed #{len(result['seeds'])+1}\n")
             
             pattern = analyze_patterns_parallel_gpu_cpu(result['seeds'])
             
