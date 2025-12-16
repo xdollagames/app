@@ -1,0 +1,4133 @@
+{
+  "lottery_type": "joker",
+  "lottery_name": "Joker",
+  "config": {
+    "numbers_to_draw": 6,
+    "min_number": 1,
+    "max_number": 45,
+    "is_composite": true
+  },
+  "total_draws": 98,
+  "years": [
+    2025
+  ],
+  "extracted_at": "2025-12-16T18:36:43.725891",
+  "draws": [
+    {
+      "date": "2025-01-05",
+      "date_str": "Du,  5 ianuarie 2025",
+      "numbers": [
+        45,
+        16,
+        9,
+        5,
+        39,
+        8
+      ],
+      "numbers_sorted": [
+        5,
+        8,
+        9,
+        16,
+        39,
+        45
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            45,
+            16,
+            9,
+            5,
+            39
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            8
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-01-09",
+      "date_str": "Jo,  9 ianuarie 2025",
+      "numbers": [
+        39,
+        29,
+        44,
+        5,
+        34,
+        14
+      ],
+      "numbers_sorted": [
+        5,
+        14,
+        29,
+        34,
+        39,
+        44
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            39,
+            29,
+            44,
+            5,
+            34
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            14
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-01-12",
+      "date_str": "Du, 12 ianuarie 2025",
+      "numbers": [
+        41,
+        44,
+        33,
+        23,
+        17,
+        2
+      ],
+      "numbers_sorted": [
+        2,
+        17,
+        23,
+        33,
+        41,
+        44
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            41,
+            44,
+            33,
+            23,
+            17
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            2
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-01-16",
+      "date_str": "Jo, 16 ianuarie 2025",
+      "numbers": [
+        8,
+        42,
+        33,
+        34,
+        16,
+        6
+      ],
+      "numbers_sorted": [
+        6,
+        8,
+        16,
+        33,
+        34,
+        42
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            8,
+            42,
+            33,
+            34,
+            16
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            6
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-01-19",
+      "date_str": "Du, 19 ianuarie 2025",
+      "numbers": [
+        36,
+        10,
+        33,
+        43,
+        31,
+        5
+      ],
+      "numbers_sorted": [
+        5,
+        10,
+        31,
+        33,
+        36,
+        43
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            36,
+            10,
+            33,
+            43,
+            31
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            5
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-01-23",
+      "date_str": "Jo, 23 ianuarie 2025",
+      "numbers": [
+        2,
+        31,
+        29,
+        33,
+        1,
+        15
+      ],
+      "numbers_sorted": [
+        1,
+        2,
+        15,
+        29,
+        31,
+        33
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            2,
+            31,
+            29,
+            33,
+            1
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            15
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-01-26",
+      "date_str": "Du, 26 ianuarie 2025",
+      "numbers": [
+        26,
+        4,
+        2,
+        32,
+        28,
+        6
+      ],
+      "numbers_sorted": [
+        2,
+        4,
+        6,
+        26,
+        28,
+        32
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            26,
+            4,
+            2,
+            32,
+            28
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            6
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-01-30",
+      "date_str": "Jo, 30 ianuarie 2025",
+      "numbers": [
+        14,
+        24,
+        30,
+        18,
+        37,
+        8
+      ],
+      "numbers_sorted": [
+        8,
+        14,
+        18,
+        24,
+        30,
+        37
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            14,
+            24,
+            30,
+            18,
+            37
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            8
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-02-02",
+      "date_str": "Du,  2 februarie 2025",
+      "numbers": [
+        15,
+        22,
+        44,
+        27,
+        3,
+        17
+      ],
+      "numbers_sorted": [
+        3,
+        15,
+        17,
+        22,
+        27,
+        44
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            15,
+            22,
+            44,
+            27,
+            3
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            17
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-02-06",
+      "date_str": "Jo,  6 februarie 2025",
+      "numbers": [
+        16,
+        45,
+        9,
+        6,
+        19,
+        7
+      ],
+      "numbers_sorted": [
+        6,
+        7,
+        9,
+        16,
+        19,
+        45
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            16,
+            45,
+            9,
+            6,
+            19
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            7
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-02-09",
+      "date_str": "Du,  9 februarie 2025",
+      "numbers": [
+        36,
+        10,
+        4,
+        30,
+        9,
+        10
+      ],
+      "numbers_sorted": [
+        4,
+        9,
+        10,
+        10,
+        30,
+        36
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            36,
+            10,
+            4,
+            30,
+            9
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            10
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-02-13",
+      "date_str": "Jo, 13 februarie 2025",
+      "numbers": [
+        18,
+        6,
+        28,
+        23,
+        45,
+        14
+      ],
+      "numbers_sorted": [
+        6,
+        14,
+        18,
+        23,
+        28,
+        45
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            18,
+            6,
+            28,
+            23,
+            45
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            14
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-02-16",
+      "date_str": "Du, 16 februarie 2025",
+      "numbers": [
+        32,
+        10,
+        5,
+        28,
+        33,
+        16
+      ],
+      "numbers_sorted": [
+        5,
+        10,
+        16,
+        28,
+        32,
+        33
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            32,
+            10,
+            5,
+            28,
+            33
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            16
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-02-20",
+      "date_str": "Jo, 20 februarie 2025",
+      "numbers": [
+        6,
+        29,
+        16,
+        7,
+        33,
+        10
+      ],
+      "numbers_sorted": [
+        6,
+        7,
+        10,
+        16,
+        29,
+        33
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            6,
+            29,
+            16,
+            7,
+            33
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            10
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-02-23",
+      "date_str": "Du, 23 februarie 2025",
+      "numbers": [
+        42,
+        14,
+        6,
+        44,
+        40,
+        9
+      ],
+      "numbers_sorted": [
+        6,
+        9,
+        14,
+        40,
+        42,
+        44
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            42,
+            14,
+            6,
+            44,
+            40
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            9
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-02-27",
+      "date_str": "Jo, 27 februarie 2025",
+      "numbers": [
+        8,
+        23,
+        30,
+        38,
+        32,
+        7
+      ],
+      "numbers_sorted": [
+        7,
+        8,
+        23,
+        30,
+        32,
+        38
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            8,
+            23,
+            30,
+            38,
+            32
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            7
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-03-02",
+      "date_str": "Du,  2 martie 2025",
+      "numbers": [
+        31,
+        41,
+        29,
+        5,
+        21,
+        19
+      ],
+      "numbers_sorted": [
+        5,
+        19,
+        21,
+        29,
+        31,
+        41
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            31,
+            41,
+            29,
+            5,
+            21
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            19
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-03-06",
+      "date_str": "Jo,  6 martie 2025",
+      "numbers": [
+        33,
+        3,
+        41,
+        38,
+        37,
+        19
+      ],
+      "numbers_sorted": [
+        3,
+        19,
+        33,
+        37,
+        38,
+        41
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            33,
+            3,
+            41,
+            38,
+            37
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            19
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-03-09",
+      "date_str": "Du,  9 martie 2025",
+      "numbers": [
+        42,
+        40,
+        37,
+        10,
+        19,
+        19
+      ],
+      "numbers_sorted": [
+        10,
+        19,
+        19,
+        37,
+        40,
+        42
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            42,
+            40,
+            37,
+            10,
+            19
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            19
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-03-13",
+      "date_str": "Jo, 13 martie 2025",
+      "numbers": [
+        31,
+        13,
+        8,
+        17,
+        15,
+        8
+      ],
+      "numbers_sorted": [
+        8,
+        8,
+        13,
+        15,
+        17,
+        31
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            31,
+            13,
+            8,
+            17,
+            15
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            8
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-03-16",
+      "date_str": "Du, 16 martie 2025",
+      "numbers": [
+        23,
+        6,
+        5,
+        3,
+        8,
+        7
+      ],
+      "numbers_sorted": [
+        3,
+        5,
+        6,
+        7,
+        8,
+        23
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            23,
+            6,
+            5,
+            3,
+            8
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            7
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-03-20",
+      "date_str": "Jo, 20 martie 2025",
+      "numbers": [
+        36,
+        28,
+        29,
+        10,
+        20,
+        20
+      ],
+      "numbers_sorted": [
+        10,
+        20,
+        20,
+        28,
+        29,
+        36
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            36,
+            28,
+            29,
+            10,
+            20
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            20
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-03-23",
+      "date_str": "Du, 23 martie 2025",
+      "numbers": [
+        13,
+        5,
+        43,
+        41,
+        18,
+        1
+      ],
+      "numbers_sorted": [
+        1,
+        5,
+        13,
+        18,
+        41,
+        43
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            13,
+            5,
+            43,
+            41,
+            18
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            1
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-03-27",
+      "date_str": "Jo, 27 martie 2025",
+      "numbers": [
+        44,
+        26,
+        32,
+        36,
+        14,
+        5
+      ],
+      "numbers_sorted": [
+        5,
+        14,
+        26,
+        32,
+        36,
+        44
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            44,
+            26,
+            32,
+            36,
+            14
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            5
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-03-30",
+      "date_str": "Du, 30 martie 2025",
+      "numbers": [
+        35,
+        5,
+        22,
+        4,
+        16,
+        1
+      ],
+      "numbers_sorted": [
+        1,
+        4,
+        5,
+        16,
+        22,
+        35
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            35,
+            5,
+            22,
+            4,
+            16
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            1
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-04-03",
+      "date_str": "Jo,  3 aprilie 2025",
+      "numbers": [
+        44,
+        15,
+        40,
+        37,
+        18,
+        3
+      ],
+      "numbers_sorted": [
+        3,
+        15,
+        18,
+        37,
+        40,
+        44
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            44,
+            15,
+            40,
+            37,
+            18
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            3
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-04-06",
+      "date_str": "Du,  6 aprilie 2025",
+      "numbers": [
+        13,
+        43,
+        35,
+        21,
+        33,
+        17
+      ],
+      "numbers_sorted": [
+        13,
+        17,
+        21,
+        33,
+        35,
+        43
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            13,
+            43,
+            35,
+            21,
+            33
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            17
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-04-10",
+      "date_str": "Jo, 10 aprilie 2025",
+      "numbers": [
+        37,
+        29,
+        12,
+        11,
+        7,
+        8
+      ],
+      "numbers_sorted": [
+        7,
+        8,
+        11,
+        12,
+        29,
+        37
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            37,
+            29,
+            12,
+            11,
+            7
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            8
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-04-13",
+      "date_str": "Du, 13 aprilie 2025",
+      "numbers": [
+        16,
+        40,
+        18,
+        32,
+        29,
+        8
+      ],
+      "numbers_sorted": [
+        8,
+        16,
+        18,
+        29,
+        32,
+        40
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            16,
+            40,
+            18,
+            32,
+            29
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            8
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-04-19",
+      "date_str": "Sb, 19 aprilie 2025",
+      "numbers": [
+        18,
+        28,
+        10,
+        37,
+        6,
+        17
+      ],
+      "numbers_sorted": [
+        6,
+        10,
+        17,
+        18,
+        28,
+        37
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            18,
+            28,
+            10,
+            37,
+            6
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            17
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-04-24",
+      "date_str": "Jo, 24 aprilie 2025",
+      "numbers": [
+        34,
+        18,
+        4,
+        27,
+        41,
+        18
+      ],
+      "numbers_sorted": [
+        4,
+        18,
+        18,
+        27,
+        34,
+        41
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            34,
+            18,
+            4,
+            27,
+            41
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            18
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-04-27",
+      "date_str": "Du, 27 aprilie 2025",
+      "numbers": [
+        6,
+        28,
+        43,
+        37,
+        15,
+        18
+      ],
+      "numbers_sorted": [
+        6,
+        15,
+        18,
+        28,
+        37,
+        43
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            6,
+            28,
+            43,
+            37,
+            15
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            18
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-05-01",
+      "date_str": "Jo,  1 mai 2025",
+      "numbers": [
+        18,
+        40,
+        8,
+        14,
+        28,
+        20
+      ],
+      "numbers_sorted": [
+        8,
+        14,
+        18,
+        20,
+        28,
+        40
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            18,
+            40,
+            8,
+            14,
+            28
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            20
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-05-04",
+      "date_str": "Du,  4 mai 2025",
+      "numbers": [
+        24,
+        35,
+        21,
+        5,
+        45,
+        11
+      ],
+      "numbers_sorted": [
+        5,
+        11,
+        21,
+        24,
+        35,
+        45
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            24,
+            35,
+            21,
+            5,
+            45
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            11
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-05-08",
+      "date_str": "Jo,  8 mai 2025",
+      "numbers": [
+        2,
+        19,
+        1,
+        37,
+        27,
+        12
+      ],
+      "numbers_sorted": [
+        1,
+        2,
+        12,
+        19,
+        27,
+        37
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            2,
+            19,
+            1,
+            37,
+            27
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            12
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-05-11",
+      "date_str": "Du, 11 mai 2025",
+      "numbers": [
+        43,
+        39,
+        35,
+        38,
+        31,
+        1
+      ],
+      "numbers_sorted": [
+        1,
+        31,
+        35,
+        38,
+        39,
+        43
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            43,
+            39,
+            35,
+            38,
+            31
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            1
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-05-15",
+      "date_str": "Jo, 15 mai 2025",
+      "numbers": [
+        44,
+        9,
+        26,
+        3,
+        2,
+        12
+      ],
+      "numbers_sorted": [
+        2,
+        3,
+        9,
+        12,
+        26,
+        44
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            44,
+            9,
+            26,
+            3,
+            2
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            12
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-05-18",
+      "date_str": "Du, 18 mai 2025",
+      "numbers": [
+        30,
+        26,
+        44,
+        3,
+        27,
+        13
+      ],
+      "numbers_sorted": [
+        3,
+        13,
+        26,
+        27,
+        30,
+        44
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            30,
+            26,
+            44,
+            3,
+            27
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            13
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-05-22",
+      "date_str": "Jo, 22 mai 2025",
+      "numbers": [
+        25,
+        32,
+        1,
+        28,
+        30,
+        4
+      ],
+      "numbers_sorted": [
+        1,
+        4,
+        25,
+        28,
+        30,
+        32
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            25,
+            32,
+            1,
+            28,
+            30
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            4
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-05-25",
+      "date_str": "Du, 25 mai 2025",
+      "numbers": [
+        19,
+        34,
+        12,
+        15,
+        11,
+        10
+      ],
+      "numbers_sorted": [
+        10,
+        11,
+        12,
+        15,
+        19,
+        34
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            19,
+            34,
+            12,
+            15,
+            11
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            10
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-05-29",
+      "date_str": "Jo, 29 mai 2025",
+      "numbers": [
+        25,
+        31,
+        28,
+        29,
+        7,
+        20
+      ],
+      "numbers_sorted": [
+        7,
+        20,
+        25,
+        28,
+        29,
+        31
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            25,
+            31,
+            28,
+            29,
+            7
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            20
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-06-01",
+      "date_str": "Du,  1 iunie 2025",
+      "numbers": [
+        41,
+        24,
+        36,
+        28,
+        10,
+        4
+      ],
+      "numbers_sorted": [
+        4,
+        10,
+        24,
+        28,
+        36,
+        41
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            41,
+            24,
+            36,
+            28,
+            10
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            4
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-06-05",
+      "date_str": "Jo,  5 iunie 2025",
+      "numbers": [
+        26,
+        7,
+        15,
+        35,
+        40,
+        11
+      ],
+      "numbers_sorted": [
+        7,
+        11,
+        15,
+        26,
+        35,
+        40
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            26,
+            7,
+            15,
+            35,
+            40
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            11
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-06-08",
+      "date_str": "Du,  8 iunie 2025",
+      "numbers": [
+        29,
+        44,
+        8,
+        7,
+        12,
+        15
+      ],
+      "numbers_sorted": [
+        7,
+        8,
+        12,
+        15,
+        29,
+        44
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            29,
+            44,
+            8,
+            7,
+            12
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            15
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-06-12",
+      "date_str": "Jo, 12 iunie 2025",
+      "numbers": [
+        41,
+        24,
+        19,
+        27,
+        14,
+        14
+      ],
+      "numbers_sorted": [
+        14,
+        14,
+        19,
+        24,
+        27,
+        41
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            41,
+            24,
+            19,
+            27,
+            14
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            14
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-06-15",
+      "date_str": "Du, 15 iunie 2025",
+      "numbers": [
+        43,
+        27,
+        4,
+        30,
+        13,
+        4
+      ],
+      "numbers_sorted": [
+        4,
+        4,
+        13,
+        27,
+        30,
+        43
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            43,
+            27,
+            4,
+            30,
+            13
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            4
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-06-19",
+      "date_str": "Jo, 19 iunie 2025",
+      "numbers": [
+        44,
+        38,
+        29,
+        24,
+        9,
+        4
+      ],
+      "numbers_sorted": [
+        4,
+        9,
+        24,
+        29,
+        38,
+        44
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            44,
+            38,
+            29,
+            24,
+            9
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            4
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-06-22",
+      "date_str": "Du, 22 iunie 2025",
+      "numbers": [
+        10,
+        16,
+        42,
+        22,
+        38,
+        16
+      ],
+      "numbers_sorted": [
+        10,
+        16,
+        16,
+        22,
+        38,
+        42
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            10,
+            16,
+            42,
+            22,
+            38
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            16
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-06-26",
+      "date_str": "Jo, 26 iunie 2025",
+      "numbers": [
+        45,
+        40,
+        12,
+        7,
+        31,
+        13
+      ],
+      "numbers_sorted": [
+        7,
+        12,
+        13,
+        31,
+        40,
+        45
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            45,
+            40,
+            12,
+            7,
+            31
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            13
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-06-29",
+      "date_str": "Du, 29 iunie 2025",
+      "numbers": [
+        16,
+        26,
+        35,
+        18,
+        21,
+        19
+      ],
+      "numbers_sorted": [
+        16,
+        18,
+        19,
+        21,
+        26,
+        35
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            16,
+            26,
+            35,
+            18,
+            21
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            19
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-07-03",
+      "date_str": "Jo,  3 iulie 2025",
+      "numbers": [
+        38,
+        35,
+        3,
+        28,
+        21,
+        13
+      ],
+      "numbers_sorted": [
+        3,
+        13,
+        21,
+        28,
+        35,
+        38
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            38,
+            35,
+            3,
+            28,
+            21
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            13
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-07-06",
+      "date_str": "Du,  6 iulie 2025",
+      "numbers": [
+        45,
+        42,
+        14,
+        26,
+        4,
+        4
+      ],
+      "numbers_sorted": [
+        4,
+        4,
+        14,
+        26,
+        42,
+        45
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            45,
+            42,
+            14,
+            26,
+            4
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            4
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-07-10",
+      "date_str": "Jo, 10 iulie 2025",
+      "numbers": [
+        34,
+        24,
+        39,
+        11,
+        36,
+        1
+      ],
+      "numbers_sorted": [
+        1,
+        11,
+        24,
+        34,
+        36,
+        39
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            34,
+            24,
+            39,
+            11,
+            36
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            1
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-07-13",
+      "date_str": "Du, 13 iulie 2025",
+      "numbers": [
+        18,
+        17,
+        24,
+        42,
+        39,
+        9
+      ],
+      "numbers_sorted": [
+        9,
+        17,
+        18,
+        24,
+        39,
+        42
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            18,
+            17,
+            24,
+            42,
+            39
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            9
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-07-17",
+      "date_str": "Jo, 17 iulie 2025",
+      "numbers": [
+        45,
+        13,
+        15,
+        6,
+        18,
+        4
+      ],
+      "numbers_sorted": [
+        4,
+        6,
+        13,
+        15,
+        18,
+        45
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            45,
+            13,
+            15,
+            6,
+            18
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            4
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-07-20",
+      "date_str": "Du, 20 iulie 2025",
+      "numbers": [
+        7,
+        24,
+        29,
+        1,
+        33,
+        13
+      ],
+      "numbers_sorted": [
+        1,
+        7,
+        13,
+        24,
+        29,
+        33
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            7,
+            24,
+            29,
+            1,
+            33
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            13
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-07-24",
+      "date_str": "Jo, 24 iulie 2025",
+      "numbers": [
+        2,
+        21,
+        15,
+        23,
+        1,
+        18
+      ],
+      "numbers_sorted": [
+        1,
+        2,
+        15,
+        18,
+        21,
+        23
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            2,
+            21,
+            15,
+            23,
+            1
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            18
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-07-27",
+      "date_str": "Du, 27 iulie 2025",
+      "numbers": [
+        21,
+        31,
+        8,
+        38,
+        22,
+        15
+      ],
+      "numbers_sorted": [
+        8,
+        15,
+        21,
+        22,
+        31,
+        38
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            21,
+            31,
+            8,
+            38,
+            22
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            15
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-07-31",
+      "date_str": "Jo, 31 iulie 2025",
+      "numbers": [
+        12,
+        1,
+        20,
+        33,
+        7,
+        9
+      ],
+      "numbers_sorted": [
+        1,
+        7,
+        9,
+        12,
+        20,
+        33
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            12,
+            1,
+            20,
+            33,
+            7
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            9
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-08-03",
+      "date_str": "Du,  3 august 2025",
+      "numbers": [
+        35,
+        14,
+        26,
+        41,
+        24,
+        6
+      ],
+      "numbers_sorted": [
+        6,
+        14,
+        24,
+        26,
+        35,
+        41
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            35,
+            14,
+            26,
+            41,
+            24
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            6
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-08-07",
+      "date_str": "Jo,  7 august 2025",
+      "numbers": [
+        11,
+        22,
+        27,
+        21,
+        34,
+        11
+      ],
+      "numbers_sorted": [
+        11,
+        11,
+        21,
+        22,
+        27,
+        34
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            11,
+            22,
+            27,
+            21,
+            34
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            11
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-08-10",
+      "date_str": "Du, 10 august 2025",
+      "numbers": [
+        37,
+        44,
+        5,
+        36,
+        8,
+        18
+      ],
+      "numbers_sorted": [
+        5,
+        8,
+        18,
+        36,
+        37,
+        44
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            37,
+            44,
+            5,
+            36,
+            8
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            18
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-08-14",
+      "date_str": "Jo, 14 august 2025",
+      "numbers": [
+        42,
+        43,
+        41,
+        24,
+        37,
+        9
+      ],
+      "numbers_sorted": [
+        9,
+        24,
+        37,
+        41,
+        42,
+        43
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            42,
+            43,
+            41,
+            24,
+            37
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            9
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-08-17",
+      "date_str": "Du, 17 august 2025",
+      "numbers": [
+        23,
+        12,
+        25,
+        35,
+        17,
+        14
+      ],
+      "numbers_sorted": [
+        12,
+        14,
+        17,
+        23,
+        25,
+        35
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            23,
+            12,
+            25,
+            35,
+            17
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            14
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-08-21",
+      "date_str": "Jo, 21 august 2025",
+      "numbers": [
+        2,
+        35,
+        15,
+        3,
+        16,
+        12
+      ],
+      "numbers_sorted": [
+        2,
+        3,
+        12,
+        15,
+        16,
+        35
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            2,
+            35,
+            15,
+            3,
+            16
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            12
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-08-24",
+      "date_str": "Du, 24 august 2025",
+      "numbers": [
+        34,
+        20,
+        40,
+        32,
+        29,
+        5
+      ],
+      "numbers_sorted": [
+        5,
+        20,
+        29,
+        32,
+        34,
+        40
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            34,
+            20,
+            40,
+            32,
+            29
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            5
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-08-28",
+      "date_str": "Jo, 28 august 2025",
+      "numbers": [
+        42,
+        8,
+        26,
+        7,
+        1,
+        3
+      ],
+      "numbers_sorted": [
+        1,
+        3,
+        7,
+        8,
+        26,
+        42
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            42,
+            8,
+            26,
+            7,
+            1
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            3
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-08-31",
+      "date_str": "Du, 31 august 2025",
+      "numbers": [
+        40,
+        6,
+        20,
+        19,
+        1,
+        3
+      ],
+      "numbers_sorted": [
+        1,
+        3,
+        6,
+        19,
+        20,
+        40
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            40,
+            6,
+            20,
+            19,
+            1
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            3
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-09-04",
+      "date_str": "Jo,  4 septembrie 2025",
+      "numbers": [
+        37,
+        13,
+        42,
+        18,
+        35,
+        16
+      ],
+      "numbers_sorted": [
+        13,
+        16,
+        18,
+        35,
+        37,
+        42
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            37,
+            13,
+            42,
+            18,
+            35
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            16
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-09-07",
+      "date_str": "Du,  7 septembrie 2025",
+      "numbers": [
+        12,
+        6,
+        41,
+        43,
+        4,
+        5
+      ],
+      "numbers_sorted": [
+        4,
+        5,
+        6,
+        12,
+        41,
+        43
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            12,
+            6,
+            41,
+            43,
+            4
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            5
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-09-11",
+      "date_str": "Jo, 11 septembrie 2025",
+      "numbers": [
+        36,
+        8,
+        22,
+        5,
+        14,
+        20
+      ],
+      "numbers_sorted": [
+        5,
+        8,
+        14,
+        20,
+        22,
+        36
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            36,
+            8,
+            22,
+            5,
+            14
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            20
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-09-14",
+      "date_str": "Du, 14 septembrie 2025",
+      "numbers": [
+        32,
+        38,
+        5,
+        29,
+        34,
+        12
+      ],
+      "numbers_sorted": [
+        5,
+        12,
+        29,
+        32,
+        34,
+        38
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            32,
+            38,
+            5,
+            29,
+            34
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            12
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-09-18",
+      "date_str": "Jo, 18 septembrie 2025",
+      "numbers": [
+        22,
+        38,
+        32,
+        24,
+        5,
+        13
+      ],
+      "numbers_sorted": [
+        5,
+        13,
+        22,
+        24,
+        32,
+        38
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            22,
+            38,
+            32,
+            24,
+            5
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            13
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-09-21",
+      "date_str": "Du, 21 septembrie 2025",
+      "numbers": [
+        26,
+        38,
+        33,
+        37,
+        5,
+        13
+      ],
+      "numbers_sorted": [
+        5,
+        13,
+        26,
+        33,
+        37,
+        38
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            26,
+            38,
+            33,
+            37,
+            5
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            13
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-09-25",
+      "date_str": "Jo, 25 septembrie 2025",
+      "numbers": [
+        17,
+        26,
+        36,
+        13,
+        8,
+        12
+      ],
+      "numbers_sorted": [
+        8,
+        12,
+        13,
+        17,
+        26,
+        36
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            17,
+            26,
+            36,
+            13,
+            8
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            12
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-09-28",
+      "date_str": "Du, 28 septembrie 2025",
+      "numbers": [
+        31,
+        19,
+        17,
+        26,
+        3,
+        2
+      ],
+      "numbers_sorted": [
+        2,
+        3,
+        17,
+        19,
+        26,
+        31
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            31,
+            19,
+            17,
+            26,
+            3
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            2
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-10-02",
+      "date_str": "Jo,  2 octombrie 2025",
+      "numbers": [
+        15,
+        4,
+        23,
+        3,
+        10,
+        19
+      ],
+      "numbers_sorted": [
+        3,
+        4,
+        10,
+        15,
+        19,
+        23
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            15,
+            4,
+            23,
+            3,
+            10
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            19
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-10-05",
+      "date_str": "Du,  5 octombrie 2025",
+      "numbers": [
+        13,
+        42,
+        10,
+        12,
+        24,
+        20
+      ],
+      "numbers_sorted": [
+        10,
+        12,
+        13,
+        20,
+        24,
+        42
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            13,
+            42,
+            10,
+            12,
+            24
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            20
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-10-09",
+      "date_str": "Jo,  9 octombrie 2025",
+      "numbers": [
+        31,
+        12,
+        21,
+        26,
+        22,
+        18
+      ],
+      "numbers_sorted": [
+        12,
+        18,
+        21,
+        22,
+        26,
+        31
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            31,
+            12,
+            21,
+            26,
+            22
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            18
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-10-12",
+      "date_str": "Du, 12 octombrie 2025",
+      "numbers": [
+        20,
+        5,
+        32,
+        24,
+        11,
+        2
+      ],
+      "numbers_sorted": [
+        2,
+        5,
+        11,
+        20,
+        24,
+        32
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            20,
+            5,
+            32,
+            24,
+            11
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            2
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-10-16",
+      "date_str": "Jo, 16 octombrie 2025",
+      "numbers": [
+        5,
+        11,
+        9,
+        10,
+        43,
+        17
+      ],
+      "numbers_sorted": [
+        5,
+        9,
+        10,
+        11,
+        17,
+        43
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            5,
+            11,
+            9,
+            10,
+            43
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            17
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-10-19",
+      "date_str": "Du, 19 octombrie 2025",
+      "numbers": [
+        13,
+        28,
+        14,
+        15,
+        11,
+        19
+      ],
+      "numbers_sorted": [
+        11,
+        13,
+        14,
+        15,
+        19,
+        28
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            13,
+            28,
+            14,
+            15,
+            11
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            19
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-10-23",
+      "date_str": "Jo, 23 octombrie 2025",
+      "numbers": [
+        39,
+        19,
+        2,
+        37,
+        4,
+        5
+      ],
+      "numbers_sorted": [
+        2,
+        4,
+        5,
+        19,
+        37,
+        39
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            39,
+            19,
+            2,
+            37,
+            4
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            5
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-10-26",
+      "date_str": "Du, 26 octombrie 2025",
+      "numbers": [
+        6,
+        12,
+        15,
+        22,
+        35,
+        16
+      ],
+      "numbers_sorted": [
+        6,
+        12,
+        15,
+        16,
+        22,
+        35
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            6,
+            12,
+            15,
+            22,
+            35
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            16
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-10-30",
+      "date_str": "Jo, 30 octombrie 2025",
+      "numbers": [
+        12,
+        17,
+        28,
+        4,
+        37,
+        15
+      ],
+      "numbers_sorted": [
+        4,
+        12,
+        15,
+        17,
+        28,
+        37
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            12,
+            17,
+            28,
+            4,
+            37
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            15
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-11-02",
+      "date_str": "Du,  2 noiembrie 2025",
+      "numbers": [
+        32,
+        4,
+        33,
+        21,
+        42,
+        5
+      ],
+      "numbers_sorted": [
+        4,
+        5,
+        21,
+        32,
+        33,
+        42
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            32,
+            4,
+            33,
+            21,
+            42
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            5
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-11-06",
+      "date_str": "Jo,  6 noiembrie 2025",
+      "numbers": [
+        29,
+        12,
+        26,
+        40,
+        20,
+        11
+      ],
+      "numbers_sorted": [
+        11,
+        12,
+        20,
+        26,
+        29,
+        40
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            29,
+            12,
+            26,
+            40,
+            20
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            11
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-11-09",
+      "date_str": "Du,  9 noiembrie 2025",
+      "numbers": [
+        23,
+        5,
+        15,
+        37,
+        34,
+        17
+      ],
+      "numbers_sorted": [
+        5,
+        15,
+        17,
+        23,
+        34,
+        37
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            23,
+            5,
+            15,
+            37,
+            34
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            17
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-11-13",
+      "date_str": "Jo, 13 noiembrie 2025",
+      "numbers": [
+        20,
+        14,
+        24,
+        31,
+        34,
+        18
+      ],
+      "numbers_sorted": [
+        14,
+        18,
+        20,
+        24,
+        31,
+        34
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            20,
+            14,
+            24,
+            31,
+            34
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            18
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-11-16",
+      "date_str": "Du, 16 noiembrie 2025",
+      "numbers": [
+        19,
+        23,
+        30,
+        37,
+        31,
+        14
+      ],
+      "numbers_sorted": [
+        14,
+        19,
+        23,
+        30,
+        31,
+        37
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            19,
+            23,
+            30,
+            37,
+            31
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            14
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-11-20",
+      "date_str": "Jo, 20 noiembrie 2025",
+      "numbers": [
+        40,
+        41,
+        1,
+        43,
+        23,
+        19
+      ],
+      "numbers_sorted": [
+        1,
+        19,
+        23,
+        40,
+        41,
+        43
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            40,
+            41,
+            1,
+            43,
+            23
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            19
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-11-23",
+      "date_str": "Du, 23 noiembrie 2025",
+      "numbers": [
+        38,
+        12,
+        43,
+        13,
+        20,
+        11
+      ],
+      "numbers_sorted": [
+        11,
+        12,
+        13,
+        20,
+        38,
+        43
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            38,
+            12,
+            43,
+            13,
+            20
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            11
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-11-27",
+      "date_str": "Jo, 27 noiembrie 2025",
+      "numbers": [
+        3,
+        9,
+        4,
+        17,
+        42,
+        13
+      ],
+      "numbers_sorted": [
+        3,
+        4,
+        9,
+        13,
+        17,
+        42
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            3,
+            9,
+            4,
+            17,
+            42
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            13
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-11-30",
+      "date_str": "Du, 30 noiembrie 2025",
+      "numbers": [
+        37,
+        4,
+        18,
+        10,
+        5,
+        14
+      ],
+      "numbers_sorted": [
+        4,
+        5,
+        10,
+        14,
+        18,
+        37
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            37,
+            4,
+            18,
+            10,
+            5
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            14
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-12-04",
+      "date_str": "Jo,  4 decembrie 2025",
+      "numbers": [
+        17,
+        4,
+        29,
+        24,
+        20,
+        12
+      ],
+      "numbers_sorted": [
+        4,
+        12,
+        17,
+        20,
+        24,
+        29
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            17,
+            4,
+            29,
+            24,
+            20
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            12
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-12-07",
+      "date_str": "Du,  7 decembrie 2025",
+      "numbers": [
+        37,
+        22,
+        21,
+        12,
+        29,
+        10
+      ],
+      "numbers_sorted": [
+        10,
+        12,
+        21,
+        22,
+        29,
+        37
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            37,
+            22,
+            21,
+            12,
+            29
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            10
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-12-11",
+      "date_str": "Jo, 11 decembrie 2025",
+      "numbers": [
+        11,
+        12,
+        22,
+        5,
+        25,
+        18
+      ],
+      "numbers_sorted": [
+        5,
+        11,
+        12,
+        18,
+        22,
+        25
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            11,
+            12,
+            22,
+            5,
+            25
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            18
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    },
+    {
+      "date": "2025-12-14",
+      "date_str": "Du, 14 decembrie 2025",
+      "numbers": [
+        40,
+        25,
+        5,
+        28,
+        42,
+        18
+      ],
+      "numbers_sorted": [
+        5,
+        18,
+        25,
+        28,
+        40,
+        42
+      ],
+      "year": 2025,
+      "lottery_type": "joker",
+      "composite_breakdown": {
+        "part_1": {
+          "numbers": [
+            40,
+            25,
+            5,
+            28,
+            42
+          ],
+          "range": "1-45",
+          "description": "5 din 1-45"
+        },
+        "part_2": {
+          "numbers": [
+            18
+          ],
+          "range": "1-20",
+          "description": "1 din 1-20"
+        }
+      }
+    }
+  ]
+}
