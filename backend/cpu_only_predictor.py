@@ -95,25 +95,26 @@ def cpu_worker(args):
         return (draw_idx, reversed_seed)
     
     # OPTIMIZARE ECHILIBRATĂ: reducere pentru viteză DAR suficient pentru acuratețe
+    # x5 pentru mai multe seeds găsite
     
     import math
     scale_factor = math.sqrt(max(1, num_extractions)) * 2
     adjusted_search = int(base_search_size / scale_factor)
     
-    # LIMITE ECHILIBRATE (DUBLATE pentru mai multe seeds):
+    # LIMITE ECHILIBRATE (x5 pentru acuratețe):
     if num_extractions <= 3:
-        adjusted_search = min(adjusted_search, 1000000)  # 1M pentru 3 extrageri
+        adjusted_search = min(adjusted_search, 5000000)  # 5M pentru 3 extrageri
     elif num_extractions <= 5:
-        adjusted_search = min(adjusted_search, 2000000)  # 2M pentru 5
+        adjusted_search = min(adjusted_search, 10000000)  # 10M pentru 5
     elif num_extractions <= 10:
-        adjusted_search = min(adjusted_search, 4000000)  # 4M pentru 10
+        adjusted_search = min(adjusted_search, 20000000)  # 20M pentru 10
     
-    # MERSENNE - reducere dar dublat față de înainte
+    # MERSENNE - reducere dar x5 față de înainte
     if rng_name == 'mersenne':
-        adjusted_search = min(20000, adjusted_search // 50)  # 20K pentru Mersenne
+        adjusted_search = min(100000, adjusted_search // 50)  # 100K pentru Mersenne
     
-    # Minimum 10K seeds
-    actual_search_size = max(10000, adjusted_search)
+    # Minimum 50K seeds
+    actual_search_size = max(50000, adjusted_search)
     
     # Brute force
     test_seeds = random.sample(range(seed_range[0], seed_range[1]), 
