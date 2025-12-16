@@ -244,15 +244,24 @@ def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
 
 
 def cpu_multiprocessing_worker(data, lottery_config, seed_range, search_size, min_success_rate, results_queue):
-    """CPU Thread - testează RNG-uri SECVENȚIAL cu TOATE cores-urile (multiprocessing spawn)"""
-    num_cores = cpu_count()
+    """CPU Thread - testează 9 RNG-uri SECVENȚIAL cu (total_cores - 3)"""
     
-    print(f"💻 [CPU Thread] Folosește TOATE cele {num_cores} cores")
+    # Verificare cores ÎNAINTE de a porni
+    total_cores = cpu_count()
+    num_cores = max(1, total_cores - 3)  # Lasă 3 cores pentru GPU thread
     
-    # RNG-uri CPU (exclude cele testate pe GPU)
-    cpu_rngs = [r for r in RNG_TYPES.keys() if r != 'xorshift_simple']
+    print(f"💻 [CPU Thread] Total cores: {total_cores}")
+    print(f"💻 [CPU Thread] Folosește: {num_cores} cores (lasă 3 pentru GPU)")
     
-    print(f"💻 [CPU] Va testa {len(cpu_rngs)} RNG-uri SECVENȚIAL (fiecare cu {num_cores} cores)\n")
+    # RNG-uri CPU (exclude cele 12 de pe GPU)
+    gpu_rngs = ['xorshift_simple', 'lcg_glibc', 'java_random', 'xorshift32', 
+               'xorshift64', 'pcg32', 'splitmix', 'xoshiro256', 'xorshift128', 
+               'mersenne', 'lfsr', 'lcg_minstd']
+    
+    cpu_rngs = [r for r in RNG_TYPES.keys() if r not in gpu_rngs]
+    
+    print(f"💻 [CPU] Va testa {len(cpu_rngs)} RNG-uri SECVENȚIAL")
+    print(f"   RNG-uri CPU: {', '.join(cpu_rngs)}\n")
     
     cpu_results = {}
     
