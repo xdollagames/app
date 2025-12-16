@@ -396,7 +396,7 @@ class CPUOnlyPredictor:
             else:
                 print(f"[{idx}/21] 💻 {rng_name.upper()}")
             
-            tasks = [(i, e['numere'], rng_name, self.config, seed_range, search_size) 
+            tasks = [(i, e['numere'], rng_name, self.config, seed_range, search_size, len(data)) 
                     for i, e in enumerate(data) if len(e['numere']) == self.config.numbers_to_draw]
             
             seeds_found = []
