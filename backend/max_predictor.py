@@ -265,8 +265,228 @@ if GPU_AVAILABLE:
         results[idx] = all_match ? 1 : 0;
     }
     ''', 'test_seeds')
+    
+    # Kernel pentru PCG32
+    GPU_RNG_KERNELS['pcg32'] = cp.RawKernel(r'''
+    extern "C" __global__
+    void test_seeds(
+        const unsigned long long* seeds, const int num_seeds,
+        const int* target, const int target_size,
+        const int min_num, const int max_num,
+        int* results
+    ) {
+        int idx = blockDim.x * blockIdx.x + threadIdx.x;
+        if (idx >= num_seeds) return;
+        
+        unsigned long long state = seeds[idx];
+        int range_size = max_num - min_num + 1;
+        
+        int generated[10];
+        for (int i = 0; i < target_size; i++) {
+            // PCG XSH RR: state = state * 6364136223846793005 + inc
+            unsigned long long oldstate = state;
+            state = oldstate * 6364136223846793005ULL + 1442695040888963407ULL;
+            
+            // Output function
+            unsigned int xorshifted = ((oldstate >> 18) ^ oldstate) >> 27;
+            unsigned int rot = oldstate >> 59;
+            unsigned int output = (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
+            
+            generated[i] = min_num + (output % range_size);
+        }
+        
+        // Sortare
+        for (int i = 0; i < target_size - 1; i++) {
+            for (int j = 0; j < target_size - i - 1; j++) {
+                if (generated[j] > generated[j + 1]) {
+                    int temp = generated[j];
+                    generated[j] = generated[j + 1];
+                    generated[j + 1] = temp;
+                }
+            }
+        }
+        
+        // Compare
+        int all_match = 1;
+        for (int i = 0; i < target_size; i++) {
+            if (generated[i] != target[i]) {
+                all_match = 0;
+                break;
+            }
+        }
+        
+        results[idx] = all_match ? 1 : 0;
+    }
+    ''', 'test_seeds')
+    
+    # Kernel pentru SplitMix64
+    GPU_RNG_KERNELS['splitmix'] = cp.RawKernel(r'''
+    extern "C" __global__
+    void test_seeds(
+        const unsigned long long* seeds, const int num_seeds,
+        const int* target, const int target_size,
+        const int min_num, const int max_num,
+        int* results
+    ) {
+        int idx = blockDim.x * blockIdx.x + threadIdx.x;
+        if (idx >= num_seeds) return;
+        
+        unsigned long long state = seeds[idx];
+        int range_size = max_num - min_num + 1;
+        
+        int generated[10];
+        for (int i = 0; i < target_size; i++) {
+            state += 0x9e3779b97f4a7c15ULL;
+            unsigned long long z = state;
+            z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9ULL;
+            z = (z ^ (z >> 27)) * 0x94d049bb133111ebULL;
+            z = z ^ (z >> 31);
+            
+            generated[i] = min_num + (z % range_size);
+        }
+        
+        // Sortare
+        for (int i = 0; i < target_size - 1; i++) {
+            for (int j = 0; j < target_size - i - 1; j++) {
+                if (generated[j] > generated[j + 1]) {
+                    int temp = generated[j];
+                    generated[j] = generated[j + 1];
+                    generated[j + 1] = temp;
+                }
+            }
+        }
+        
+        // Compare
+        int all_match = 1;
+        for (int i = 0; i < target_size; i++) {
+            if (generated[i] != target[i]) {
+                all_match = 0;
+                break;
+            }
+        }
+        
+        results[idx] = all_match ? 1 : 0;
+    }
+    ''', 'test_seeds')
+    
+    # Kernel pentru Xoshiro256++
+    GPU_RNG_KERNELS['xoshiro256'] = cp.RawKernel(r'''
+    extern "C" __device__ unsigned long long rotl(unsigned long long x, int k) {
+        return (x << k) | (x >> (64 - k));
+    }
+    
+    extern "C" __global__
+    void test_seeds(
+        const unsigned long long* seeds, const int num_seeds,
+        const int* target, const int target_size,
+        const int min_num, const int max_num,
+        int* results
+    ) {
+        int idx = blockDim.x * blockIdx.x + threadIdx.x;
+        if (idx >= num_seeds) return;
+        
+        // Initialize state from seed
+        unsigned long long s[4];
+        s[0] = seeds[idx];
+        s[1] = seeds[idx] + 0x9e3779b97f4a7c15ULL;
+        s[2] = seeds[idx] + 0x3c6ef372fe94f82aULL;
+        s[3] = seeds[idx] + 0x78dde6e5fd29f044ULL;
+        
+        int range_size = max_num - min_num + 1;
+        
+        int generated[10];
+        for (int i = 0; i < target_size; i++) {
+            unsigned long long result = rotl(s[0] + s[3], 23) + s[0];
+            unsigned long long t = s[1] << 17;
+            
+            s[2] ^= s[0];
+            s[3] ^= s[1];
+            s[1] ^= s[2];
+            s[0] ^= s[3];
+            s[2] ^= t;
+            s[3] = rotl(s[3], 45);
+            
+            generated[i] = min_num + (result % range_size);
+        }
+        
+        // Sortare
+        for (int i = 0; i < target_size - 1; i++) {
+            for (int j = 0; j < target_size - i - 1; j++) {
+                if (generated[j] > generated[j + 1]) {
+                    int temp = generated[j];
+                    generated[j] = generated[j + 1];
+                    generated[j + 1] = temp;
+                }
+            }
+        }
+        
+        // Compare
+        int all_match = 1;
+        for (int i = 0; i < target_size; i++) {
+            if (generated[i] != target[i]) {
+                all_match = 0;
+                break;
+            }
+        }
+        
+        results[idx] = all_match ? 1 : 0;
+    }
+    ''', 'test_seeds')
+    
+    # Kernel pentru xorshift128
+    GPU_RNG_KERNELS['xorshift128'] = cp.RawKernel(r'''
+    extern "C" __global__
+    void test_seeds(
+        const unsigned int* seeds, const int num_seeds,
+        const int* target, const int target_size,
+        const int min_num, const int max_num,
+        int* results
+    ) {
+        int idx = blockDim.x * blockIdx.x + threadIdx.x;
+        if (idx >= num_seeds) return;
+        
+        // Initialize 128-bit state from seed
+        unsigned int x = seeds[idx];
+        unsigned int y = seeds[idx] ^ 0x159a55e5;
+        unsigned int z = seeds[idx] ^ 0x1f83d9ab;
+        unsigned int w = seeds[idx] ^ 0x5be0cd19;
+        
+        int range_size = max_num - min_num + 1;
+        
+        int generated[10];
+        for (int i = 0; i < target_size; i++) {
+            unsigned int t = x ^ (x << 11);
+            x = y; y = z; z = w;
+            w = w ^ (w >> 19) ^ (t ^ (t >> 8));
+            
+            generated[i] = min_num + (w % range_size);
+        }
+        
+        // Sortare
+        for (int i = 0; i < target_size - 1; i++) {
+            for (int j = 0; j < target_size - i - 1; j++) {
+                if (generated[j] > generated[j + 1]) {
+                    int temp = generated[j];
+                    generated[j] = generated[j + 1];
+                    generated[j + 1] = temp;
+                }
+            }
+        }
+        
+        // Compare
+        int all_match = 1;
+        for (int i = 0; i < target_size; i++) {
+            if (generated[i] != target[i]) {
+                all_match = 0;
+                break;
+            }
+        }
+        
+        results[idx] = all_match ? 1 : 0;
+    }
+    ''', 'test_seeds')
 
-# RNG-uri suportate pe GPU
+# RNG-uri suportate pe GPU - ACUM 10 RNG-URI!
 GPU_SUPPORTED_RNGS = list(GPU_RNG_KERNELS.keys()) if GPU_AVAILABLE else []
 
 from lottery_config import get_lottery_config
