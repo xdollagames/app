@@ -495,12 +495,17 @@ class CPUOnlyPredictor:
         return [{'data': e.get('data', e.get('date')), 'numere': e.get('numere', e.get('numbers', e.get('numbers_sorted')))} for e in filtered]
     
     def run_prediction(self, last_n=None, start_year=None, end_year=None,
-                      seed_range=None, search_size=10000000, min_success_rate=0.66):
+                      seed_range=None, mersenne_timeout=10, min_success_rate=0.66):
         
-        # Folosește seed range OPTIMIZAT automat dacă nu e specificat
+        # Folosește seed range OPTIMIZAT automat
         if seed_range is None:
             seed_range = get_optimal_seed_range(self.lottery_type)
-            print(f"✅ Seed range OPTIMIZAT pentru {self.lottery_type}: {seed_range[0]:,} - {seed_range[1]:,}")
+            print(f"✅ Seed range OPTIMIZAT: {seed_range[0]:,} - {seed_range[1]:,}")
+        
+        # Search size = TOATE seeds-urile (100% coverage)
+        search_size = get_exhaustive_search_size(self.lottery_type)
+        print(f"✅ Search size: {search_size:,} seeds (100% COVERAGE - EXHAUSTIVE!)")
+        print(f"⏰ Timeout Mersenne: {mersenne_timeout} minute per extragere")
         
         print(f"\n{'='*70}")
         print(f"  CPU-ONLY PREDICTOR - {self.lottery_type.upper()}")
