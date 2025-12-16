@@ -1797,41 +1797,25 @@ class MaxPredictor:
         print(f"{'='*70}\n")
         
         if GPU_AVAILABLE:
-            print(f"🚀 GPU Thread: {len(GPU_SUPPORTED_RNGS)} RNG-uri pe RTX 5090")
-            print(f"💻 CPU Thread: {len([r for r in RNG_TYPES.keys() if r not in GPU_SUPPORTED_RNGS])} RNG-uri pe {num_cores} cores")
-            print(f"⚡ AMBELE rulează SIMULTAN!\n")
-        else:
-            print(f"💻 CPU Mode: {num_cores} cores\n")
+            print(f"🚀 GPU: Activ pentru Pattern Analysis (CuPy)")
+            print(f"⚠️  RNG Testing: CPU only (multiprocessing + GPU = probleme)")
+        print(f"💻 CPU: {num_cores} cores pentru RNG testing")
+        print(f"🎯 Reverse Engineering: Activ pentru 16 RNG-uri\n")
         
         # Queue pentru rezultate
         results_queue = Queue()
         
-        # Create threads
-        threads = []
-        
-        if GPU_AVAILABLE and len(GPU_SUPPORTED_RNGS) > 0:
-            gpu_thread = threading.Thread(
-                target=self.test_gpu_rngs_parallel,
-                args=(data, seed_range, search_size, results_queue)
-            )
-            threads.append(gpu_thread)
-        
+        # DOAR CPU thread pentru RNG testing (GPU + multiprocessing nu merg bine)
         cpu_thread = threading.Thread(
             target=self.test_cpu_rngs_parallel,
             args=(data, seed_range, search_size, results_queue)
         )
-        threads.append(cpu_thread)
         
-        # Start SIMULTAN!
-        print(f"🚀 PORNIRE SIMULTANĂ GPU + CPU...\n")
-        for thread in threads:
-            thread.start()
+        print(f"🚀 PORNIRE RNG Testing pe CPU (cu reverse engineering)...\n")
+        cpu_thread.start()
+        cpu_thread.join()
         
-        # Așteaptă să termine AMBELE
-        for thread in threads:
-            thread.join()
-        
-        print(f"\n✅ AMBELE THREAD-URI COMPLETE!\n")
+        print(f"\n✅ RNG TESTING COMPLET!\n")
         
         # Colectează rezultate din queue
         rng_results = {}
