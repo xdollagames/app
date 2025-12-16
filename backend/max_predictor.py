@@ -631,6 +631,80 @@ def compute_modular_inverse(a, m):
     return (x % m + m) % m
 
 
+def reverse_lcg_generic(output_number: int, min_number: int, max_number: int, a: int, c: int, m: int) -> Optional[int]:
+    """INVERSĂ GENERICĂ pentru orice LCG: state = (a*state + c) % m"""
+    range_size = max_number - min_number + 1
+    target_mod = output_number - min_number
+    
+    a_inv = compute_modular_inverse(a, m)
+    if a_inv is None:
+        return None
+    
+    # Testăm toate state-urile care dau target_mod
+    for k in range(0, min(1000, m // range_size + 1)):
+        state = target_mod + k * range_size
+        if state >= m:
+            break
+        
+        # prev_state = a_inv * (state - c) % m
+        prev_state = (a_inv * (state - c)) % m
+        
+        if 0 <= prev_state < m:
+            return prev_state
+    
+    return None
+
+
+def reverse_lcg_randu(output_number: int, min_number: int, max_number: int) -> Optional[int]:
+    """INVERSĂ LCG RANDU: state = (65539*state + 0) % 2^31"""
+    return reverse_lcg_generic(output_number, min_number, max_number, 65539, 0, 2**31)
+
+
+def reverse_lcg_borland(output_number: int, min_number: int, max_number: int) -> Optional[int]:
+    """INVERSĂ LCG BORLAND: state = (22695477*state + 1) % 2^32"""
+    return reverse_lcg_generic(output_number, min_number, max_number, 22695477, 1, 2**32)
+
+
+def reverse_lcg_weak(output_number: int, min_number: int, max_number: int) -> Optional[int]:
+    """INVERSĂ LCG WEAK: state = (9301*state + 49297) % 233280"""
+    return reverse_lcg_generic(output_number, min_number, max_number, 9301, 49297, 233280)
+
+
+def reverse_php_rand(output_number: int, min_number: int, max_number: int) -> Optional[int]:
+    """INVERSĂ PHP rand(): state = (1103515245*state + 12345) & 0x7FFFFFFF"""
+    return reverse_lcg_generic(output_number, min_number, max_number, 1103515245, 12345, 0x7FFFFFFF)
+
+
+def reverse_js_math_random(numbers: List[int], min_number: int, max_number: int) -> Optional[int]:
+    """INVERSĂ JS Math.random (V8 xorshift128+)"""
+    # V8 folosește xorshift128+ cu două state-uri
+    range_size = max_number - min_number + 1
+    target_mod = numbers[0] - min_number
+    
+    for seed in range(1, 5000000):
+        # Initialize dual state
+        state0 = seed
+        state1 = seed ^ 0x49616E42
+        
+        # xorshift128+ iteration
+        s1 = state0
+        s0 = state1
+        s1 ^= s1 << 23
+        s1 &= 0xFFFFFFFFFFFFFFFF
+        s1 ^= s1 >> 17
+        s1 ^= s0
+        s1 ^= s0 >> 26
+        state0 = s0
+        state1 = s1
+        
+        result = (state0 + state1) & 0xFFFFFFFFFFFFFFFF
+        
+        if (result % range_size) == target_mod:
+            return seed
+    
+    return None
+
+
 def reverse_lcg_glibc(output_number: int, min_number: int, max_number: int) -> Optional[int]:
     """INVERSĂ LCG GLIBC - Calculează seed-ul direct din numărul generat!"""
     # LCG GLIBC: state = (1103515245 * state + 12345) % 2^31
