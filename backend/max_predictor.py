@@ -475,6 +475,11 @@ class MaxPredictor:
             
             if success_rate >= min_success_rate:
                 print(f"✅ SUCCESS RATE PESTE THRESHOLD!")
+                
+                # SORTARE CRONOLOGICĂ - CRITIC pentru analiza pattern-ului!
+                draws_with_seeds.sort(key=lambda x: x['idx'])
+                seeds_found = [d['seed'] for d in draws_with_seeds]
+                
                 rng_results[rng_name] = {
                     'seeds': seeds_found,
                     'draws': draws_with_seeds,
