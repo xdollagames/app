@@ -471,7 +471,7 @@ class CPUOnlyPredictor:
         self.data_file = f"{lottery_type}_data.json"
     
     def load_data(self, last_n=None, start_year=None, end_year=None):
-        """Load data"""
+        """Load data - cu suport CORECT pentru Joker composite"""
         with open(self.data_file, 'r') as f:
             data = json.load(f)
         
@@ -492,7 +492,26 @@ class CPUOnlyPredictor:
         else:
             filtered = all_data
         
-        return [{'data': e.get('data', e.get('date')), 'numere': e.get('numere', e.get('numbers', e.get('numbers_sorted')))} for e in filtered]
+        # Normalizare - CORECT pentru Joker!
+        normalized = []
+        for e in filtered:
+            # Pentru Joker, reconstruim ordinea CORECTĂ (5 numere + joker)
+            if self.config.is_composite and 'composite_breakdown' in e:
+                # Extragem din breakdown
+                part1_nums = e['composite_breakdown']['part_1']['numbers']
+                part2_nums = e['composite_breakdown']['part_2']['numbers']
+                # Concatenăm: 5 numere + 1 joker (NU sortăm împreună!)
+                numere_corecte = part1_nums + part2_nums
+            else:
+                # Pentru 5/40 și 6/49, folosim numbers_sorted
+                numere_corecte = e.get('numere', e.get('numbers', e.get('numbers_sorted')))
+            
+            normalized.append({
+                'data': e.get('data', e.get('date')),
+                'numere': numere_corecte
+            })
+        
+        return normalized
     
     def run_prediction(self, last_n=None, start_year=None, end_year=None,
                       seed_range=None, mersenne_timeout=10, min_success_rate=0.66):
