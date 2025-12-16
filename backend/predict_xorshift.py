@@ -93,7 +93,7 @@ class XorshiftInvestigator:
                 
         return filtered_data
     
-    def run_investigation(self, start_year: int = 2010, end_year: int = 2025):
+    def analyze_seed_pattern(self, seeds: List[int]) -> Dict:
         """Analizează pattern-ul matematic al seed-urilor"""
         if len(seeds) < 3:
             return {
