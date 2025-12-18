@@ -981,7 +981,7 @@ class CPUOnlyPredictor:
                             'formula': p['formula'],
                             'confidence': p['confidence'],
                             'seed': p['pred'],
-                            'numbers': sorted(nums)
+                            'numbers': nums  # FIX: Păstrează ordinea RNG, NU sortată!
                         })
                     except Exception as e:
                         print(f"  ❌ Eroare predicție: {e}")
