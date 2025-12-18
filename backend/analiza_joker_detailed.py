@@ -40,7 +40,7 @@ def analiza_completa_joker():
             joker_in_range_20 = 1 <= joker <= 20
             joker_duplicate = joker in primele_5
             
-            print(f"   Primele 5 în 1-45?: {toate_in_range_45} {'✓' if toate_in_range_45else '❌'}")
+            print(f"   Primele 5 în 1-45?: {toate_in_range_45} {'✓' if toate_in_range_45 else '❌'}")
             print(f"   Joker în 1-20?:     {joker_in_range_20} {'✓' if joker_in_range_20 else '❌'}")
             print(f"   Joker duplicat?:    {joker_duplicate} {'❌ PROBLEMA!' if joker_duplicate else '✓'}")
 
