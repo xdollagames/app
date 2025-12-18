@@ -970,8 +970,9 @@ class CPUOnlyPredictor:
                             print(f"  ──────────────────────────────────────────────")
                             print(f"  COMPLET: {main_nums} + [{joker_num}]")
                         else:
-                            # 5/40 și 6/49: afișare normală
-                            print(f"  NUMERE PREZISE: {sorted(nums)}")
+                            # 5/40 și 6/49: afișare cu ordinea RNG
+                            print(f"  NUMERE (ordine RNG): {nums}")
+                            print(f"         (sortate):    {sorted(nums)}")
                         
                         print(f"  {'='*66}\n")
                         
