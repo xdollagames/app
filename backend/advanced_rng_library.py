@@ -459,18 +459,25 @@ def create_rng(rng_type: str, seed: int):
 
 
 def generate_numbers(rng, count: int, min_val: int, max_val: int) -> List[int]:
-    """Generează count numere unice folosind RNG-ul dat"""
-    numbers = set()
+    """
+    Generează count numere unice în ORDINEA DE GENERARE (NU sortate!)
+    
+    CRITIC: Păstrează ordinea exactă de generare pentru RNG analysis!
+    """
+    numbers = []
+    seen = set()
     range_size = max_val - min_val + 1
     attempts = 0
     max_attempts = count * 100
     
     while len(numbers) < count and attempts < max_attempts:
         num = min_val + (rng.next() % range_size)
-        numbers.add(num)
+        if num not in seen:
+            numbers.append(num)  # Păstrează ORDINEA de generare!
+            seen.add(num)
         attempts += 1
     
-    return sorted(list(numbers))[:count]
+    return numbers  # ✓ ORDINEA EXACTĂ, NU sortată!
 
 
 if __name__ == '__main__':
