@@ -248,16 +248,19 @@ def cpu_worker_chunked(args):
         try:
             rng = create_rng(rng_name, cached_seed)
             if lottery_config.is_composite:
+                # FIX JOKER: Permite duplicate! (13.7% din cazuri în date reale)
                 generated = []
-                for part_idx, (count, min_val, max_val) in enumerate(lottery_config.composite_parts):
-                    part = generate_numbers(rng, count, min_val, max_val)
-                    # Evită duplicate pentru joker
-                    if part_idx > 0:
-                        attempts = 0
-                        while any(num in generated for num in part) and attempts < 100:
-                            part = generate_numbers(rng, count, min_val, max_val)
-                            attempts += 1
-                    generated.extend(part)
+                
+                # Partea 1: Generează primele 5 numere UNIQUE din range-ul lor
+                count_1, min_1, max_1 = lottery_config.composite_parts[0]
+                part_1 = generate_numbers(rng, count_1, min_1, max_1)
+                generated.extend(part_1)
+                
+                # Partea 2: Generează Joker FĂRĂ verificare duplicate!
+                count_2, min_2, max_2 = lottery_config.composite_parts[1]
+                # Generează direct UN număr (permite duplicate!)
+                joker = min_2 + (rng.next() % (max_2 - min_2 + 1))
+                generated.append(joker)
             else:
                 generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
             
