@@ -913,7 +913,8 @@ class CPUOnlyPredictor:
                                 print(f"     Numere principale: {main_nums}")
                                 print(f"     🎰 JOKER: {joker_num}")
                             else:
-                                print(f"     NUMERE: {sorted(nums)}")
+                                print(f"     NUMERE (ordine RNG): {nums}")
+                                print(f"            (sortate):    {sorted(nums)}")
                             
                             print()
                             
