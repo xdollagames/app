@@ -175,7 +175,8 @@ def cpu_worker_chunked(args):
                 else:
                     generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
                 
-                if sorted(generated) == target_sorted:
+                # FIX CRITIC: Compară ORDINEA EXACTĂ!
+                if generated == target_exact:
                     return (draw_idx, cached_result, True)
             except:
                 pass
