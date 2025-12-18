@@ -20,7 +20,7 @@ from advanced_rng_library import create_rng, generate_numbers
 def find_seed_worker(args):
     """Worker function pentru multiprocessing - căutare optimizată"""
     idx, numbers, lottery_config, seed_range, search_size = args
-    target_exact = numbers  # FIX: Ordinea EXACTĂ, nu sortată!
+    target_sorted = sorted(numbers)
     
     # Generează seed-uri random în loc să caute secvențial (mult mai eficient)
     import random
@@ -36,7 +36,7 @@ def find_seed_worker(args):
                 lottery_config.min_number,
                 lottery_config.max_number
             )
-            if generated == target_exact  # FIX: Compară ORDINEA!:
+            if sorted(generated) == target_sorted:
                 return (idx, seed)
         except:
             continue

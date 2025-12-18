@@ -21,7 +21,7 @@ def find_seed_for_draw_worker(args):
     import time
     
     draw_idx, numbers, rng_type, lottery_config, seed_range, search_size = args
-    target_exact = numbers  # FIX: Ordinea EXACTĂ, nu sortată!
+    target_sorted = sorted(numbers)
     
     # Timeout strict pentru Mersenne (5 minute = 300 secunde pentru TOATE extragerile)
     # Deci per extragere = 300/num_draws, dar e sigur să punem 30 secunde per extragere
@@ -49,7 +49,7 @@ def find_seed_for_draw_worker(args):
                 lottery_config.min_number,
                 lottery_config.max_number
             )
-            if generated == target_exact  # FIX: Compară ORDINEA!:
+            if sorted(generated) == target_sorted:
                 return (draw_idx, seed)
         except:
             continue

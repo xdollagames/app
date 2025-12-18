@@ -566,7 +566,7 @@ def gpu_test_seeds_batch(rng_name: str, seeds: np.ndarray, target: List[int],
         return None
     
     num_seeds = len(seeds)
-    target_exact = target  # FIX: Ordinea EXACTĂ!
+    target_sorted = sorted(target)
     
     # Pregătire date pentru GPU
     if rng_name == 'java_random' or rng_name == 'xorshift64':
@@ -574,7 +574,7 @@ def gpu_test_seeds_batch(rng_name: str, seeds: np.ndarray, target: List[int],
     else:
         seeds_gpu = cp.array(seeds, dtype=cp.uint32)
     
-    target_gpu = cp.array(target_exact, dtype=cp.int32)
+    target_gpu = cp.array(target_sorted, dtype=cp.int32)
     results_gpu = cp.zeros(num_seeds, dtype=cp.int32)
     
     # Launch kernel
@@ -1123,7 +1123,7 @@ def try_reverse_engineering(rng_name: str, numbers: List[int], lottery_config) -
                         lottery_config.min_number,
                         lottery_config.max_number
                     )
-                    if generated == numbers  # FIX: Ordinea EXACTĂ!:
+                    if sorted(generated) == sorted(numbers):
                         return seed
                 except:
                     pass
@@ -1139,7 +1139,7 @@ def find_seed_exhaustive_worker(args):
     # NU importăm CuPy aici - doar CPU!
     
     draw_idx, numbers, rng_type, lottery_config, seed_range, search_size = args
-    target_exact = numbers  # FIX: Ordinea EXACTĂ, nu sortată!
+    target_sorted = sorted(numbers)
     
     # ÎNCERCĂM MAI ÎNTÂI REVERSE ENGINEERING! (INSTANT)
     reversed_seed = try_reverse_engineering(rng_type, numbers, lottery_config)
@@ -1167,7 +1167,7 @@ def find_seed_exhaustive_worker(args):
                 lottery_config.min_number,
                 lottery_config.max_number
             )
-            if generated == target_exact  # FIX: Compară ORDINEA!:
+            if sorted(generated) == target_sorted:
                 return (draw_idx, seed)
             seeds_tested += 1
         except:

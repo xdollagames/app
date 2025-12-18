@@ -115,7 +115,7 @@ def gpu_test_seeds_batch(rng_type: str, seeds: np.ndarray, target: List[int],
         return None
     
     num_seeds = len(seeds)
-    target_exact = target  # FIX: Ordinea EXACTĂ!
+    target_sorted = sorted(target)
     
     # Transferă pe GPU
     seeds_gpu = cp.array(seeds, dtype=cp.uint32)
@@ -149,7 +149,7 @@ def gpu_test_seeds_batch(rng_type: str, seeds: np.ndarray, target: List[int],
         
         # Caută match
         for i, result in enumerate(results_cpu):
-            if result == target_exact  # FIX: Compară ORDINEA!:
+            if sorted(result) == target_sorted:
                 return int(seeds[i])
         
         return None
@@ -160,7 +160,7 @@ def gpu_test_seeds_batch(rng_type: str, seeds: np.ndarray, target: List[int],
 def cpu_find_seed_worker(args):
     """Worker CPU pentru RNG-uri care nu au suport GPU"""
     draw_idx, numbers, rng_type, lottery_config, seed_range, search_size = args
-    target_exact = numbers  # FIX: Ordinea EXACTĂ, nu sortată!
+    target_sorted = sorted(numbers)
     
     # Timeout pentru Mersenne
     import time
@@ -185,7 +185,7 @@ def cpu_find_seed_worker(args):
                 lottery_config.min_number,
                 lottery_config.max_number
             )
-            if generated == target_exact  # FIX: Compară ORDINEA!:
+            if sorted(generated) == target_sorted:
                 return (draw_idx, seed)
         except:
             continue

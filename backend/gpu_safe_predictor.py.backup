@@ -77,7 +77,7 @@ def try_reverse_engineering(rng_name, numbers, lottery_config):
             try:
                 rng = create_rng(rng_name, seed)
                 generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
-                if generated == numbers  # FIX: Ordinea EXACTĂ!:
+                if sorted(generated) == sorted(numbers):
                     return seed
             except:
                 pass
@@ -88,7 +88,7 @@ def try_reverse_engineering(rng_name, numbers, lottery_config):
 def cpu_worker(args):
     """Worker CPU - NU atinge CUDA niciodată!"""
     draw_idx, numbers, rng_name, lottery_config, seed_range, search_size = args
-    target_exact = numbers  # FIX: Ordinea EXACTĂ, nu sortată!
+    target_sorted = sorted(numbers)
     
     # Reverse engineering
     reversed_seed = try_reverse_engineering(rng_name, numbers, lottery_config)
@@ -102,7 +102,7 @@ def cpu_worker(args):
         try:
             rng = create_rng(rng_name, seed)
             generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
-            if generated == target_exact  # FIX: Compară ORDINEA!:
+            if sorted(generated) == target_sorted:
                 return (draw_idx, seed)
         except:
             continue
@@ -176,7 +176,7 @@ def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
                 if len(numbers) != lottery_config.numbers_to_draw:
                     continue
                 
-                target_exact = numbers  # FIX: Ordinea EXACTĂ, nu sortată!
+                target_sorted = sorted(numbers)
                 found = False
                 
                 # GPU batch testing - folosește TOT GPU-ul
@@ -185,14 +185,14 @@ def gpu_thread_worker(data, lottery_config, seed_range, results_queue):
                 
                 for batch_num in range(max_batches):
                     seeds_batch = cp.random.randint(0, seed_range[1], size=batch_size, dtype=cp.uint32)
-                    target_gpu = cp.array(target_exact, dtype=cp.int32)
+                    target_gpu = cp.array(target_sorted, dtype=cp.int32)
                     results_gpu = cp.zeros(batch_size, dtype=cp.int32)
                     
                     threads = 512  # Mai multe threads
                     blocks = (batch_size + threads - 1) // threads
                     
                     xorshift_kernel((blocks,), (threads,), 
-                               (seeds_batch, batch_size, target_gpu, len(target_exact),
+                               (seeds_batch, batch_size, target_gpu, len(target_sorted),
                                 lottery_config.min_number, lottery_config.max_number, results_gpu))
                     
                     matches = cp.where(results_gpu == 1)[0]

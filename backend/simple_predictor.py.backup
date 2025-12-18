@@ -90,7 +90,7 @@ def try_reverse_engineering(rng_name: str, numbers: List[int], lottery_config) -
 def find_seed_worker(args):
     """Worker CPU - cu reverse engineering"""
     draw_idx, numbers, rng_name, lottery_config, seed_range, search_size = args
-    target_exact = numbers  # FIX: Ordinea EXACTĂ, nu sortată!
+    target_sorted = sorted(numbers)
     
     # Încercăm REVERSE mai întâi
     reversed_seed = try_reverse_engineering(rng_name, numbers, lottery_config)
@@ -99,7 +99,7 @@ def find_seed_worker(args):
         try:
             rng = create_rng(rng_name, reversed_seed)
             generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
-            if generated == target_exact  # FIX: Compară ORDINEA!:
+            if sorted(generated) == target_sorted:
                 return (draw_idx, reversed_seed)
         except:
             pass
@@ -111,7 +111,7 @@ def find_seed_worker(args):
         try:
             rng = create_rng(rng_name, seed)
             generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
-            if generated == target_exact  # FIX: Compară ORDINEA!:
+            if sorted(generated) == target_sorted:
                 return (draw_idx, seed)
         except:
             continue
