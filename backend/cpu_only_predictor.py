@@ -1017,15 +1017,13 @@ class CPUOnlyPredictor:
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description='CPU-Only Predictor')
+    parser = argparse.ArgumentParser(description='CPU-Only Predictor - ORDINEA EXACTĂ')
     parser.add_argument('--lottery', default='5-40', choices=['5-40', '6-49', 'joker'])
     parser.add_argument('--last-n', type=int, help='Ultimele N extrageri')
     parser.add_argument('--start-year', type=int)
     parser.add_argument('--end-year', type=int)
-    parser.add_argument('--seed-range', type=int, nargs=2, default=None,
-                      help='Seed range (default: auto-optimizat)')
-    parser.add_argument('--mersenne-timeout', type=int, default=10,
-                      help='Timeout pentru Mersenne în minute (default: 10)')
+    parser.add_argument('--rng-timeout', type=int, default=60,
+                      help='Timeout GLOBAL per RNG în minute (default: 60)')
     parser.add_argument('--min-success-rate', type=float, default=0.66,
                       help='Success rate minim (default: 0.66). Folosește 1.0 pentru doar RNG-uri PERFECTE (100%%)')
     parser.add_argument('--only-perfect', action='store_true',
@@ -1047,7 +1045,6 @@ if __name__ == "__main__":
         last_n=args.last_n,
         start_year=args.start_year,
         end_year=args.end_year,
-        seed_range=tuple(args.seed_range) if args.seed_range else None,
-        mersenne_timeout=args.mersenne_timeout,
+        rng_timeout_minutes=args.rng_timeout,
         min_success_rate=args.min_success_rate
     )
