@@ -62,8 +62,7 @@ def cache_seed(lottery_type, date_str, rng_name, seed):
     save_seeds_cache(cache)
 
 
-# SEED RANGES MAXIME pentru fiecare tip de RNG - CĂUTARE ORDINEA EXACTĂ!
-# Pentru ordine exactă avem nevoie de TOATE seeds-urile posibile
+# SEED RANGES MAXIME pentru fiecare tip de RNG
 RNG_MAX_SEEDS = {
     'lcg_glibc': 2**31,              # 2,147,483,648
     'lcg_minstd': 2**31 - 1,         # 2,147,483,647
@@ -75,7 +74,6 @@ RNG_MAX_SEEDS = {
     'xorshift64': 2**32,             # Folosim 32-bit din 64
     'xorshift128': 2**32,            # State 128-bit, dar testăm 32
     'xorshift128plus': 2**32,
-    'mersenne': 100000000,           # Limităm la 100M cu timeout strict
     'pcg32': 2**32,
     'well512': 2**32,
     'mwc': 2**32,
@@ -86,9 +84,44 @@ RNG_MAX_SEEDS = {
     'chacha': 2**31,
 }
 
+# Calcul factorial
+def factorial(n):
+    result = 1
+    for i in range(2, n + 1):
+        result *= i
+    return result
+
+# Calcul combinații C(n, k)
+def comb(n, k):
+    if k > n:
+        return 0
+    result = 1
+    for i in range(k):
+        result = result * (n - i) // (i + 1)
+    return result
+
+# POSIBILITĂȚI TOTALE per joc (cu ORDINE EXACTĂ!)
+LOTTERY_POSSIBILITIES = {
+    '5-40': comb(40, 6) * factorial(6),           # C(40,6) × 6! = 2,763,633,600
+    '6-49': comb(49, 6) * factorial(6),           # C(49,6) × 6! = 10,068,347,520
+    'joker': comb(45, 5) * factorial(5) * 20,     # C(45,5) × 5! × 20 = 2,932,221,600
+}
+
 def get_rng_max_seeds(rng_name):
     """Returnează numărul MAXIM de seeds pentru un RNG specific"""
-    return RNG_MAX_SEEDS.get(rng_name, 2**31)  # Default: 2^31
+    return RNG_MAX_SEEDS.get(rng_name, 2**31)
+
+def get_compatible_rngs(lottery_type):
+    """Returnează doar RNG-urile care au range suficient pentru loteria specificată"""
+    min_required = LOTTERY_POSSIBILITIES.get(lottery_type, 0)
+    compatible = []
+    
+    # Skip Mersenne automat
+    for rng_name, max_seeds in RNG_MAX_SEEDS.items():
+        if max_seeds >= min_required:
+            compatible.append(rng_name)
+    
+    return compatible
 
 
 def compute_modular_inverse(a, m):
