@@ -748,7 +748,10 @@ class CPUOnlyPredictor:
         
         rng_results = {}
         
-        for idx, rng_name in enumerate(RNG_TYPES.keys(), 1):
+        # SKIP Mersenne - prea lent pentru ordine exactă
+        rng_list = [rng for rng in RNG_TYPES.keys() if rng != 'mersenne']
+        
+        for idx, rng_name in enumerate(rng_list, 1):
             # Range MAXIM pentru acest RNG
             max_seeds = get_rng_max_seeds(rng_name)
             seed_range = (0, max_seeds)
@@ -756,7 +759,7 @@ class CPUOnlyPredictor:
             # Timeout în secunde
             timeout_seconds = rng_timeout_minutes * 60
             
-            print(f"[{idx}/21] 💻 {rng_name.upper()}")
+            print(f"[{idx}/{len(rng_list)}] 💻 {rng_name.upper()}")
             print(f"  📊 Range: {seed_range[0]:,} - {seed_range[1]:,} ({seed_range[1]:,} seeds)")
             print(f"  ⏰ Timeout: {rng_timeout_minutes} minute ({timeout_seconds} secunde)")
             
