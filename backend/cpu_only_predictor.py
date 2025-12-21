@@ -751,9 +751,6 @@ class CPUOnlyPredictor:
         
         rng_results = {}
         
-        # SKIP Mersenne - prea lent pentru ordine exactă
-        rng_list = [rng for rng in RNG_TYPES.keys() if rng != 'mersenne']
-        
         for idx, rng_name in enumerate(rng_list, 1):
             # Range MAXIM pentru acest RNG
             max_seeds = get_rng_max_seeds(rng_name)
