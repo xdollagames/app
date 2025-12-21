@@ -237,8 +237,8 @@ def cpu_worker_chunked(args):
     import time
     
     draw_idx, numbers, rng_name, lottery_config, seed_range, search_size_total, timeout_minutes, lottery_type, date_str = args
-    # FIX CRITIC: Păstrează ordinea EXACTĂ!
-    target_exact = numbers
+    # Comparăm SETUL de numere (sortate) pentru a găsi RNG-ul corect
+    target_sorted = sorted(numbers)
     start_time = time.time()
     
     # VERIFICĂ CACHE MAI ÎNTÂI! (INSTANT dacă există!)
