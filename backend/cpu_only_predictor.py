@@ -62,23 +62,24 @@ def cache_seed(lottery_type, date_str, rng_name, seed):
     save_seeds_cache(cache)
 
 
-# SEED RANGES pentru fiecare tip de RNG - OPTIMIZAT per JOC
-RNG_SEEDS_32BIT = {
-    'lcg_borland': 2**32,            # 4,294,967,296
-    'xorshift32': 2**32 - 1,         # 4,294,967,295
+# SEED RANGES pentru fiecare RNG
+# Toate RNG-urile care pot fi folosite
+ALL_RNGS = {
+    'lcg_borland': 2**32,
+    'xorshift32': 2**32 - 1,
+    'xorshift64': 2**32,        # Poate merge la 2^64 pentru 6-49
+    'xorshift128': 2**32,       # Poate merge la 2^64 pentru 6-49
+    'xorshift128plus': 2**32,   # Poate merge la 2^64 pentru 6-49
     'pcg32': 2**32,
     'well512': 2**32,
     'mwc': 2**32,
+    'xoshiro256': 2**32,        # Poate merge la 2^64 pentru 6-49
+    'splitmix64': 2**32,        # Poate merge la 2^64 pentru 6-49
+    'chacha': 2**32,            # Poate merge la 2^64 pentru 6-49
 }
 
-RNG_SEEDS_64BIT = {
-    'xorshift64': 2**64,
-    'xorshift128': 2**64,
-    'xorshift128plus': 2**64,
-    'xoshiro256': 2**64,
-    'splitmix64': 2**64,
-    'chacha': 2**64,
-}
+# RNG-uri care pot scala la 64-bit pentru 6-49
+RNG_64BIT_CAPABLE = ['xorshift64', 'xorshift128', 'xorshift128plus', 'xoshiro256', 'splitmix64', 'chacha']
 
 # Calcul factorial
 def factorial(n):
@@ -103,23 +104,21 @@ LOTTERY_POSSIBILITIES = {
     'joker': comb(45, 5) * factorial(5) * 20,     # C(45,5) × 5! × 20 = 2,932,221,600
 }
 
-def get_rng_max_seeds(rng_name):
-    """Returnează numărul MAXIM de seeds pentru un RNG specific"""
-    if rng_name in RNG_SEEDS_32BIT:
-        return RNG_SEEDS_32BIT[rng_name]
-    elif rng_name in RNG_SEEDS_64BIT:
-        return RNG_SEEDS_64BIT[rng_name]
-    return 2**32  # Default
+def get_rng_max_seeds(rng_name, lottery_type='5-40'):
+    """Returnează numărul MAXIM de seeds pentru un RNG specific și loterie"""
+    # Pentru 6-49, folosește 64-bit pentru RNG-urile capabile
+    if lottery_type == '6-49' and rng_name in RNG_64BIT_CAPABLE:
+        return 2**64
+    # Altfel, folosește range-ul standard
+    return ALL_RNGS.get(rng_name, 2**32)
 
 def get_compatible_rngs(lottery_type):
     """Returnează TOATE RNG-urile care au range suficient pentru loteria specificată"""
     min_required = LOTTERY_POSSIBILITIES.get(lottery_type, 0)
     compatible = []
     
-    # Adaugă toate RNG-urile cu range suficient
-    all_rngs = {**RNG_SEEDS_32BIT, **RNG_SEEDS_64BIT}
-    
-    for rng_name, max_seeds in all_rngs.items():
+    for rng_name in ALL_RNGS.keys():
+        max_seeds = get_rng_max_seeds(rng_name, lottery_type)
         if max_seeds >= min_required:
             compatible.append(rng_name)
     
