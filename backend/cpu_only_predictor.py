@@ -71,17 +71,18 @@ RNG_MAX_SEEDS = {
     'lcg_weak': 233280,              # Range-ul specific
     'php_rand': 0x7FFFFFFF,          # 2,147,483,647
     'xorshift32': 2**32 - 1,         # 4,294,967,295
-    'xorshift64': 2**32,             # Folosim 32-bit din 64
-    'xorshift128': 2**32,            # State 128-bit, dar testăm 32
-    'xorshift128plus': 2**32,
+    'xorshift64': 2**64,             # 64-bit COMPLET pentru 6-49!
+    'xorshift128': 2**64,            # 64-bit output
+    'xorshift128plus': 2**64,        # 64-bit output
     'pcg32': 2**32,
+    'pcg64': 2**64,                  # PCG 64-bit pentru 6-49!
     'well512': 2**32,
     'mwc': 2**32,
     'fibonacci': 2**31,
     'isaac': 2**31,
-    'xoshiro256': 2**32,
-    'splitmix64': 2**32,
-    'chacha': 2**31,
+    'xoshiro256': 2**64,             # 64-bit output pentru 6-49!
+    'splitmix64': 2**64,             # 64-bit COMPLET pentru 6-49!
+    'chacha': 2**64,                 # 64-bit pentru 6-49!
 }
 
 # Calcul factorial
