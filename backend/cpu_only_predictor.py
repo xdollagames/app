@@ -721,7 +721,7 @@ class CPUOnlyPredictor:
         print(f"💻 Cores logice: {total_logical}")
         print(f"💻 Cores fizice: {physical}")
         print(f"💻 Cores folosite: {num_cores}/{physical} (100% - 1 core)")
-        print(f"🎯 RNG-uri: 21 (toate pe CPU)")
+        print(f"🎯 RNG-uri: {len(rng_list)} (FĂRĂ Mersenne - prea lent)")
         print(f"⚡ Reverse Engineering: 6 LCG (INSTANT)")
         print(f"⏰ Timeout GLOBAL per RNG: {rng_timeout_minutes} minute")
         print(f"🔍 Comparare: ORDINEA EXACTĂ (nu sorted!)")
