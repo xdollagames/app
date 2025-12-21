@@ -701,20 +701,11 @@ class CPUOnlyPredictor:
         return normalized
     
     def run_prediction(self, last_n=None, start_year=None, end_year=None,
-                      seed_range=None, mersenne_timeout=10, min_success_rate=0.66):
-        
-        # Folosește seed range OPTIMIZAT automat
-        if seed_range is None:
-            seed_range = get_optimal_seed_range(self.lottery_type)
-            print(f"✅ Seed range OPTIMIZAT: {seed_range[0]:,} - {seed_range[1]:,}")
-        
-        # Search size = TOATE seeds-urile (100% coverage)
-        search_size = get_exhaustive_search_size(self.lottery_type)
-        print(f"✅ Search size: {search_size:,} seeds (100% COVERAGE - EXHAUSTIVE!)")
-        print(f"⏰ Timeout Mersenne: {mersenne_timeout} minute per extragere")
+                      rng_timeout_minutes=60, min_success_rate=0.66):
         
         print(f"\n{'='*70}")
         print(f"  CPU-ONLY PREDICTOR - {self.lottery_type.upper()}")
+        print(f"  ORDINEA EXACTĂ - RANGE MAXIM PER RNG")
         print(f"{'='*70}\n")
         
         # Detectare cores fizice
@@ -731,17 +722,15 @@ class CPUOnlyPredictor:
         print(f"💻 Cores folosite: {num_cores}/{physical} (100% - 1 core)")
         print(f"🎯 RNG-uri: 21 (toate pe CPU)")
         print(f"⚡ Reverse Engineering: 6 LCG (INSTANT)")
-        print(f"📊 Pattern-uri: 23 (toate pe CPU)")
-        print(f"🔍 Seed range: {seed_range[0]:,} - {seed_range[1]:,}")
-        print(f"📈 Search: {search_size:,} seeds (100% EXHAUSTIVE!)")
-        print(f"⏰ Mersenne timeout: {mersenne_timeout} min per extragere")
+        print(f"⏰ Timeout GLOBAL per RNG: {rng_timeout_minutes} minute")
+        print(f"🔍 Comparare: ORDINEA EXACTĂ (nu sorted!)")
         
         # Load
         if last_n:
-            print(f"📊 Încărcare ultimele {last_n} extrageri...")
+            print(f"\n📊 Încărcare ultimele {last_n} extrageri...")
             data = self.load_data(last_n=last_n)
         else:
-            print(f"📊 Încărcare {start_year}-{end_year}...")
+            print(f"\n📊 Încărcare {start_year}-{end_year}...")
             data = self.load_data(start_year=start_year, end_year=end_year)
         
         print(f"✅ {len(data)} extrageri încărcate\n")
@@ -753,21 +742,25 @@ class CPUOnlyPredictor:
         
         # Test TOATE 21 RNG-uri
         print(f"{'='*70}")
-        print(f"  RNG TESTING - {num_cores} cores per RNG")
+        print(f"  RNG TESTING - RANGE MAXIM + TIMEOUT {rng_timeout_minutes} min per RNG")
         print(f"{'='*70}\n")
         
         rng_results = {}
         
         for idx, rng_name in enumerate(RNG_TYPES.keys(), 1):
-            # Afișare cu info exhaustive
-            if rng_name == 'mersenne':
-                print(f"[{idx}/21] 💻 {rng_name.upper()} (⏰ TIMEOUT {mersenne_timeout} min - exhaustive până la timeout)")
-            else:
-                print(f"[{idx}/21] 💻 {rng_name.upper()} (EXHAUSTIVE - toate {search_size:,} seeds)")
+            # Range MAXIM pentru acest RNG
+            max_seeds = get_rng_max_seeds(rng_name)
+            seed_range = (0, max_seeds)
+            
+            # Timeout în secunde
+            timeout_seconds = rng_timeout_minutes * 60
+            
+            print(f"[{idx}/21] 💻 {rng_name.upper()}")
+            print(f"  📊 Range: {seed_range[0]:,} - {seed_range[1]:,} ({seed_range[1]:,} seeds)")
+            print(f"  ⏰ Timeout: {rng_timeout_minutes} minute ({timeout_seconds} secunde)")
             
             # Creează CHUNKS pentru a folosi TOATE cores-urile!
-            # Cu 3 extrageri × 31 chunks = 93 tasks → 31 cores lucrează simultan!
-            chunk_size = max(1000, search_size // num_cores)
+            chunk_size = max(100000, seed_range[1] // (num_cores * 10))  # 10 chunks per core
             
             tasks = []
             for i, e in enumerate(data):
@@ -775,29 +768,37 @@ class CPUOnlyPredictor:
                     continue
                 
                 # Împarte seed range în chunks
-                for chunk_start in range(seed_range[0], search_size, chunk_size):
-                    chunk_end = min(chunk_start + chunk_size, search_size)
+                for chunk_start in range(seed_range[0], seed_range[1], chunk_size):
+                    chunk_end = min(chunk_start + chunk_size, seed_range[1])
                     tasks.append((i, e['numere'], rng_name, self.config, chunk_start, chunk_end, 
-                                mersenne_timeout, self.lottery_type, e['data'], seed_range))
+                                timeout_seconds, self.lottery_type, e['data'], seed_range))
             
-            print(f"  🔥 {len(tasks)} task-uri (chunks) → {min(num_cores, len(tasks))} cores active")
+            print(f"  🔥 {len(tasks)} task-uri (chunks de {chunk_size:,}) → {min(num_cores, len(tasks))} cores active")
             
             seeds_found = []
             draws_with_seeds = []
-            cached_positive = 0  # Seeds găsite în cache
-            cached_negative = 0  # NOT_FOUND în cache (skip)
+            cached_positive = 0
+            cached_negative = 0
             seeds_by_draw = {}
+            
+            rng_start_time = time.time()
             
             with Pool(processes=num_cores) as pool:
                 for result in pool.imap_unordered(cpu_worker_chunked, tasks):
+                    # Check timeout global per RNG
+                    elapsed = time.time() - rng_start_time
+                    if elapsed > timeout_seconds:
+                        print(f"\n  ⏰ TIMEOUT reached ({rng_timeout_minutes} min) - stopping RNG {rng_name}")
+                        pool.terminate()
+                        pool.join()
+                        break
+                    
                     idx_task, seed, from_cache = result
                     
                     if seed is None and from_cache:
-                        # Cache NEGATIV (NOT_FOUND)
                         cached_negative += 1
-                        seeds_by_draw[idx_task] = None  # Marchează ca procesat
+                        seeds_by_draw[idx_task] = None
                     elif seed is not None and idx_task not in seeds_by_draw:
-                        # Seed GĂSIT (prima dată pentru această extragere)
                         seeds_by_draw[idx_task] = seed
                         seeds_found.append(seed)
                         draws_with_seeds.append({
@@ -808,23 +809,25 @@ class CPUOnlyPredictor:
                         })
                         if from_cache:
                             cached_positive += 1
+                        
+                        # Afișăm imediat când găsim
+                        print(f"\n  🎯 GĂSIT! Seed {seed:,} pentru {data[idx_task]['data']}: {data[idx_task]['numere']}")
                     
                     completed = len(seeds_by_draw)
                     progress = 100 * completed / len(data) if len(data) > 0 else 0
+                    elapsed_min = elapsed / 60
                     cache_info = ""
                     if cached_positive > 0:
-                        cache_info += f" (✅{cached_positive} cache)"
+                        cache_info += f" ✅{cached_positive}"
                     if cached_negative > 0:
-                        cache_info += f" (⏭️{cached_negative} skip)"
-                    print(f"  [{completed}/{len(data)}] ({progress:.1f}%)... {len(seeds_found)} seeds{cache_info}", end='\r')
+                        cache_info += f" ⏭️{cached_negative}"
+                    print(f"  [{completed}/{len(data)}] ({progress:.1f}%) | {len(seeds_found)} seeds | {elapsed_min:.1f}/{rng_timeout_minutes}min{cache_info}", end='\r')
             
+            elapsed_total = time.time() - rng_start_time
             success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
-            cache_msg = ""
-            if cached_positive > 0:
-                cache_msg += f" (✅{cached_positive} instant cache)"
-            if cached_negative > 0:
-                cache_msg += f" (⏭️{cached_negative} skip cache)"
-            print(f"\n  ✅ {len(seeds_found)}/{len(data)} ({success_rate:.1%}){cache_msg}", end='')
+            
+            print(f"\n  ⏱️  Timp: {elapsed_total/60:.1f} minute")
+            print(f"  ✅ {len(seeds_found)}/{len(data)} ({success_rate:.1%})", end='')
             
             if success_rate >= min_success_rate:
                 print(f" - ✅ PESTE 66%!")
