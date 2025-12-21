@@ -203,14 +203,13 @@ def cpu_worker_chunked(args):
             cache_seed(lottery_type, date_str, rng_name, reversed_seed)
             return (draw_idx, reversed_seed, False)
     
-    # Timeout pentru Mersenne
-    timeout_seconds = timeout_minutes * 60 if rng_name == 'mersenne' else 99999999
+    # Timeout pentru acest chunk
+    timeout_seconds = timeout_seconds if rng_name == 'mersenne' else 99999999
     
     # Exhaustive search pe acest CHUNK
     for seed in range(seed_chunk_start, seed_chunk_end):
-        if rng_name == 'mersenne':
-            if (time.time() - start_time) > timeout_seconds:
-                return (draw_idx, None, False)
+        if (time.time() - start_time) > timeout_seconds:
+            return (draw_idx, None, False)
         
         try:
             rng = create_rng(rng_name, seed)
