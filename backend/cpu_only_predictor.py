@@ -709,22 +709,16 @@ class CPUOnlyPredictor:
         print(f"  ORDINEA EXACTĂ - RANGE MAXIM PER RNG")
         print(f"{'='*70}\n")
         
-        # Detectare cores fizice
+        # Detectare cores - FOLOSEȘTE TOATE!
         total_logical = cpu_count()
-        if HAS_PSUTIL:
-            physical = psutil.cpu_count(logical=False)
-        else:
-            physical = total_logical // 2 if total_logical > 32 else total_logical
-        
-        num_cores = max(1, physical - 1)
+        num_cores = total_logical  # TOATE threadurile
         
         # SKIP Mersenne - prea lent pentru ordine exactă
         rng_list = [rng for rng in RNG_TYPES.keys() if rng != 'mersenne']
         
         print(f"💻 Cores logice: {total_logical}")
-        print(f"💻 Cores fizice: {physical}")
-        print(f"💻 Cores folosite: {num_cores}/{physical} (100% - 1 core)")
-        print(f"🎯 RNG-uri: {len(rng_list)} (FĂRĂ Mersenne - prea lent)")
+        print(f"💻 Cores folosite: {num_cores} (TOATE!)")
+        print(f"🎯 RNG-uri: {len(rng_list)} (FĂRĂ Mersenne)")
         print(f"⚡ Reverse Engineering: 6 LCG (INSTANT)")
         print(f"⏰ Timeout GLOBAL per RNG: {rng_timeout_minutes} minute")
         print(f"🔍 Comparare: ORDINEA EXACTĂ (nu sorted!)")
