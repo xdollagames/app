@@ -746,12 +746,14 @@ class CPUOnlyPredictor:
         total_logical = cpu_count()
         num_cores = total_logical  # TOATE threadurile
         
-        # SKIP Mersenne - prea lent pentru ordine exactă
-        rng_list = [rng for rng in RNG_TYPES.keys() if rng != 'mersenne']
+        # Filtrează RNG-urile compatibile cu acest joc
+        rng_list = get_compatible_rngs(self.lottery_type)
+        total_possibilities = LOTTERY_POSSIBILITIES.get(self.lottery_type, 0)
         
         print(f"💻 Cores logice: {total_logical}")
         print(f"💻 Cores folosite: {num_cores} (TOATE!)")
-        print(f"🎯 RNG-uri: {len(rng_list)} (FĂRĂ Mersenne)")
+        print(f"🎲 Posibilități totale {self.lottery_type}: {total_possibilities:,}")
+        print(f"🎯 RNG-uri compatibile: {len(rng_list)}/{len(RNG_MAX_SEEDS)}")
         print(f"⚡ Reverse Engineering: 6 LCG (INSTANT)")
         print(f"⏰ Timeout GLOBAL per RNG: {rng_timeout_minutes} minute")
         print(f"🔍 Comparare: ORDINEA EXACTĂ (nu sorted!)")
