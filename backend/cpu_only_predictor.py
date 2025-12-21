@@ -75,7 +75,6 @@ RNG_MAX_SEEDS = {
     'xorshift128': 2**64,            # 64-bit output
     'xorshift128plus': 2**64,        # 64-bit output
     'pcg32': 2**32,
-    'pcg64': 2**64,                  # PCG 64-bit pentru 6-49!
     'well512': 2**32,
     'mwc': 2**32,
     'fibonacci': 2**31,
