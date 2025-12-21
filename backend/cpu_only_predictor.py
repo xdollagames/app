@@ -231,8 +231,8 @@ def cpu_worker_chunked(args):
             else:
                 generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
             
-            # Comparăm SETUL de numere (sortate), nu ordinea fizică
-            if sorted(generated) == target_sorted:
+            # Comparăm ORDINEA EXACTĂ de extragere
+            if generated == target_exact:
                 cache_seed(lottery_type, date_str, rng_name, seed)
                 return (draw_idx, seed, False)
         except:
