@@ -820,7 +820,10 @@ class CPUOnlyPredictor:
             rng_start_time = time.time()
             
             with Pool(processes=num_cores) as pool:
+                tasks_completed = 0
                 for result in pool.imap_unordered(cpu_worker_chunked, tasks):
+                    tasks_completed += 1
+                    
                     # Incrementăm seeds procesate (fiecare task = un chunk)
                     seeds_processed += chunk_size
                     if seeds_processed > total_seeds:
@@ -860,6 +863,18 @@ class CPUOnlyPredictor:
                             pool.terminate()
                             pool.join()
                             break
+                    
+                    completed = len(seeds_by_draw)
+                    progress = 100 * completed / len(data) if len(data) > 0 else 0
+                    elapsed_min = elapsed / 60
+                    seeds_progress = 100 * seeds_processed / total_seeds
+                    
+                    # STOP la 100% seeds procesate
+                    if seeds_progress >= 100:
+                        print(f"\n  ✅ 100% seeds procesate pentru {rng_name}")
+                        pool.terminate()
+                        pool.join()
+                        break
                     
                     completed = len(seeds_by_draw)
                     progress = 100 * completed / len(data) if len(data) > 0 else 0
