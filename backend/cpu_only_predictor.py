@@ -61,21 +61,33 @@ def cache_seed(lottery_type, date_str, rng_name, seed):
     save_seeds_cache(cache)
 
 
-# SEED RANGES OPTIMIZATE + SEARCH SIZE = 100% COVERAGE!
-OPTIMIZED_SEED_RANGES = {
-    '5-40': (0, 4000000),      # C(40,6) = 3,838,380 → 100% coverage
-    '6-49': (0, 14000000),     # C(49,6) = 13,983,816 → 100% coverage
-    'joker': (0, 25000000),    # C(45,5) × 20 = 24,435,180 → 100% coverage
+# SEED RANGES MAXIME pentru fiecare tip de RNG - CĂUTARE ORDINEA EXACTĂ!
+# Pentru ordine exactă avem nevoie de TOATE seeds-urile posibile
+RNG_MAX_SEEDS = {
+    'lcg_glibc': 2**31,              # 2,147,483,648
+    'lcg_minstd': 2**31 - 1,         # 2,147,483,647
+    'lcg_randu': 2**31,              # 2,147,483,648
+    'lcg_borland': 2**32,            # 4,294,967,296
+    'lcg_weak': 233280,              # Range-ul specific
+    'php_rand': 0x7FFFFFFF,          # 2,147,483,647
+    'xorshift32': 2**32 - 1,         # 4,294,967,295
+    'xorshift64': 2**32,             # Folosim 32-bit din 64
+    'xorshift128': 2**32,            # State 128-bit, dar testăm 32
+    'xorshift128plus': 2**32,
+    'mersenne': 100000000,           # Limităm la 100M cu timeout strict
+    'pcg32': 2**32,
+    'well512': 2**32,
+    'mwc': 2**32,
+    'fibonacci': 2**31,
+    'isaac': 2**31,
+    'xoshiro256': 2**32,
+    'splitmix64': 2**32,
+    'chacha': 2**31,
 }
 
-def get_optimal_seed_range(lottery_type):
-    """Returnează seed range optim pentru loterie"""
-    return OPTIMIZED_SEED_RANGES.get(lottery_type, (0, 100000000))
-
-def get_exhaustive_search_size(lottery_type):
-    """Returnează search size = TOATE seeds-urile pentru 100% coverage"""
-    seed_range = get_optimal_seed_range(lottery_type)
-    return seed_range[1]  # Testează TOATE seeds-urile!
+def get_rng_max_seeds(rng_name):
+    """Returnează numărul MAXIM de seeds pentru un RNG specific"""
+    return RNG_MAX_SEEDS.get(rng_name, 2**31)  # Default: 2^31
 
 
 def compute_modular_inverse(a, m):
