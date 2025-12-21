@@ -156,9 +156,9 @@ def cpu_worker_chunked(args):
     """Worker CPU - procesează un CHUNK de seeds pentru o extragere"""
     import time
     
-    draw_idx, numbers, rng_name, lottery_config, seed_chunk_start, seed_chunk_end, timeout_minutes, lottery_type, date_str, seed_range_tuple = args
-    # Comparăm SETUL de numere (sortate) pentru a găsi RNG-ul corect
-    target_sorted = sorted(numbers)  # Setul de numere, nu ordinea fizică
+    draw_idx, numbers, rng_name, lottery_config, seed_chunk_start, seed_chunk_end, timeout_seconds, lottery_type, date_str, seed_range_tuple = args
+    # CRITIC: Căutăm seed-ul care reproduce ORDINEA EXACTĂ de extragere!
+    target_exact = numbers  # Lista în ordinea EXACTĂ de extragere
     start_time = time.time()
     
     # VERIFICĂ CACHE MAI ÎNTÂI
