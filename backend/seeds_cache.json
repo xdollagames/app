@@ -2,11 +2,13 @@
   "5-40": {
     "2025-12-07": {
       "lcg_glibc": "NOT_FOUND",
-      "lcg_minstd": "NOT_FOUND"
+      "lcg_minstd": "NOT_FOUND",
+      "lcg_randu": "NOT_FOUND"
     },
     "2025-12-11": {
       "lcg_glibc": "NOT_FOUND",
-      "lcg_minstd": 2116949
+      "lcg_minstd": 2692990,
+      "lcg_randu": "NOT_FOUND"
     },
     "2025-12-14": {
       "lcg_glibc": "NOT_FOUND",
