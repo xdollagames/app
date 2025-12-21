@@ -13,6 +13,37 @@
     "2025-12-14": {
       "lcg_glibc": "NOT_FOUND",
       "lcg_minstd": "NOT_FOUND"
+    },
+    "2025-11-13": {
+      "lcg_glibc": "NOT_FOUND",
+      "lcg_minstd": "NOT_FOUND",
+      "lcg_randu": "NOT_FOUND"
+    },
+    "2025-11-16": {
+      "lcg_glibc": "NOT_FOUND",
+      "lcg_minstd": "NOT_FOUND",
+      "lcg_randu": "NOT_FOUND"
+    },
+    "2025-11-20": {
+      "lcg_glibc": "NOT_FOUND",
+      "lcg_minstd": "NOT_FOUND",
+      "lcg_randu": "NOT_FOUND"
+    },
+    "2025-11-23": {
+      "lcg_glibc": "NOT_FOUND",
+      "lcg_minstd": "NOT_FOUND"
+    },
+    "2025-11-27": {
+      "lcg_glibc": "NOT_FOUND",
+      "lcg_minstd": "NOT_FOUND"
+    },
+    "2025-11-30": {
+      "lcg_glibc": "NOT_FOUND",
+      "lcg_minstd": 2518761
+    },
+    "2025-12-04": {
+      "lcg_glibc": "NOT_FOUND",
+      "lcg_minstd": "NOT_FOUND"
     }
   }
 }
