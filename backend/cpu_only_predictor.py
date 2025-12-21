@@ -63,7 +63,7 @@ def cache_seed(lottery_type, date_str, rng_name, seed):
 
 
 # SEED RANGES pentru fiecare RNG
-# Toate RNG-urile care pot fi folosite
+# Toate RNG-urile care pot fi folosite (10 RNG-uri originale)
 ALL_RNGS = {
     'lcg_borland': 2**32,
     'xorshift32': 2**32 - 1,
@@ -75,11 +75,10 @@ ALL_RNGS = {
     'mwc': 2**32,
     'xoshiro256': 2**32,        # Poate merge la 2^64 pentru 6-49
     'splitmix64': 2**32,        # Poate merge la 2^64 pentru 6-49
-    'chacha': 2**32,            # Poate merge la 2^64 pentru 6-49
 }
 
-# RNG-uri care pot scala la 64-bit pentru 6-49
-RNG_64BIT_CAPABLE = ['xorshift64', 'xorshift128', 'xorshift128plus', 'xoshiro256', 'splitmix64', 'chacha']
+# RNG-uri care pot scala la 64-bit DOAR pentru 6-49
+RNG_64BIT_CAPABLE = ['xorshift64', 'xorshift128', 'xorshift128plus', 'xoshiro256', 'splitmix64']
 
 # Calcul factorial
 def factorial(n):
