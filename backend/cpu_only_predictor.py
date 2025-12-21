@@ -783,8 +783,8 @@ class CPUOnlyPredictor:
         rng_results = {}
         
         for idx, rng_name in enumerate(rng_list, 1):
-            # Range MAXIM pentru acest RNG
-            max_seeds = get_rng_max_seeds(rng_name)
+            # Range pentru acest RNG și loterie
+            max_seeds = get_rng_max_seeds(rng_name, self.lottery_type)
             seed_range = (0, max_seeds)
             
             # Timeout în secunde
