@@ -750,10 +750,18 @@ class CPUOnlyPredictor:
         rng_list = get_compatible_rngs(self.lottery_type)
         total_possibilities = LOTTERY_POSSIBILITIES.get(self.lottery_type, 0)
         
+        # Informații despre optimizare
+        if self.lottery_type == '6-49':
+            rng_type = "64-bit (necesar pentru 6-49)"
+            total_rngs = len(RNG_SEEDS_64BIT)
+        else:
+            rng_type = "32-bit (optimizat pentru viteză)"
+            total_rngs = len(RNG_SEEDS_32BIT)
+        
         print(f"💻 Cores logice: {total_logical}")
         print(f"💻 Cores folosite: {num_cores} (TOATE!)")
         print(f"🎲 Posibilități totale {self.lottery_type}: {total_possibilities:,}")
-        print(f"🎯 RNG-uri compatibile: {len(rng_list)}/{len(RNG_MAX_SEEDS)}")
+        print(f"🎯 RNG-uri selectate: {len(rng_list)} ({rng_type})")
         print(f"⚡ Reverse Engineering: 6 LCG (INSTANT)")
         print(f"⏰ Timeout GLOBAL per RNG: {rng_timeout_minutes} minute")
         print(f"🔍 Comparare: ORDINEA EXACTĂ (nu sorted!)")
