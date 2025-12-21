@@ -62,26 +62,22 @@ def cache_seed(lottery_type, date_str, rng_name, seed):
     save_seeds_cache(cache)
 
 
-# SEED RANGES MAXIME pentru fiecare tip de RNG
-RNG_MAX_SEEDS = {
-    'lcg_glibc': 2**31,              # 2,147,483,648
-    'lcg_minstd': 2**31 - 1,         # 2,147,483,647
-    'lcg_randu': 2**31,              # 2,147,483,648
+# SEED RANGES pentru fiecare tip de RNG - OPTIMIZAT per JOC
+RNG_SEEDS_32BIT = {
     'lcg_borland': 2**32,            # 4,294,967,296
-    'lcg_weak': 233280,              # Range-ul specific
-    'php_rand': 0x7FFFFFFF,          # 2,147,483,647
     'xorshift32': 2**32 - 1,         # 4,294,967,295
-    'xorshift64': 2**64,             # 64-bit COMPLET pentru 6-49!
-    'xorshift128': 2**64,            # 64-bit output
-    'xorshift128plus': 2**64,        # 64-bit output
     'pcg32': 2**32,
     'well512': 2**32,
     'mwc': 2**32,
-    'fibonacci': 2**31,
-    'isaac': 2**31,
-    'xoshiro256': 2**64,             # 64-bit output pentru 6-49!
-    'splitmix64': 2**64,             # 64-bit COMPLET pentru 6-49!
-    'chacha': 2**64,                 # 64-bit pentru 6-49!
+}
+
+RNG_SEEDS_64BIT = {
+    'xorshift64': 2**64,
+    'xorshift128': 2**64,
+    'xorshift128plus': 2**64,
+    'xoshiro256': 2**64,
+    'splitmix64': 2**64,
+    'chacha': 2**64,
 }
 
 # Calcul factorial
@@ -109,19 +105,23 @@ LOTTERY_POSSIBILITIES = {
 
 def get_rng_max_seeds(rng_name):
     """Returnează numărul MAXIM de seeds pentru un RNG specific"""
-    return RNG_MAX_SEEDS.get(rng_name, 2**31)
+    if rng_name in RNG_SEEDS_32BIT:
+        return RNG_SEEDS_32BIT[rng_name]
+    elif rng_name in RNG_SEEDS_64BIT:
+        return RNG_SEEDS_64BIT[rng_name]
+    return 2**32  # Default
 
 def get_compatible_rngs(lottery_type):
-    """Returnează doar RNG-urile care au range suficient pentru loteria specificată"""
+    """Returnează doar RNG-urile OPTIME pentru loteria specificată"""
     min_required = LOTTERY_POSSIBILITIES.get(lottery_type, 0)
-    compatible = []
     
-    # Skip Mersenne automat
-    for rng_name, max_seeds in RNG_MAX_SEEDS.items():
-        if max_seeds >= min_required:
-            compatible.append(rng_name)
+    # Pentru 6-49: DOAR 64-bit (32-bit e prea mic)
+    if lottery_type == '6-49':
+        return list(RNG_SEEDS_64BIT.keys())
     
-    return compatible
+    # Pentru 5-40 și Joker: DOAR 32-bit (64-bit e overkill)
+    else:
+        return list(RNG_SEEDS_32BIT.keys())
 
 
 def compute_modular_inverse(a, m):
