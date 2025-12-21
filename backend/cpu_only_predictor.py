@@ -810,6 +810,13 @@ class CPUOnlyPredictor:
                         
                         # Afișăm imediat când găsim
                         print(f"\n  🎯 GĂSIT! Seed {seed:,} pentru {data[idx_task]['data']}: {data[idx_task]['numere']}")
+                        
+                        # EARLY STOPPING: Dacă am găsit toate extragerile, STOP!
+                        if len(seeds_found) == len(data):
+                            print(f"\n  ✅ TOATE EXTRAGERILE GĂSITE! Opresc căutarea pentru {rng_name}")
+                            pool.terminate()
+                            pool.join()
+                            break
                     
                     completed = len(seeds_by_draw)
                     progress = 100 * completed / len(data) if len(data) > 0 else 0
