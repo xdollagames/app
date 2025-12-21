@@ -143,8 +143,8 @@ def try_reverse_engineering(rng_name, numbers, lottery_config):
             try:
                 rng = create_rng(rng_name, seed)
                 generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
-                # Comparăm SETUL de numere, nu ordinea (ordinea fizică ≠ ordinea RNG)
-                if sorted(generated) == sorted(numbers):
+                # CRITIC: Comparăm ORDINEA EXACTĂ de extragere!
+                if generated == numbers:
                     return seed
             except:
                 pass
