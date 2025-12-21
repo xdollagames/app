@@ -112,16 +112,18 @@ def get_rng_max_seeds(rng_name):
     return 2**32  # Default
 
 def get_compatible_rngs(lottery_type):
-    """Returnează doar RNG-urile OPTIME pentru loteria specificată"""
+    """Returnează TOATE RNG-urile care au range suficient pentru loteria specificată"""
     min_required = LOTTERY_POSSIBILITIES.get(lottery_type, 0)
+    compatible = []
     
-    # Pentru 6-49: DOAR 64-bit (32-bit e prea mic)
-    if lottery_type == '6-49':
-        return list(RNG_SEEDS_64BIT.keys())
+    # Adaugă toate RNG-urile cu range suficient
+    all_rngs = {**RNG_SEEDS_32BIT, **RNG_SEEDS_64BIT}
     
-    # Pentru 5-40 și Joker: DOAR 32-bit (64-bit e overkill)
-    else:
-        return list(RNG_SEEDS_32BIT.keys())
+    for rng_name, max_seeds in all_rngs.items():
+        if max_seeds >= min_required:
+            compatible.append(rng_name)
+    
+    return compatible
 
 
 def compute_modular_inverse(a, m):
