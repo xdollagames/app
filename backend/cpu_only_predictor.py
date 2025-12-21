@@ -781,21 +781,11 @@ class CPUOnlyPredictor:
             print(f"  {i}. {e['data']:15s} → {e['numere']}")
         print()
         
-        # Test TOATE RNG-urile compatibile
+        # Test RNG-urile selectate
         print(f"\n{'='*70}")
-        print(f"  RNG TESTING - {len(rng_list)} RNG-uri compatibile")
+        print(f"  RNG TESTING - {len(rng_list)} RNG-uri")
         print(f"  Timeout: {rng_timeout_minutes} min per RNG")
         print(f"{'='*70}\n")
-        
-        # Afișăm RNG-urile INCOMPATIBILE (dacă există)
-        all_rngs = set(RNG_MAX_SEEDS.keys())
-        incompatible = all_rngs - set(rng_list)
-        if incompatible:
-            print(f"⚠️  RNG-uri INCOMPATIBILE (range prea mic):")
-            for rng in sorted(incompatible):
-                max_seeds = RNG_MAX_SEEDS[rng]
-                print(f"   ❌ {rng}: {max_seeds:,} < {total_possibilities:,}")
-            print()
         
         rng_results = {}
         
