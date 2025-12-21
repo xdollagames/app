@@ -718,6 +718,9 @@ class CPUOnlyPredictor:
         
         num_cores = max(1, physical - 1)
         
+        # SKIP Mersenne - prea lent pentru ordine exactă
+        rng_list = [rng for rng in RNG_TYPES.keys() if rng != 'mersenne']
+        
         print(f"💻 Cores logice: {total_logical}")
         print(f"💻 Cores fizice: {physical}")
         print(f"💻 Cores folosite: {num_cores}/{physical} (100% - 1 core)")
