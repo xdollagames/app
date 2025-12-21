@@ -247,9 +247,9 @@ def cpu_worker_chunked(args):
     """Worker CPU - cu CACHE pentru seeds deja găsite!"""
     import time
     
-    draw_idx, numbers, rng_name, lottery_config, seed_range, search_size_total, timeout_minutes, lottery_type, date_str = args
-    # Comparăm SETUL de numere (sortate) pentru a găsi RNG-ul corect
-    target_sorted = sorted(numbers)
+    draw_idx, numbers, rng_name, lottery_config, seed_range, search_size_total, timeout_seconds, lottery_type, date_str = args
+    # CRITIC: Căutăm seed-ul care reproduce ORDINEA EXACTĂ de extragere!
+    target_exact = numbers
     start_time = time.time()
     
     # VERIFICĂ CACHE MAI ÎNTÂI! (INSTANT dacă există!)
