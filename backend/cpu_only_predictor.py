@@ -1138,6 +1138,8 @@ if __name__ == "__main__":
                       help='Success rate minim (default: 0.66). Folosește 1.0 pentru doar RNG-uri PERFECTE (100%%)')
     parser.add_argument('--only-perfect', action='store_true',
                       help='Acceptă doar RNG-uri cu 100%% success rate (shortcut pentru --min-success-rate 1.0)')
+    parser.add_argument('--min-recent-seeds', type=int, default=None,
+                      help='Permite predicție dacă găsește ultimele N seeds (ex: --min-recent-seeds 2). Ignoră --min-success-rate')
     
     args = parser.parse_args()
     
