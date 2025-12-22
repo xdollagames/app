@@ -878,18 +878,20 @@ class CPUOnlyPredictor:
             # Chunk mai mare = mai puțin overhead, folosește RAM pentru caching
             chunk_size = max(500000, seed_range[1] // (num_cores * 4))  # 4 chunks per core (era 10)
             
+            # OPTIMIZARE: Creează tasks ODATĂ pentru TOATE extragerile
+            # În loc să creeze tasks separate per extragere (ineficient)
+            all_targets = [(i, e['numere'], e['data']) for i, e in enumerate(data) 
+                          if len(e['numere']) == self.config.numbers_to_draw]
+            
             tasks = []
-            for i, e in enumerate(data):
-                if len(e['numere']) != self.config.numbers_to_draw:
-                    continue
-                
-                # Împarte seed range în chunks
-                for chunk_start in range(seed_range[0], seed_range[1], chunk_size):
-                    chunk_end = min(chunk_start + chunk_size, seed_range[1])
-                    tasks.append((i, e['numere'], rng_name, self.config, chunk_start, chunk_end, 
-                                timeout_seconds, self.lottery_type, e['data'], seed_range))
+            for chunk_start in range(seed_range[0], seed_range[1], chunk_size):
+                chunk_end = min(chunk_start + chunk_size, seed_range[1])
+                # Un task procesează un chunk pentru TOATE extragerile
+                tasks.append((all_targets, rng_name, self.config, chunk_start, chunk_end, 
+                            timeout_seconds, self.lottery_type, seed_range))
             
             print(f"  🔥 {len(tasks)} task-uri (chunks de {chunk_size:,}) → {min(num_cores, len(tasks))} cores active")
+            print(f"  ⚡ OPTIMIZAT: Fiecare seed testat o singură dată pentru {len(all_targets)} extrageri!")
             
             seeds_found = []
             draws_with_seeds = []
