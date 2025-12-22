@@ -907,7 +907,7 @@ class CPUOnlyPredictor:
             
             with Pool(processes=num_cores) as pool:
                 tasks_completed = 0
-                for result in pool.imap_unordered(cpu_worker_chunked, tasks):
+                for chunk_results in pool.imap_unordered(cpu_worker_chunked, tasks):
                     tasks_completed += 1
                     
                     # Incrementăm seeds procesate (fiecare task = un chunk)
@@ -923,33 +923,36 @@ class CPUOnlyPredictor:
                         pool.join()
                         break
                     
-                    idx_task, seed, from_cache = result
+                    # Procesează rezultatele pentru TOATE extragerile din acest chunk
+                    seed_found_in_chunk = False
+                    for idx_task, result_seed in chunk_results.items():
+                        if result_seed == 'NOT_FOUND':
+                            cached_negative += 1
+                            seeds_by_draw[idx_task] = None
+                        elif result_seed is not None and isinstance(result_seed, int) and idx_task not in seeds_by_draw:
+                            seeds_by_draw[idx_task] = result_seed
+                            seeds_found.append(result_seed)
+                            draws_with_seeds.append({
+                                'idx': idx_task,
+                                'date': data[idx_task]['data'],
+                                'numbers': data[idx_task]['numere'],
+                                'seed': result_seed
+                            })
+                            seed_found_in_chunk = True
+                            
+                            # Afișăm imediat când găsim
+                            print(f"\n  🎯 GĂSIT! Seed {result_seed:,} pentru {data[idx_task]['data']}: {data[idx_task]['numere']}")
                     
-                    if seed is None and from_cache:
-                        cached_negative += 1
-                        seeds_by_draw[idx_task] = None
-                    elif seed is not None and idx_task not in seeds_by_draw:
-                        seeds_by_draw[idx_task] = seed
-                        seeds_found.append(seed)
-                        draws_with_seeds.append({
-                            'idx': idx_task,
-                            'date': data[idx_task]['data'],
-                            'numbers': data[idx_task]['numere'],
-                            'seed': seed
-                        })
-                        if from_cache:
-                            cached_positive += 1
-                        
-                        # Afișăm imediat când găsim
-                        print(f"\n  🎯 GĂSIT! Seed {seed:,} pentru {data[idx_task]['data']}: {data[idx_task]['numere']}")
-                        last_update_time = time.time()  # Forțează update imediat după găsire
-                        
-                        # EARLY STOPPING: Dacă am găsit toate extragerile, STOP!
-                        if len(seeds_found) == len(data):
-                            print(f"\n  ✅ TOATE EXTRAGERILE GĂSITE! Opresc căutarea pentru {rng_name}")
-                            pool.terminate()
-                            pool.join()
-                            break
+                    if seed_found_in_chunk:
+                        last_update_time = time.time()  # Forțează update imediat
+                        cached_positive += len([s for s in chunk_results.values() if isinstance(s, int)])
+                    
+                    # EARLY STOPPING: Dacă am găsit toate extragerile, STOP!
+                    if len(seeds_found) == len(data):
+                        print(f"\n  ✅ TOATE EXTRAGERILE GĂSITE! Opresc căutarea pentru {rng_name}")
+                        pool.terminate()
+                        pool.join()
+                        break
                     
                     # Calculăm seeds_progress pentru verificare
                     seeds_progress = 100 * seeds_processed / total_seeds
