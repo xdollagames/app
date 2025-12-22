@@ -192,14 +192,22 @@ def get_rng_max_seeds(rng_name, lottery_type='5-40'):
     return ALL_RNGS.get(rng_name, 2**32)
 
 def get_compatible_rngs(lottery_type):
-    """Returnează TOATE RNG-urile care au range suficient pentru loteria specificată"""
+    """Returnează RNG-urile OPTIME pentru loteria specificată"""
     min_required = LOTTERY_POSSIBILITIES.get(lottery_type, 0)
     compatible = []
     
     for rng_name in ALL_RNGS.keys():
         max_seeds = get_rng_max_seeds(rng_name, lottery_type)
-        if max_seeds >= min_required:
-            compatible.append(rng_name)
+        
+        # Pentru 5-40 și Joker: EXCLUDE RNG-urile 64-bit (prea mari!)
+        if lottery_type in ['5-40', 'joker']:
+            # Acceptă doar dacă range-ul e între min_required și 10 miliarde
+            if min_required <= max_seeds < 10_000_000_000:
+                compatible.append(rng_name)
+        # Pentru 6-49: DOAR 64-bit
+        else:
+            if max_seeds >= min_required:
+                compatible.append(rng_name)
     
     return compatible
 
