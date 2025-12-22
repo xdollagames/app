@@ -902,7 +902,7 @@ class CPUOnlyPredictor:
             
             rng_start_time = time.time()
             last_update_time = time.time()
-            update_interval = 2.0  # Actualizare la fiecare 2 secunde
+            update_interval = 30.0  # Actualizare la fiecare 30 secunde
             
             with Pool(processes=num_cores) as pool:
                 tasks_completed = 0
