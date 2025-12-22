@@ -939,17 +939,45 @@ class CPUOnlyPredictor:
             print(f"\n  ⏱️  Timp: {elapsed_total/60:.1f} minute")
             print(f"  ✅ {len(seeds_found)}/{len(data)} ({success_rate:.1%})", end='')
             
-            if success_rate >= min_success_rate:
-                print(f" - ✅ PESTE 66%!")
+            # Verifică dacă avem ultimele N seeds (cele mai recente)
+            recent_seeds_found = False
+            if min_recent_seeds and len(draws_with_seeds) >= min_recent_seeds:
+                # Sortăm după idx pentru a avea ordinea cronologică
                 draws_with_seeds.sort(key=lambda x: x['idx'])
-                seeds_found = [d['seed'] for d in draws_with_seeds]
-                rng_results[rng_name] = {
-                    'seeds': seeds_found,
-                    'draws': draws_with_seeds,
-                    'success_rate': success_rate
-                }
-            else:
-                print(f" - ❌ Sub 66%")
+                # Verificăm dacă ultimele N extrageri au seeds
+                recent_indices = list(range(len(data) - min_recent_seeds, len(data)))
+                found_indices = [d['idx'] for d in draws_with_seeds]
+                
+                # Dacă ultimele min_recent_seeds extrageri TOATE au seeds
+                if all(idx in found_indices for idx in recent_indices):
+                    recent_seeds_found = True
+                    print(f" - ✅ ULTIMELE {min_recent_seeds} GĂSITE! (permite predicție)")
+                    # Păstrăm doar ultimele min_recent_seeds pentru pattern analysis
+                    recent_draws = [d for d in draws_with_seeds if d['idx'] in recent_indices]
+                    seeds_found = [d['seed'] for d in recent_draws]
+                    rng_results[rng_name] = {
+                        'seeds': seeds_found,
+                        'draws': recent_draws,
+                        'success_rate': len(recent_draws) / min_recent_seeds,
+                        'partial': True,  # Marchează că e parțial
+                        'recent_only': True
+                    }
+                else:
+                    print(f" - ❌ Nu are ultimele {min_recent_seeds} consecutive")
+            
+            # Logica normală de success rate (dacă nu e min_recent_seeds)
+            if not recent_seeds_found:
+                if success_rate >= min_success_rate:
+                    print(f" - ✅ PESTE {min_success_rate:.0%}!")
+                    draws_with_seeds.sort(key=lambda x: x['idx'])
+                    seeds_found = [d['seed'] for d in draws_with_seeds]
+                    rng_results[rng_name] = {
+                        'seeds': seeds_found,
+                        'draws': draws_with_seeds,
+                        'success_rate': success_rate
+                    }
+                else:
+                    print(f" - ❌ Sub {min_success_rate:.0%}")
             
             print()
         
