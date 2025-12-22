@@ -62,19 +62,39 @@ def cache_seed(lottery_type, date_str, rng_name, seed):
     save_seeds_cache(cache)
 
 
-# SEED RANGES pentru fiecare RNG
-# Toate RNG-urile care pot fi folosite (10 RNG-uri originale)
+# SEED RANGES pentru fiecare RNG - TOATE DISPONIBILE (fără Mersenne)
 ALL_RNGS = {
+    # LCG family
     'lcg_borland': 2**32,
+    'lcg_glibc': 2**31,
+    'lcg_minstd': 2**31 - 1,
+    'lcg_randu': 2**31,
+    'lcg_weak': 233280,
+    'php_rand': 2**31 - 1,
+    
+    # Xorshift family
     'xorshift32': 2**32 - 1,
     'xorshift64': 2**32,        # Poate merge la 2^64 pentru 6-49
     'xorshift128': 2**32,       # Poate merge la 2^64 pentru 6-49
-    'xorshift128plus': 2**32,   # Poate merge la 2^64 pentru 6-49
+    'xorshift128plus': 2**32,   # NOTĂ: în RNG_TYPES se numește diferit
+    'xorshift_simple': 2**32,
+    
+    # Modern RNGs
     'pcg32': 2**32,
-    'well512': 2**32,
-    'mwc': 2**32,
     'xoshiro256': 2**32,        # Poate merge la 2^64 pentru 6-49
     'splitmix64': 2**32,        # Poate merge la 2^64 pentru 6-49
+    
+    # Other algorithms
+    'well512': 2**32,
+    'mwc': 2**32,
+    'fibonacci': 2**31,
+    'middlesquare': 2**32,
+    'lfsr': 2**32,
+    
+    # Language-specific
+    'js_math_random': 2**32,
+    'java_random': 2**32,
+    'complex_hash': 2**32,
 }
 
 # RNG-uri care pot scala la 64-bit DOAR pentru 6-49
