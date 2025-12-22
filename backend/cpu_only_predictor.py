@@ -1019,26 +1019,106 @@ class CPUOnlyPredictor:
         for rng_name, result in sorted(rng_results.items(), key=lambda x: x[1]['success_rate'], reverse=True):
             print(f"\n{'='*70}")
             print(f"{rng_name.upper()} - Success: {result['success_rate']:.1%}", end='')
-            if result.get('recent_only'):
-                print(f" (ULTIMELE {len(result['seeds'])} seeds)", end='')
+            if result['has_gaps']:
+                print(f" (Total: {result['total_count']}, Consecutiv final: {result['consecutive_count']})", end='')
             print()
             print(f"{'='*70}")
             
-            # VERIFICARE ORDINE
-            if result.get('recent_only'):
-                print(f"\n  📋 ULTIMELE {len(result['seeds'])} Seeds (cele mai recente):")
-            else:
-                print(f"\n  📋 Seeds (ordine cronologică - primele 5):")
+            # Afișare seeds găsite
+            print(f"\n  📋 Seeds găsite (ordine cronologică):")
+            for i, draw in enumerate(result['all_draws'][:10]):
+                marker = "🔥" if draw['idx'] in [d['idx'] for d in result['combo_draws']] else "  "
+                print(f"    {marker} {i+1}. {draw['date']:15s} → seed: {draw['seed']:>10,}")
+            if len(result['all_draws']) > 10:
+                print(f"    ... (+{len(result['all_draws'])-10} seeds)")
             
-            for i, draw in enumerate(result['draws'][:5]):
-                print(f"    {i+1}. {draw['date']:15s} → seed: {draw['seed']:>10,}")
-            if len(result['draws']) > 5:
-                print(f"    ... (+{len(result['draws'])-5} seeds)")
-            print(f"    → Ultimul seed (cel mai nou): {result['seeds'][-1]:,}")
-            print(f"    → Prezice seed #{len(result['seeds'])+1}\n")
+            # Afișare combo consecutiv
+            if result['has_gaps']:
+                print(f"\n  🔥 COMBO CONSECUTIV (ultimele {result['consecutive_count']}):")
+                for i, draw in enumerate(result['combo_draws']):
+                    print(f"     {i+1}. {draw['date']:15s} → seed: {draw['seed']:>10,}")
             
-            # Pattern analysis
-            pattern = analyze_all_patterns_cpu(result['seeds'])
+            # PREDICȚIE 1: Cu TOATE seeds-urile (dacă are gaps)
+            if result['has_gaps'] and len(result['all_seeds']) >= 2:
+                print(f"\n  {'─'*66}")
+                print(f"  PREDICȚIE #1: Pattern pe TOATE {len(result['all_seeds'])} seeds")
+                print(f"  {'─'*66}")
+                
+                pattern_all = analyze_all_patterns_cpu(result['all_seeds'])
+                
+                if pattern_all and pattern_all.get('top_patterns'):
+                    for p in pattern_all['top_patterns'][:1]:  # Top 1
+                        print(f"  Pattern: {p['name']}")
+                        print(f"  Confidence: {p['confidence']:.1f}%")
+                        print(f"  Seed prezis (toate): {p['pred']:,}")
+                        
+                        # Generează predicție
+                        try:
+                            rng = create_rng(rng_name, p['pred'])
+                            if self.config.is_composite:
+                                nums = []
+                                count_1, min_1, max_1 = self.config.composite_parts[0]
+                                part_1 = generate_numbers(rng, count_1, min_1, max_1)
+                                nums.extend(part_1)
+                                count_2, min_2, max_2 = self.config.composite_parts[1]
+                                joker = min_2 + (rng.next() % (max_2 - min_2 + 1))
+                                nums.append(joker)
+                            else:
+                                nums = generate_numbers(rng, self.config.numbers_to_draw, self.config.min_number, self.config.max_number)
+                            
+                            print(f"  Predicție: {nums}")
+                            predictions.append({
+                                'rng': rng_name,
+                                'type': 'ALL_SEEDS',
+                                'seeds_used': len(result['all_seeds']),
+                                'pattern': p['name'],
+                                'confidence': p['confidence'],
+                                'numbers': nums,
+                                'priority': 'low'
+                            })
+                        except Exception as e:
+                            print(f"  ❌ Eroare: {e}")
+            
+            # PREDICȚIE #2: Cu DOAR COMBO-ul consecutiv (PRIORITAR!)
+            if len(result['combo_seeds']) >= 2:
+                print(f"\n  {'─'*66}")
+                print(f"  🔥 PREDICȚIE #2: Pattern pe COMBO consecutiv ({len(result['combo_seeds'])} seeds) - PRIORITAR!")
+                print(f"  {'─'*66}")
+                
+                pattern_combo = analyze_all_patterns_cpu(result['combo_seeds'])
+                
+                if pattern_combo and pattern_combo.get('top_patterns'):
+                    for p in pattern_combo['top_patterns'][:1]:
+                        print(f"  Pattern: {p['name']}")
+                        print(f"  Confidence: {p['confidence']:.1f}%")
+                        print(f"  Seed prezis (combo): {p['pred']:,}")
+                        
+                        try:
+                            rng = create_rng(rng_name, p['pred'])
+                            if self.config.is_composite:
+                                nums = []
+                                count_1, min_1, max_1 = self.config.composite_parts[0]
+                                part_1 = generate_numbers(rng, count_1, min_1, max_1)
+                                nums.extend(part_1)
+                                count_2, min_2, max_2 = self.config.composite_parts[1]
+                                joker = min_2 + (rng.next() % (max_2 - min_2 + 1))
+                                nums.append(joker)
+                            else:
+                                nums = generate_numbers(rng, self.config.numbers_to_draw, self.config.min_number, self.config.max_number)
+                            
+                            print(f"  🎯 Predicție PRIORITARĂ: {nums}")
+                            predictions.append({
+                                'rng': rng_name,
+                                'type': 'CONSECUTIVE_COMBO',
+                                'seeds_used': len(result['combo_seeds']),
+                                'consecutive': True,
+                                'pattern': p['name'],
+                                'confidence': p['confidence'],
+                                'numbers': nums,
+                                'priority': 'HIGH'
+                            })
+                        except Exception as e:
+                            print(f"  ❌ Eroare: {e}")
             
             # Display patterns
             if pattern.get('top_patterns') and len(pattern['top_patterns']) > 1:
