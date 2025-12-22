@@ -1176,8 +1176,10 @@ class CPUOnlyPredictor:
                     except Exception as e:
                         print(f"  ❌ Eroare predicție: {e}")
         
-        # Salvare
+        # Salvare predicții (sortate după prioritate)
         if predictions:
+            predictions.sort(key=lambda x: (x['priority'] != 'HIGH', -x['confidence']))
+            
             output = f"cpu_prediction_{self.lottery_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
             with open(output, 'w') as f:
                 json.dump({
@@ -1185,7 +1187,29 @@ class CPUOnlyPredictor:
                     'timestamp': datetime.now().isoformat(),
                     'predictions': predictions
                 }, f, indent=2)
-            print(f"\n💾 Rezultate salvate: {output}\n")
+            print(f"\n💾 Rezultate salvate: {output}")
+            
+            # Afișare rezumat predicții
+            print(f"\n{'='*70}")
+            print(f"  REZUMAT PREDICȚII")
+            print(f"{'='*70}")
+            
+            high_priority = [p for p in predictions if p['priority'] == 'HIGH']
+            low_priority = [p for p in predictions if p['priority'] == 'low']
+            
+            if high_priority:
+                print(f"\n🔥 PREDICȚII PRIORITARE (combo consecutiv):")
+                for i, p in enumerate(high_priority[:3], 1):
+                    print(f"  {i}. {p['rng'].upper()} ({p['seeds_used']} seeds consecutiv)")
+                    print(f"     → {p['numbers']}")
+            
+            if low_priority:
+                print(f"\n📊 Predicții suplimentare (toate seeds):")
+                for i, p in enumerate(low_priority[:3], 1):
+                    print(f"  {i}. {p['rng'].upper()} ({p['seeds_used']} seeds total)")
+                    print(f"     → {p['numbers']}")
+            
+            print()
 
 
 if __name__ == "__main__":
