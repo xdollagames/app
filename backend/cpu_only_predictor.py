@@ -267,97 +267,96 @@ def try_reverse_engineering(rng_name, numbers, lottery_config):
 
 
 def cpu_worker_chunked(args):
-    """Worker CPU - procesează un CHUNK de seeds pentru o extragere"""
+    """Worker CPU - OPTIMIZAT: testează fiecare seed o singură dată pentru TOATE extragerile"""
     import time
     
-    draw_idx, numbers, rng_name, lottery_config, seed_chunk_start, seed_chunk_end, timeout_seconds, lottery_type, date_str, seed_range_tuple = args
-    # CRITIC: Căutăm seed-ul care reproduce ORDINEA EXACTĂ de extragere!
-    target_exact = numbers  # Lista în ordinea EXACTĂ de extragere
+    all_targets, rng_name, lottery_config, seed_chunk_start, seed_chunk_end, timeout_seconds, lottery_type, seed_range_tuple = args
+    # all_targets = lista cu toate extragerile: [(idx, numbers, date), ...]
+    
     start_time = time.time()
+    results_per_draw = {idx: None for idx, _, _ in all_targets}
     
-    # VERIFICĂ CACHE MAI ÎNTÂI
-    cached_result = get_cached_seed(lottery_type, date_str, rng_name)
-    
-    if cached_result == 'NOT_FOUND':
-        # Deja am căutat și NU am găsit → SKIP direct!
-        return (draw_idx, None, True)  # True = din cache (negativ)
-    
-    if cached_result is not None and isinstance(cached_result, int):
-        # Seed găsit în cache → verifică că e în acest chunk
-        if seed_chunk_start <= cached_result < seed_chunk_end:
-            try:
-                rng = create_rng(rng_name, cached_result)
-                if lottery_config.is_composite:
-                    # FIX JOKER: Permite duplicate! (13.7% din cazuri în date reale)
-                    generated = []
-                    
-                    # Partea 1: Generează primele 5 numere UNIQUE din range-ul lor
-                    count_1, min_1, max_1 = lottery_config.composite_parts[0]
-                    part_1 = generate_numbers(rng, count_1, min_1, max_1)
-                    generated.extend(part_1)
-                    
-                    # Partea 2: Generează Joker FĂRĂ verificare duplicate!
-                    count_2, min_2, max_2 = lottery_config.composite_parts[1]
-                    # Generează direct UN număr (permite duplicate!)
-                    joker = min_2 + (rng.next() % (max_2 - min_2 + 1))
-                    generated.append(joker)
-                else:
-                    generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
-                
-                # Comparăm ORDINEA EXACTĂ de extragere
-                if generated == target_exact:
-                    return (draw_idx, cached_result, True)
-            except:
-                pass
-    
-    # Reverse engineering (doar dacă chunk-ul e primul)
-    if seed_chunk_start == 0:
-        reversed_seed = try_reverse_engineering(rng_name, numbers, lottery_config)
-        if reversed_seed is not None:
-            cache_seed(lottery_type, date_str, rng_name, reversed_seed)
-            return (draw_idx, reversed_seed, False)
-    
-    # Timeout pentru acest chunk
-    timeout_seconds = timeout_seconds if rng_name == 'mersenne' else 99999999
-    
-    # Exhaustive search pe acest CHUNK
-    for seed in range(seed_chunk_start, seed_chunk_end):
-        if (time.time() - start_time) > timeout_seconds:
-            return (draw_idx, None, False)
+    # Verifică cache pentru fiecare extragere
+    cache_hits = {}
+    for idx, numbers, date_str in all_targets:
+        cached_result = get_cached_seed(lottery_type, date_str, rng_name)
         
+        if cached_result == 'NOT_FOUND':
+            results_per_draw[idx] = 'NOT_FOUND'
+        elif cached_result is not None and isinstance(cached_result, int):
+            if seed_chunk_start <= cached_result < seed_chunk_end:
+                cache_hits[idx] = (cached_result, date_str)
+    
+    # Verifică cache hits
+    for idx, (cached_seed, date_str) in cache_hits.items():
         try:
-            rng = create_rng(rng_name, seed)
-            
+            rng = create_rng(rng_name, cached_seed)
             if lottery_config.is_composite:
-                # FIX JOKER: Permite duplicate! (13.7% din cazuri în date reale)
                 generated = []
-                
-                # Partea 1: Generează primele 5 numere UNIQUE din range-ul lor
                 count_1, min_1, max_1 = lottery_config.composite_parts[0]
                 part_1 = generate_numbers(rng, count_1, min_1, max_1)
                 generated.extend(part_1)
-                
-                # Partea 2: Generează Joker FĂRĂ verificare duplicate!
                 count_2, min_2, max_2 = lottery_config.composite_parts[1]
-                # Generează direct UN număr (permite duplicate!)
                 joker = min_2 + (rng.next() % (max_2 - min_2 + 1))
                 generated.append(joker)
             else:
                 generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
             
-            # Comparăm ORDINEA EXACTĂ de extragere
-            if generated == target_exact:
-                cache_seed(lottery_type, date_str, rng_name, seed)
-                return (draw_idx, seed, False)
+            # Compară cu target pentru această extragere
+            target = [num for i, num, _ in all_targets if i == idx][0]
+            if generated == target:
+                results_per_draw[idx] = cached_seed
+        except:
+            pass
+    
+    # Reverse engineering pentru primul chunk (doar pentru extragerea 0)
+    if seed_chunk_start == 0 and all_targets:
+        idx_0, numbers_0, date_0 = all_targets[0]
+        if results_per_draw[idx_0] is None:
+            reversed_seed = try_reverse_engineering(rng_name, numbers_0, lottery_config)
+            if reversed_seed is not None:
+                cache_seed(lottery_type, date_0, rng_name, reversed_seed)
+                results_per_draw[idx_0] = reversed_seed
+    
+    # LOOP OPTIMIZAT: testează fiecare seed o singură dată
+    for seed in range(seed_chunk_start, seed_chunk_end):
+        if (time.time() - start_time) > timeout_seconds:
+            break
+        
+        try:
+            rng = create_rng(rng_name, seed)
+            
+            # Generează ODATĂ
+            if lottery_config.is_composite:
+                generated = []
+                count_1, min_1, max_1 = lottery_config.composite_parts[0]
+                part_1 = generate_numbers(rng, count_1, min_1, max_1)
+                generated.extend(part_1)
+                count_2, min_2, max_2 = lottery_config.composite_parts[1]
+                joker = min_2 + (rng.next() % (max_2 - min_2 + 1))
+                generated.append(joker)
+            else:
+                generated = generate_numbers(rng, lottery_config.numbers_to_draw, lottery_config.min_number, lottery_config.max_number)
+            
+            # Compară cu TOATE extragerile
+            for idx, target, date_str in all_targets:
+                if results_per_draw[idx] is None:  # Doar dacă nu am găsit deja
+                    if generated == target:
+                        cache_seed(lottery_type, date_str, rng_name, seed)
+                        results_per_draw[idx] = seed
+                        # Nu break - poate să matchuiască și alte extrageri!
         except:
             continue
     
-    # Nu am găsit nimic în acest chunk
-    # Dacă e ultimul chunk, salvează NOT_FOUND
+    # Marchează NOT_FOUND pentru ultimul chunk
     if seed_chunk_end >= seed_range_tuple[1]:
-        cache_seed(lottery_type, date_str, rng_name, 'NOT_FOUND')
+        for idx, numbers, date_str in all_targets:
+            if results_per_draw[idx] is None:
+                cache_seed(lottery_type, date_str, rng_name, 'NOT_FOUND')
+                results_per_draw[idx] = 'NOT_FOUND'
     
-    return (draw_idx, None, False)
+    # Returnează rezultate pentru toate extragerile
+    return results_per_draw
     """Worker CPU - cu CACHE pentru seeds deja găsite!"""
     import time
     
