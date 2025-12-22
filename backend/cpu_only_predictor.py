@@ -982,7 +982,10 @@ class CPUOnlyPredictor:
             print()
         
         if not rng_results:
-            print(f"\n❌ Niciun RNG nu a trecut de 66%!\n")
+            if min_recent_seeds:
+                print(f"\n❌ Niciun RNG nu are ultimele {min_recent_seeds} seeds consecutive!\n")
+            else:
+                print(f"\n❌ Niciun RNG nu a trecut de {min_success_rate:.0%}!\n")
             return
         
         # Pattern Analysis
@@ -994,11 +997,18 @@ class CPUOnlyPredictor:
         
         for rng_name, result in sorted(rng_results.items(), key=lambda x: x[1]['success_rate'], reverse=True):
             print(f"\n{'='*70}")
-            print(f"{rng_name.upper()} - Success: {result['success_rate']:.1%}")
+            print(f"{rng_name.upper()} - Success: {result['success_rate']:.1%}", end='')
+            if result.get('recent_only'):
+                print(f" (ULTIMELE {len(result['seeds'])} seeds)", end='')
+            print()
             print(f"{'='*70}")
             
             # VERIFICARE ORDINE
-            print(f"\n  📋 Seeds (ordine cronologică - primele 5):")
+            if result.get('recent_only'):
+                print(f"\n  📋 ULTIMELE {len(result['seeds'])} Seeds (cele mai recente):")
+            else:
+                print(f"\n  📋 Seeds (ordine cronologică - primele 5):")
+            
             for i, draw in enumerate(result['draws'][:5]):
                 print(f"    {i+1}. {draw['date']:15s} → seed: {draw['seed']:>10,}")
             if len(result['draws']) > 5:
