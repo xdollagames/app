@@ -835,6 +835,8 @@ class CPUOnlyPredictor:
         print(f"🎲 Posibilități totale {self.lottery_type}: {total_possibilities:,}")
         print(f"🎯 RNG-uri compatibile: {len(rng_list)}")
         print(f"⚡ Reverse Engineering: 6 LCG (INSTANT)")
+        if HAS_NUMBA:
+            print(f"🚀 Optimizare: Numba JIT + SIMD activată")
         print(f"⏰ Timeout GLOBAL per RNG: {rng_timeout_minutes} minute")
         print(f"🔍 Comparare: ORDINEA EXACTĂ (nu sorted!)")
         
