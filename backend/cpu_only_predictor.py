@@ -960,7 +960,7 @@ class CPUOnlyPredictor:
                         pool.join()
                         break
                     
-                    # UPDATE PROGRESS la fiecare 2 secunde SAU dacă e seed găsit
+                    # UPDATE PROGRESS la fiecare 30 secunde SAU dacă e seed găsit
                     current_time = time.time()
                     if current_time - last_update_time >= update_interval or seed is not None:
                         last_update_time = current_time
