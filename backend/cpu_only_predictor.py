@@ -93,11 +93,17 @@ ALL_RNGS = {
     'js_math_random': 2**32,
     'java_random': 2**32,
     'complex_hash': 2**32,
+    
+    # NEW - Algoritmi conceptual diferiți (4 RNG-uri)
+    'lxm': 2**32,               # LCG + Xorshift hybrid
+    'xoroshiro128': 2**64,      # Xorshift cu rotații + 64-bit
+    'chacha': 2**32,            # ChaCha-based
+    'kiss': 2**32,              # KISS - combinație 3 RNG-uri
 }
-# TOTAL: 20 RNG-uri
+# TOTAL: 24 RNG-uri
 
 # RNG-uri care pot scala la 64-bit DOAR pentru 6-49
-RNG_64BIT_CAPABLE = ['xorshift64', 'xorshift128', 'xoshiro256', 'splitmix']
+RNG_64BIT_CAPABLE = ['xorshift64', 'xorshift128', 'xoshiro256', 'splitmix', 'xoroshiro128']
 
 # Calcul factorial
 def factorial(n):
