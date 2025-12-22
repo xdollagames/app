@@ -1139,19 +1139,21 @@ class CPUOnlyPredictor:
             print(f"  REZUMAT PREDICȚII")
             print(f"{'='*70}")
             
-            high_priority = [p for p in predictions if p['priority'] == 'HIGH']
-            low_priority = [p for p in predictions if p['priority'] == 'low']
+            high_priority = [p for p in predictions if p.get('priority') == 'HIGH']
+            low_priority = [p for p in predictions if p.get('priority') == 'low']
             
             if high_priority:
-                print(f"\n🔥 PREDICȚII PRIORITARE (combo consecutiv):")
-                for i, p in enumerate(high_priority[:3], 1):
-                    print(f"  {i}. {p['rng'].upper()} ({p['seeds_used']} seeds consecutiv)")
+                print(f"\n🔥 PREDICȚII PRIORITARE (combo consecutiv final):")
+                for i, p in enumerate(high_priority[:5], 1):
+                    print(f"  {i}. {p['rng'].upper()} - {p['seeds_used']} seeds consecutiv")
+                    print(f"     Pattern: {p['pattern']} ({p['confidence']:.1f}%)")
                     print(f"     → {p['numbers']}")
             
             if low_priority:
-                print(f"\n📊 Predicții suplimentare (toate seeds):")
-                for i, p in enumerate(low_priority[:3], 1):
-                    print(f"  {i}. {p['rng'].upper()} ({p['seeds_used']} seeds total)")
+                print(f"\n📊 Predicții suplimentare (include gap-uri în istoric):")
+                for i, p in enumerate(low_priority[:5], 1):
+                    print(f"  {i}. {p['rng'].upper()} - {p['seeds_used']} seeds total")
+                    print(f"     Pattern: {p['pattern']} ({p['confidence']:.1f}%)")
                     print(f"     → {p['numbers']}")
             
             print()
