@@ -529,6 +529,53 @@ class KISS:
         return (self.x + self.y + self.z) & 0xFFFFFFFF
 
 
+class PCG64:
+    """PCG64 - Permuted Congruential Generator 64-bit"""
+    __slots__ = ['state', 'inc']
+    
+    def __init__(self, seed: int):
+        self.state = seed & 0xFFFFFFFFFFFFFFFF
+        self.inc = ((seed >> 32) & 0xFFFFFFFFFFFFFFFF) | 1  # Trebuie impar
+    
+    def next(self) -> int:
+        # PCG XSH RR 64-bit
+        oldstate = self.state
+        # LCG step: state = state * multiplier + increment
+        self.state = (oldstate * 6364136223846793005 + self.inc) & 0xFFFFFFFFFFFFFFFF
+        
+        # XSH (xorshift high) + RR (random rotate)
+        xorshifted = (((oldstate >> 18) ^ oldstate) >> 27) & 0xFFFFFFFF
+        rot = (oldstate >> 59) & 0x1F
+        
+        return ((xorshifted >> rot) | (xorshifted << ((-rot) & 31))) & 0xFFFFFFFF
+
+
+class LXM64:
+    """LXM 64-bit - LCG + Xorshift Mix cu state mai mare"""
+    __slots__ = ['lcg_state', 'xor_state']
+    
+    def __init__(self, seed: int):
+        self.lcg_state = seed & 0xFFFFFFFFFFFFFFFF
+        self.xor_state = ((seed >> 32) & 0xFFFFFFFFFFFFFFFF) or 1
+        if self.lcg_state == 0:
+            self.lcg_state = 1
+    
+    def next(self) -> int:
+        # LCG part (64-bit)
+        self.lcg_state = (2862933555777941757 * self.lcg_state + 3037000493) & 0xFFFFFFFFFFFFFFFF
+        
+        # Xorshift part (64-bit)
+        x = self.xor_state
+        x ^= (x << 13) & 0xFFFFFFFFFFFFFFFF
+        x ^= (x >> 7) & 0xFFFFFFFFFFFFFFFF
+        x ^= (x << 17) & 0xFFFFFFFFFFFFFFFF
+        self.xor_state = x
+        
+        # Mix both și returnează 32-bit
+        result = (self.lcg_state + self.xor_state) & 0xFFFFFFFFFFFFFFFF
+        return result & 0xFFFFFFFF
+
+
 # Factory pentru crearea RNG-urilor
 RNG_TYPES = {
     'lcg_glibc': LCG_GLIBC,
@@ -556,6 +603,8 @@ RNG_TYPES = {
     'xoroshiro128': Xoroshiro128,  # Îmbunătățire xorshift cu rotații - NOU!
     'chacha': ChaChaSimple,  # ChaCha-based PRNG - NOU!
     'kiss': KISS,  # Keep It Simple Stupid - combinație 3 RNG - NOU!
+    'pcg64': PCG64,  # PCG 64-bit pentru 6-49 - NOU!
+    'lxm64': LXM64,  # LXM 64-bit pentru 6-49 - NOU!
 }
 
 
