@@ -97,8 +97,9 @@ def load_seeds_cache():
         return {}
 
 def save_seeds_cache(cache):
-    """Salvează cache-ul de seeds"""
+    """Salvează cache-ul de seeds cu versiune"""
     try:
+        cache['_version'] = CACHE_VERSION
         with open(CACHE_FILE, 'w') as f:
             json.dump(cache, f, indent=2)
     except:
