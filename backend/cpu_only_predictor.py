@@ -99,11 +99,15 @@ ALL_RNGS = {
     'xoroshiro128': 2**64,      # Xorshift cu rotații + 64-bit
     'chacha': 2**32,            # ChaCha-based
     'kiss': 2**32,              # KISS - combinație 3 RNG-uri
+    
+    # NEW - 64-bit specifice pentru 6-49 (2 RNG-uri)
+    'pcg64': 2**64,             # PCG 64-bit - top quality
+    'lxm64': 2**64,             # LXM 64-bit - robust modern
 }
-# TOTAL: 24 RNG-uri
+# TOTAL: 26 RNG-uri
 
 # RNG-uri care pot scala la 64-bit DOAR pentru 6-49
-RNG_64BIT_CAPABLE = ['xorshift64', 'xorshift128', 'xoshiro256', 'splitmix', 'xoroshiro128']
+RNG_64BIT_CAPABLE = ['xorshift64', 'xorshift128', 'xoshiro256', 'splitmix', 'xoroshiro128', 'pcg64', 'lxm64']
 
 # Calcul factorial
 def factorial(n):
