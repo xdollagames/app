@@ -764,7 +764,7 @@ class CPUOnlyPredictor:
         return normalized
     
     def run_prediction(self, last_n=None, start_year=None, end_year=None,
-                      rng_timeout_minutes=60, min_success_rate=0.66):
+                      rng_timeout_minutes=60, min_success_rate=0.66, min_recent_seeds=None):
         
         print(f"\n{'='*70}")
         print(f"  CPU-ONLY PREDICTOR - {self.lottery_type.upper()}")
