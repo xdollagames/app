@@ -1186,6 +1186,10 @@ if __name__ == "__main__":
         args.min_success_rate = 1.0
         print("🎯 Mod ONLY-PERFECT activat: doar RNG-uri cu 100%!\n")
     
+    # Afișare info pentru min_recent_seeds
+    if args.min_recent_seeds:
+        print(f"🎯 Mod RECENT-SEEDS activat: acceptă RNG dacă găsește ultimele {args.min_recent_seeds} seeds!\n")
+    
     if not args.last_n and not (args.start_year and args.end_year):
         print("❌ Specifică --last-n SAU (--start-year și --end-year)!")
         sys.exit(1)
@@ -1196,5 +1200,6 @@ if __name__ == "__main__":
         start_year=args.start_year,
         end_year=args.end_year,
         rng_timeout_minutes=args.rng_timeout,
-        min_success_rate=args.min_success_rate
+        min_success_rate=args.min_success_rate,
+        min_recent_seeds=args.min_recent_seeds
     )
