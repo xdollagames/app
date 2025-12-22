@@ -36,6 +36,45 @@ from lottery_config import get_lottery_config
 from advanced_rng_library import RNG_TYPES, create_rng, generate_numbers
 
 
+# OPTIMIZARE SIMD: Funcții vectorizate pentru LCG-uri (cele mai rapide)
+@njit(cache=True)
+def lcg_batch(seeds, a, c, m, min_val, max_val, count):
+    """Procesează batch de seeds LCG simultan cu SIMD/vectorizare"""
+    range_size = max_val - min_val + 1
+    batch_size = len(seeds)
+    results = np.zeros((batch_size, count), dtype=np.int32)
+    
+    for b in range(batch_size):
+        state = seeds[b] % m
+        numbers = []
+        seen = set()
+        attempts = 0
+        max_attempts = count * 100
+        
+        while len(numbers) < count and attempts < max_attempts:
+            # LCG step
+            state = (a * state + c) % m
+            num = min_val + (state % range_size)
+            
+            if num not in seen:
+                numbers.append(num)
+                seen.add(num)
+            attempts += 1
+        
+        # Umple rezultatul
+        for i in range(min(len(numbers), count)):
+            results[b, i] = numbers[i]
+    
+    return results
+
+
+if HAS_NUMBA:
+    print("✅ Numba SIMD optimization activată!")
+else:
+    print("⚠️  Numba nu e disponibil - rulează fără SIMD")
+
+
+
 # CACHE pentru seeds găsite (persistent între rulări!)
 CACHE_FILE = "seeds_cache.json"
 
