@@ -1119,95 +1119,20 @@ class CPUOnlyPredictor:
                             })
                         except Exception as e:
                             print(f"  ❌ Eroare: {e}")
+        
+        # Salvare
+        if predictions:
+            # Sortăm: prioritate HIGH primele
+            predictions.sort(key=lambda x: (x['priority'] != 'HIGH', -x['confidence']))
             
-            # Display patterns
-            if pattern.get('top_patterns') and len(pattern['top_patterns']) > 1:
-                print(f"  🔥 MULTIPLE PATTERN-URI PERFECTE ({len(pattern['top_patterns'])} cu 100%):")
-                for i, p in enumerate(pattern['top_patterns'], 1):
-                    print(f"    {i}. {p['name'].upper()}: {p['formula']}, seed={p['pred']:,}")
-            elif pattern.get('top_patterns'):
-                p = pattern['top_patterns'][0]
-                print(f"  🏆 BEST PATTERN: {p['name'].upper()}")
-                print(f"  📐 Formula: {p['formula']}")
-                print(f"  🎯 Confidence: {p['confidence']:.2f}%")
-                print(f"  ❌ Error: {p['error']}")
-            
-            print(f"\n  📊 Toate patterns ({len(pattern.get('all_patterns', {}))}):")
-            for pn, pd in pattern.get('all_patterns', {}).items():
-                err_str = f"{pd.get('error', 0):.2f}" if pd.get('error') != float('inf') else "∞"
-                print(f"    {pn:20s}: error={err_str}")
-            
-            # Predicție - GENEREAZĂ PENTRU TOATE PATTERN-URILE CU 100%!
-            if pattern.get('top_patterns'):
-                # Verifică dacă sunt multiple cu 100%
-                if len(pattern['top_patterns']) > 1:
-                    print(f"\n  {'='*66}")
-                    print(f"  🎯 PREDICȚII ({len(pattern['top_patterns'])} PATTERN-URI PERFECTE)")
-                    print(f"  {'='*66}\n")
-                    
-                    for i, p in enumerate(pattern['top_patterns'], 1):
-                        try:
-                            rng = create_rng(rng_name, p['pred'])
-                            
-                            if self.config.is_composite:
-                                # FIX JOKER: Permite duplicate! (13.7% din cazuri în date reale)
-                                nums = []
-                                
-                                # Partea 1: Generează primele 5 numere UNIQUE din range-ul lor
-                                count_1, min_1, max_1 = self.config.composite_parts[0]
-                                part_1 = generate_numbers(rng, count_1, min_1, max_1)
-                                nums.extend(part_1)
-                                
-                                # Partea 2: Generează Joker FĂRĂ verificare duplicate!
-                                count_2, min_2, max_2 = self.config.composite_parts[1]
-                                # Generează direct UN număr (permite duplicate!)
-                                joker = min_2 + (rng.next() % (max_2 - min_2 + 1))
-                                nums.append(joker)
-                            else:
-                                nums = generate_numbers(rng, self.config.numbers_to_draw, self.config.min_number, self.config.max_number)
-                            
-                            print(f"  {i}. {p['name'].upper()}:")
-                            print(f"     Seed: {p['pred']:,}")
-                            
-                            # Afișare SPECIALĂ pentru Joker
-                            if self.config.is_composite:
-                                main_nums = sorted(nums[:-1])
-                                joker_num = nums[-1]
-                                print(f"     Numere principale: {main_nums}")
-                                print(f"     🎰 JOKER: {joker_num}")
-                            else:
-                                print(f"     NUMERE (ordine RNG): {nums}")
-                                print(f"            (sortate):    {sorted(nums)}")
-                            
-                            print()
-                            
-                            predictions.append({
-                                'rng': rng_name,
-                                'success_rate': result['success_rate'],
-                                'pattern': p['name'],
-                                'formula': p['formula'],
-                                'confidence': p['confidence'],
-                                'seed': p['pred'],
-                                'numbers': nums  # FIX: Păstrează ordinea RNG, NU sortată!
-                            })
-                        except Exception as e:
-                            print(f"  ❌ Eroare predicție {p['name']}: {e}")
-                    
-                    print(f"  {'='*66}\n")
-                
-                elif pattern['top_patterns']:
-                    # Un singur pattern
-                    p = pattern['top_patterns'][0]
-                    try:
-                        rng = create_rng(rng_name, p['pred'])
-                        
-                        if self.config.is_composite:
-                            # FIX JOKER: Permite duplicate! (13.7% din cazuri în date reale)
-                            nums = []
-                            
-                            # Partea 1: Generează primele 5 numere UNIQUE din range-ul lor
-                            count_1, min_1, max_1 = self.config.composite_parts[0]
-                            part_1 = generate_numbers(rng, count_1, min_1, max_1)
+            output = f"cpu_prediction_{self.lottery_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            with open(output, 'w') as f:
+                json.dump({
+                    'lottery': self.lottery_type,
+                    'timestamp': datetime.now().isoformat(),
+                    'predictions': predictions
+                }, f, indent=2)
+            print(f"\n💾 Rezultate salvate: {output}\n")
                             nums.extend(part_1)
                             
                             # Partea 2: Generează Joker FĂRĂ verificare duplicate!
