@@ -966,7 +966,7 @@ class CPUOnlyPredictor:
                     
                     # UPDATE PROGRESS la fiecare 30 secunde SAU dacă e seed găsit
                     current_time = time.time()
-                    if current_time - last_update_time >= update_interval or seed is not None:
+                    if current_time - last_update_time >= update_interval or seed_found_in_chunk:
                         last_update_time = current_time
                         
                         completed = len(seeds_by_draw)
