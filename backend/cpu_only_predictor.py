@@ -1132,61 +1132,6 @@ class CPUOnlyPredictor:
                     'timestamp': datetime.now().isoformat(),
                     'predictions': predictions
                 }, f, indent=2)
-            print(f"\n💾 Rezultate salvate: {output}\n")
-                            nums.extend(part_1)
-                            
-                            # Partea 2: Generează Joker FĂRĂ verificare duplicate!
-                            count_2, min_2, max_2 = self.config.composite_parts[1]
-                            # Generează direct UN număr (permite duplicate!)
-                            joker = min_2 + (rng.next() % (max_2 - min_2 + 1))
-                            nums.append(joker)
-                        else:
-                            nums = generate_numbers(rng, self.config.numbers_to_draw, self.config.min_number, self.config.max_number)
-                        
-                        print(f"\n  {'='*66}")
-                        print(f"  🎯 PREDICȚIE PENTRU URMĂTOAREA EXTRAGERE")
-                        print(f"  {'='*66}")
-                        print(f"  Seed prezis: {p['pred']:,}")
-                        
-                        # Afișare SPECIALĂ pentru Joker
-                        if self.config.is_composite:
-                            # Joker: primele 5 + ultimul separat
-                            main_nums = sorted(nums[:-1])  # Primele 5
-                            joker_num = nums[-1]           # Ultimul = Joker
-                            print(f"  NUMERE PRINCIPALE: {main_nums}  (5 din 1-45)")
-                            print(f"  🎰 JOKER: {joker_num}  (1 din 1-20)")
-                            print(f"  ──────────────────────────────────────────────")
-                            print(f"  COMPLET: {main_nums} + [{joker_num}]")
-                        else:
-                            # 5/40 și 6/49: afișare cu ordinea RNG
-                            print(f"  NUMERE (ordine RNG): {nums}")
-                            print(f"         (sortate):    {sorted(nums)}")
-                        
-                        print(f"  {'='*66}\n")
-                        
-                        predictions.append({
-                            'rng': rng_name,
-                            'success_rate': result['success_rate'],
-                            'pattern': p['name'],
-                            'formula': p['formula'],
-                            'confidence': p['confidence'],
-                            'seed': p['pred'],
-                            'numbers': nums  # FIX: Păstrează ordinea RNG, NU sortată!
-                        })
-                    except Exception as e:
-                        print(f"  ❌ Eroare predicție: {e}")
-        
-        # Salvare predicții (sortate după prioritate)
-        if predictions:
-            predictions.sort(key=lambda x: (x['priority'] != 'HIGH', -x['confidence']))
-            
-            output = f"cpu_prediction_{self.lottery_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-            with open(output, 'w') as f:
-                json.dump({
-                    'lottery': self.lottery_type,
-                    'timestamp': datetime.now().isoformat(),
-                    'predictions': predictions
-                }, f, indent=2)
             print(f"\n💾 Rezultate salvate: {output}")
             
             # Afișare rezumat predicții
