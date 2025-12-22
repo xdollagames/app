@@ -901,6 +901,8 @@ class CPUOnlyPredictor:
             total_seeds = seed_range[1]  # Total seeds pentru acest RNG
             
             rng_start_time = time.time()
+            last_update_time = time.time()
+            update_interval = 2.0  # Actualizare la fiecare 2 secunde
             
             with Pool(processes=num_cores) as pool:
                 tasks_completed = 0
@@ -939,6 +941,7 @@ class CPUOnlyPredictor:
                         
                         # Afișăm imediat când găsim
                         print(f"\n  🎯 GĂSIT! Seed {seed:,} pentru {data[idx_task]['data']}: {data[idx_task]['numere']}")
+                        last_update_time = time.time()  # Forțează update imediat după găsire
                         
                         # EARLY STOPPING: Dacă am găsit toate extragerile, STOP!
                         if len(seeds_found) == len(data):
@@ -947,9 +950,7 @@ class CPUOnlyPredictor:
                             pool.join()
                             break
                     
-                    completed = len(seeds_by_draw)
-                    progress = 100 * completed / len(data) if len(data) > 0 else 0
-                    elapsed_min = elapsed / 60
+                    # Calculăm seeds_progress pentru verificare
                     seeds_progress = 100 * seeds_processed / total_seeds
                     
                     # STOP la 100% seeds procesate
@@ -959,33 +960,37 @@ class CPUOnlyPredictor:
                         pool.join()
                         break
                     
-                    completed = len(seeds_by_draw)
-                    progress = 100 * completed / len(data) if len(data) > 0 else 0
-                    elapsed_min = elapsed / 60
-                    seeds_progress = 100 * seeds_processed / total_seeds
-                    
-                    # Format seeds processed (în milioane, miliarde, etc)
-                    if seeds_processed >= 1_000_000_000:
-                        seeds_str = f"{seeds_processed/1_000_000_000:.1f}B"
-                    elif seeds_processed >= 1_000_000:
-                        seeds_str = f"{seeds_processed/1_000_000:.0f}M"
-                    else:
-                        seeds_str = f"{seeds_processed:,}"
-                    
-                    if total_seeds >= 1_000_000_000:
-                        total_str = f"{total_seeds/1_000_000_000:.1f}B"
-                    elif total_seeds >= 1_000_000:
-                        total_str = f"{total_seeds/1_000_000:.0f}M"
-                    else:
-                        total_str = f"{total_seeds:,}"
-                    
-                    cache_info = ""
-                    if cached_positive > 0:
-                        cache_info += f" ✅{cached_positive}"
-                    if cached_negative > 0:
-                        cache_info += f" ⏭️{cached_negative}"
-                    
-                    print(f"  [{completed}/{len(data)}] ({progress:.1f}%) | {len(seeds_found)} seeds | {elapsed_min:.1f}/{rng_timeout_minutes}min | Seeds: {seeds_progress:.1f}% ({seeds_str}/{total_str}){cache_info}", end='\r')
+                    # UPDATE PROGRESS la fiecare 2 secunde SAU dacă e seed găsit
+                    current_time = time.time()
+                    if current_time - last_update_time >= update_interval or seed is not None:
+                        last_update_time = current_time
+                        
+                        completed = len(seeds_by_draw)
+                        progress = 100 * completed / len(data) if len(data) > 0 else 0
+                        elapsed_min = elapsed / 60
+                        
+                        # Format seeds processed (în milioane, miliarde, etc)
+                        if seeds_processed >= 1_000_000_000:
+                            seeds_str = f"{seeds_processed/1_000_000_000:.1f}B"
+                        elif seeds_processed >= 1_000_000:
+                            seeds_str = f"{seeds_processed/1_000_000:.0f}M"
+                        else:
+                            seeds_str = f"{seeds_processed:,}"
+                        
+                        if total_seeds >= 1_000_000_000:
+                            total_str = f"{total_seeds/1_000_000_000:.1f}B"
+                        elif total_seeds >= 1_000_000:
+                            total_str = f"{total_seeds/1_000_000:.0f}M"
+                        else:
+                            total_str = f"{total_seeds:,}"
+                        
+                        cache_info = ""
+                        if cached_positive > 0:
+                            cache_info += f" ✅{cached_positive}"
+                        if cached_negative > 0:
+                            cache_info += f" ⏭️{cached_negative}"
+                        
+                        print(f"  [{completed}/{len(data)}] ({progress:.1f}%) | {len(seeds_found)} seeds | {elapsed_min:.1f}/{rng_timeout_minutes}min | Seeds: {seeds_progress:.1f}% ({seeds_str}/{total_str}){cache_info}", end='\r')
             
             elapsed_total = time.time() - rng_start_time
             success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
