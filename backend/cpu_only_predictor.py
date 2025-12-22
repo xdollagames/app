@@ -77,12 +77,22 @@ else:
 
 # CACHE pentru seeds găsite (persistent între rulări!)
 CACHE_FILE = "seeds_cache.json"
+CACHE_VERSION = "v2_exact_order"  # Versiune pentru invalidare automată
 
 def load_seeds_cache():
-    """Încarcă cache-ul de seeds"""
+    """Încarcă cache-ul de seeds cu validare de versiune"""
     try:
         with open(CACHE_FILE, 'r') as f:
-            return json.load(f)
+            cache = json.load(f)
+            
+            # Verifică versiunea cache-ului
+            if cache.get('_version') != CACHE_VERSION:
+                print(f"⚠️  Cache vechi detectat - invalidat automat (versiune: {cache.get('_version')} → {CACHE_VERSION})")
+                return {'_version': CACHE_VERSION}
+            
+            return cache
+    except:
+        return {'_version': CACHE_VERSION}
     except:
         return {}
 
