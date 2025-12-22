@@ -76,13 +76,12 @@ ALL_RNGS = {
     'xorshift32': 2**32 - 1,
     'xorshift64': 2**32,        # Poate merge la 2^64 pentru 6-49
     'xorshift128': 2**32,       # Poate merge la 2^64 pentru 6-49
-    'xorshift128plus': 2**32,   # NOTĂ: în RNG_TYPES se numește diferit
     'xorshift_simple': 2**32,
     
     # Modern RNGs
     'pcg32': 2**32,
     'xoshiro256': 2**32,        # Poate merge la 2^64 pentru 6-49
-    'splitmix64': 2**32,        # Poate merge la 2^64 pentru 6-49
+    'splitmix': 2**32,          # Poate merge la 2^64 pentru 6-49
     
     # Other algorithms
     'well512': 2**32,
@@ -98,7 +97,7 @@ ALL_RNGS = {
 }
 
 # RNG-uri care pot scala la 64-bit DOAR pentru 6-49
-RNG_64BIT_CAPABLE = ['xorshift64', 'xorshift128', 'xorshift128plus', 'xoshiro256', 'splitmix64']
+RNG_64BIT_CAPABLE = ['xorshift64', 'xorshift128', 'xoshiro256', 'splitmix']
 
 # Calcul factorial
 def factorial(n):
