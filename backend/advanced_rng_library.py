@@ -425,6 +425,110 @@ class LFSR:
         return self.state
 
 
+class LXM:
+    """LXM (LCG + Xorshift Mix) - Modern hybrid 2020+"""
+    __slots__ = ['lcg_state', 'xor_state']
+    
+    def __init__(self, seed: int):
+        self.lcg_state = seed & 0xFFFFFFFF
+        self.xor_state = (seed >> 32) & 0xFFFFFFFF
+        if self.xor_state == 0:
+            self.xor_state = 1
+    
+    def next(self) -> int:
+        # LCG part
+        self.lcg_state = (1103515245 * self.lcg_state + 12345) & 0xFFFFFFFF
+        
+        # Xorshift part
+        x = self.xor_state
+        x ^= (x << 13) & 0xFFFFFFFF
+        x ^= (x >> 17) & 0xFFFFFFFF
+        x ^= (x << 5) & 0xFFFFFFFF
+        self.xor_state = x
+        
+        # Mix both
+        return (self.lcg_state + self.xor_state) & 0xFFFFFFFF
+
+
+class Xoroshiro128:
+    """xoroshiro128+ - Varianta îmbunătățită cu rotații"""
+    __slots__ = ['s0', 's1']
+    
+    def __init__(self, seed: int):
+        self.s0 = seed & 0xFFFFFFFFFFFFFFFF
+        self.s1 = ((seed >> 32) & 0xFFFFFFFFFFFFFFFF) or 1
+        if self.s0 == 0:
+            self.s0 = 1
+    
+    def _rotl(self, x, k):
+        return ((x << k) | (x >> (64 - k))) & 0xFFFFFFFFFFFFFFFF
+    
+    def next(self) -> int:
+        s0, s1 = self.s0, self.s1
+        result = (s0 + s1) & 0xFFFFFFFFFFFFFFFF
+        
+        s1 ^= s0
+        self.s0 = self._rotl(s0, 24) ^ s1 ^ ((s1 << 16) & 0xFFFFFFFFFFFFFFFF)
+        self.s1 = self._rotl(s1, 37)
+        
+        return result & 0xFFFFFFFF
+
+
+class ChaChaSimple:
+    """ChaCha-based PRNG - Versiune simplificată"""
+    __slots__ = ['state', 'counter']
+    
+    def __init__(self, seed: int):
+        self.state = seed & 0xFFFFFFFF
+        self.counter = 0
+    
+    def _quarter_round(self, a, b, c, d):
+        """Quarter round simplificat"""
+        a = (a + b) & 0xFFFFFFFF
+        d ^= a
+        d = ((d << 16) | (d >> 16)) & 0xFFFFFFFF
+        
+        c = (c + d) & 0xFFFFFFFF
+        b ^= c
+        b = ((b << 12) | (b >> 20)) & 0xFFFFFFFF
+        
+        return a, b, c, d
+    
+    def next(self) -> int:
+        self.counter += 1
+        a, b, c, d = self.state, self.counter, 0x61707865, 0x3320646e
+        a, b, c, d = self._quarter_round(a, b, c, d)
+        self.state = a
+        return a
+
+
+class KISS:
+    """KISS (Keep It Simple Stupid) - Combinație de 3 RNG-uri"""
+    __slots__ = ['x', 'y', 'z', 'c']
+    
+    def __init__(self, seed: int):
+        self.x = (seed & 0xFFFFFFFF) or 123456789
+        self.y = ((seed >> 8) & 0xFFFFFFFF) or 362436000
+        self.z = ((seed >> 16) & 0xFFFFFFFF) or 521288629
+        self.c = ((seed >> 24) & 0xFFFFFFFF) or 7654321
+    
+    def next(self) -> int:
+        # Linear congruential
+        self.x = (69069 * self.x + 12345) & 0xFFFFFFFF
+        
+        # Xorshift
+        self.y ^= (self.y << 13) & 0xFFFFFFFF
+        self.y ^= (self.y >> 17) & 0xFFFFFFFF
+        self.y ^= (self.y << 5) & 0xFFFFFFFF
+        
+        # Multiply-with-carry
+        t = (698769069 * self.z + self.c) & 0xFFFFFFFFFFFFFFFF
+        self.c = t >> 32
+        self.z = t & 0xFFFFFFFF
+        
+        return (self.x + self.y + self.z) & 0xFFFFFFFF
+
+
 # Factory pentru crearea RNG-urilor
 RNG_TYPES = {
     'lcg_glibc': LCG_GLIBC,
@@ -448,6 +552,10 @@ RNG_TYPES = {
     'splitmix': SplitMix64,
     'middlesquare': MiddleSquare,
     'lfsr': LFSR,  # LINEAR FEEDBACK SHIFT REGISTER - NOU!
+    'lxm': LXM,  # LCG + Xorshift hybrid - NOU!
+    'xoroshiro128': Xoroshiro128,  # Îmbunătățire xorshift cu rotații - NOU!
+    'chacha': ChaChaSimple,  # ChaCha-based PRNG - NOU!
+    'kiss': KISS,  # Keep It Simple Stupid - combinație 3 RNG - NOU!
 }
 
 
