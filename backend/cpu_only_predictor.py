@@ -93,8 +93,6 @@ def load_seeds_cache():
             return cache
     except:
         return {'_version': CACHE_VERSION}
-    except:
-        return {}
 
 def save_seeds_cache(cache):
     """Salvează cache-ul de seeds cu versiune"""
@@ -103,6 +101,7 @@ def save_seeds_cache(cache):
         with open(CACHE_FILE, 'w') as f:
             json.dump(cache, f, indent=2)
     except:
+        pass
         pass
 
 def get_cached_seed(lottery_type, date_str, rng_name):
