@@ -969,8 +969,9 @@ class CPUOnlyPredictor:
                     if current_time - last_update_time >= update_interval or seed_found_in_chunk:
                         last_update_time = current_time
                         
-                        completed = len(seeds_by_draw)
-                        progress = 100 * completed / len(data) if len(data) > 0 else 0
+                        # Număr de seeds găsite (nu extrageri procesate!)
+                        num_found = len(seeds_found)
+                        success_pct = 100 * num_found / len(data) if len(data) > 0 else 0
                         elapsed_min = elapsed / 60
                         
                         # Format seeds processed (în milioane, miliarde, etc)
@@ -994,7 +995,7 @@ class CPUOnlyPredictor:
                         if cached_negative > 0:
                             cache_info += f" ⏭️{cached_negative}"
                         
-                        print(f"  [{completed}/{len(data)}] ({progress:.1f}%) | {len(seeds_found)} seeds | {elapsed_min:.1f}/{rng_timeout_minutes}min | Seeds: {seeds_progress:.1f}% ({seeds_str}/{total_str}){cache_info}", end='\r')
+                        print(f"  Găsite: {num_found}/{len(data)} ({success_pct:.0f}%) | {elapsed_min:.1f}/{rng_timeout_minutes}min | Seeds: {seeds_progress:.1f}% ({seeds_str}/{total_str}){cache_info}", end='\r')
             
             elapsed_total = time.time() - rng_start_time
             success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
