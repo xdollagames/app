@@ -2,6 +2,7 @@
 """
 CPU-ONLY PREDICTOR - ZERO GPU
 Simplu, stabil, rapid cu reverse engineering
+OPTIMIZAT: Chunk size mare + Numba JIT pentru SIMD
 """
 
 import json
@@ -13,6 +14,17 @@ import numpy as np
 from scipy.optimize import curve_fit
 from multiprocessing import Pool, cpu_count
 import random
+
+try:
+    from numba import njit
+    HAS_NUMBA = True
+except:
+    HAS_NUMBA = False
+    def njit(*args, **kwargs):
+        """Fallback dacă numba nu e disponibil"""
+        def decorator(func):
+            return func
+        return decorator if not args else decorator(args[0])
 
 try:
     import psutil
