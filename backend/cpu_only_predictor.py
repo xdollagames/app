@@ -822,8 +822,9 @@ class CPUOnlyPredictor:
             print(f"  📊 Range: {seed_range[0]:,} - {seed_range[1]:,} ({seed_range[1]:,} seeds)")
             print(f"  ⏰ Timeout: {rng_timeout_minutes} minute ({timeout_seconds} secunde)")
             
-            # Creează CHUNKS pentru a folosi TOATE cores-urile!
-            chunk_size = max(100000, seed_range[1] // (num_cores * 10))  # 10 chunks per core
+            # Creează CHUNKS OPTIMIZATE pentru RAM
+            # Chunk mai mare = mai puțin overhead, folosește RAM pentru caching
+            chunk_size = max(500000, seed_range[1] // (num_cores * 4))  # 4 chunks per core (era 10)
             
             tasks = []
             for i, e in enumerate(data):
