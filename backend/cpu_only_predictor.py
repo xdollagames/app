@@ -296,16 +296,19 @@ def cpu_worker_chunked(args):
     
     # Verifică cache pentru fiecare extragere
     cache_hits = {}
+    cache_not_found = set()
+    
     for idx, numbers, date_str in all_targets:
         cached_result = get_cached_seed(lottery_type, date_str, rng_name)
         
         if cached_result == 'NOT_FOUND':
             results_per_draw[idx] = 'NOT_FOUND'
+            cache_not_found.add(idx)
         elif cached_result is not None and isinstance(cached_result, int):
-            if seed_chunk_start <= cached_result < seed_chunk_end:
-                cache_hits[idx] = (cached_result, date_str)
+            # Cache HIT - verificăm seed-ul (nu importă chunk-ul!)
+            cache_hits[idx] = (cached_result, date_str)
     
-    # Verifică cache hits
+    # Verifică cache hits (validează seed-ul)
     for idx, (cached_seed, date_str) in cache_hits.items():
         try:
             rng = create_rng(rng_name, cached_seed)
@@ -326,6 +329,10 @@ def cpu_worker_chunked(args):
                 results_per_draw[idx] = cached_seed
         except:
             pass
+    
+    # Dacă TOATE extragerile sunt rezolvate din cache, returnează instant!
+    if all(results_per_draw[idx] is not None for idx in results_per_draw.keys()):
+        return results_per_draw
     
     # Reverse engineering pentru primul chunk (doar pentru extragerea 0)
     if seed_chunk_start == 0 and all_targets:
