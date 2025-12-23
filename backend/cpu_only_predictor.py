@@ -297,18 +297,21 @@ def cpu_worker_chunked(args):
     """Worker CPU - OPTIMIZAT: testează fiecare seed o singură dată pentru TOATE extragerile"""
     import time
     
-    all_targets, rng_name, lottery_config, seed_chunk_start, seed_chunk_end, timeout_seconds, lottery_type, seed_range_tuple = args
+    all_targets, rng_name, lottery_config, seed_chunk_start, seed_chunk_end, timeout_seconds, lottery_type, seed_range_tuple, cache_data = args
     # all_targets = lista cu toate extragerile: [(idx, numbers, date), ...]
+    # cache_data = cache pre-loaded din main (evită citiri disk)
     
     start_time = time.time()
     results_per_draw = {idx: None for idx, _, _ in all_targets}
+    cache_updates = {}  # Seed-uri noi de salvat în cache
     
-    # Verifică cache pentru fiecare extragere
+    # Verifică cache pentru fiecare extragere (folosește cache_data pasat!)
     cache_hits = {}
     cache_not_found = set()
     
     for idx, numbers, date_str in all_targets:
-        cached_result = get_cached_seed(lottery_type, date_str, rng_name)
+        # Citește din cache-ul pasat (NU din disk!)
+        cached_result = cache_data.get(lottery_type, {}).get(date_str, {}).get(rng_name)
         
         if cached_result == 'NOT_FOUND':
             results_per_draw[idx] = 'NOT_FOUND'
