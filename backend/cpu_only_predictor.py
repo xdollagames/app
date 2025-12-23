@@ -1087,6 +1087,22 @@ class CPUOnlyPredictor:
                         
                         print(f"  Găsite: {num_found}/{len(data)} ({success_pct:.0f}%) | {elapsed_min:.1f}/{rng_timeout_minutes}min | Seeds: {seeds_progress:.1f}% ({seeds_str}/{total_str}){cache_info}", end='\r')
             
+            # BATCH WRITE: Scrie toate cache updates o singură dată (evită 1000+ write-uri!)
+            if all_cache_updates:
+                try:
+                    cache = load_seeds_cache()
+                    for lt in all_cache_updates:
+                        if lt not in cache:
+                            cache[lt] = {}
+                        for date_str in all_cache_updates[lt]:
+                            if date_str not in cache[lt]:
+                                cache[lt][date_str] = {}
+                            cache[lt][date_str].update(all_cache_updates[lt][date_str])
+                    save_seeds_cache(cache)
+                    print(f"\n  💾 Cache salvat: {sum(len(all_cache_updates[lt]) for lt in all_cache_updates)} date entries")
+                except Exception as e:
+                    print(f"\n  ⚠️  Cache save error: {e}")
+            
             elapsed_total = time.time() - rng_start_time
             success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
             
