@@ -1138,8 +1138,19 @@ class CPUOnlyPredictor:
                 pattern_all = analyze_all_patterns_cpu(result['all_seeds'])
                 
                 if pattern_all and pattern_all.get('top_patterns'):
-                    for p in pattern_all['top_patterns'][:1]:  # Top 1
-                        print(f"  Pattern: {p['name']}")
+                    # Afișează TOATE pattern-urile cu 100% confidence
+                    perfect_patterns = [p for p in pattern_all['top_patterns'] if p['confidence'] == 100.0]
+                    if not perfect_patterns:
+                        perfect_patterns = pattern_all['top_patterns'][:1]  # Măcar cel mai bun
+                    
+                    if len(perfect_patterns) > 1:
+                        print(f"  🔥 {len(perfect_patterns)} PATTERN-URI CU 100%:")
+                    
+                    for i, p in enumerate(perfect_patterns, 1):
+                        if len(perfect_patterns) > 1:
+                            print(f"\n  Pattern #{i}: {p['name']}")
+                        else:
+                            print(f"  Pattern: {p['name']}")
                         print(f"  Confidence: {p['confidence']:.1f}%")
                         print(f"  Seed prezis (toate): {p['pred']:,}")
                         
