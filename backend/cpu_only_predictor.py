@@ -106,21 +106,28 @@ def save_seeds_cache(cache):
 
 def get_cached_seed(lottery_type, date_str, rng_name):
     """Verifică cache - returnează seed SAU 'NOT_FOUND' SAU None"""
-    cache = load_seeds_cache()
-    result = cache.get(lottery_type, {}).get(date_str, {}).get(rng_name)
-    return result  # Poate fi: seed (int), 'NOT_FOUND' (str), sau None
+    try:
+        cache = load_seeds_cache()
+        result = cache.get(lottery_type, {}).get(date_str, {}).get(rng_name)
+        return result
+    except:
+        return None
 
 def cache_seed(lottery_type, date_str, rng_name, seed):
     """Salvează seed în cache (seed=int SAU seed='NOT_FOUND')"""
-    cache = load_seeds_cache()
-    
-    if lottery_type not in cache:
-        cache[lottery_type] = {}
-    if date_str not in cache[lottery_type]:
-        cache[lottery_type][date_str] = {}
-    
-    cache[lottery_type][date_str][rng_name] = seed
-    save_seeds_cache(cache)
+    try:
+        cache = load_seeds_cache()
+        
+        if lottery_type not in cache:
+            cache[lottery_type] = {}
+        if date_str not in cache[lottery_type]:
+            cache[lottery_type][date_str] = {}
+        
+        cache[lottery_type][date_str][rng_name] = seed
+        save_seeds_cache(cache)
+    except Exception as e:
+        # Ignore cache errors - nu e critic
+        pass
 
 
 # SEED RANGES pentru fiecare RNG - TOATE DISPONIBILE (fără Mersenne)
