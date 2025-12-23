@@ -344,7 +344,7 @@ def cpu_worker_chunked(args):
     
     # Dacă TOATE extragerile sunt rezolvate din cache, returnează instant!
     if all(results_per_draw[idx] is not None for idx in results_per_draw.keys()):
-        return results_per_draw
+        return (results_per_draw, cache_updates)  # Returnează ambele!
     
     # Reverse engineering pentru primul chunk (doar pentru extragerea 0)
     if seed_chunk_start == 0 and all_targets:
