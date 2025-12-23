@@ -84,14 +84,15 @@ def load_seeds_cache():
     try:
         with open(CACHE_FILE, 'r') as f:
             cache = json.load(f)
-            
-            # Verifică versiunea cache-ului
-            if cache.get('_version') != CACHE_VERSION:
-                print(f"⚠️  Cache vechi detectat - invalidat automat (versiune: {cache.get('_version')} → {CACHE_VERSION})")
-                return {'_version': CACHE_VERSION}
-            
-            return cache
-    except:
+        # Fișierul e închis automat aici (with context)
+        
+        # Verifică versiunea cache-ului
+        if cache.get('_version') != CACHE_VERSION:
+            print(f"⚠️  Cache vechi detectat - invalidat automat (versiune: {cache.get('_version')} → {CACHE_VERSION})")
+            return {'_version': CACHE_VERSION}
+        
+        return cache
+    except Exception:
         return {'_version': CACHE_VERSION}
 
 def save_seeds_cache(cache):
@@ -100,7 +101,8 @@ def save_seeds_cache(cache):
         cache['_version'] = CACHE_VERSION
         with open(CACHE_FILE, 'w') as f:
             json.dump(cache, f, indent=2)
-    except:
+        # Fișierul e închis automat aici (with context)
+    except Exception:
         pass
         pass
 
