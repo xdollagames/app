@@ -475,8 +475,29 @@ def cpu_worker_chunked(args):
 
 def analyze_all_patterns_cpu(seeds):
     """Analizează TOATE 23 pattern-urile - 100% CPU"""
-    if len(seeds) < 3:
+    if len(seeds) < 2:
         return {'pattern_type': 'insufficient', 'predicted_seed': None, 'confidence': 0, 'all_patterns': {}, 'top_patterns': []}
+    
+    if len(seeds) == 2:
+        # Cu 2 seeds: doar LINEAR posibil
+        print(f"  🎯 Pattern LINEAR (2 seeds)...")
+        diff = seeds[1] - seeds[0]
+        predicted = seeds[1] + diff
+        return {
+            'pattern_type': 'linear',
+            'predicted_seed': predicted,
+            'confidence': 100.0,
+            'formula': f'y = x + {diff}',
+            'error': 0.0,
+            'all_patterns': {'linear': {'pred': predicted, 'error': 0, 'formula': f'linear: +{diff}'}},
+            'top_patterns': [{
+                'name': 'linear',
+                'pred': predicted,
+                'confidence': 100.0,
+                'error': 0.0,
+                'formula': f'+{diff} per extragere'
+            }]
+        }
     
     print(f"  🎯 Analiză 23 pattern-uri pe CPU...")
     
