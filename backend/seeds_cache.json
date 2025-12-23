@@ -1,8 +1,0 @@
-{
-  "_version": "v2_exact_order",
-  "joker": {
-    "2024-12-31": {
-      "test_rng": 123456
-    }
-  }
-}
