@@ -977,6 +977,7 @@ class CPUOnlyPredictor:
             seeds_by_draw = {}
             seeds_processed = 0  # Număr total de seeds procesate
             total_seeds = seed_range[1]  # Total seeds pentru acest RNG
+            all_cache_updates = {}  # Colectează toate update-urile de cache
             
             rng_start_time = time.time()
             last_update_time = time.time()
@@ -984,8 +985,20 @@ class CPUOnlyPredictor:
             
             with Pool(processes=num_cores) as pool:
                 tasks_completed = 0
-                for chunk_results in pool.imap_unordered(cpu_worker_chunked, tasks):
+                for worker_result in pool.imap_unordered(cpu_worker_chunked, tasks):
                     tasks_completed += 1
+                    
+                    # Unpack rezultatul: (results_per_draw, cache_updates)
+                    chunk_results, cache_updates = worker_result
+                    
+                    # Merge cache updates
+                    for lt in cache_updates:
+                        if lt not in all_cache_updates:
+                            all_cache_updates[lt] = {}
+                        for date_str in cache_updates[lt]:
+                            if date_str not in all_cache_updates[lt]:
+                                all_cache_updates[lt][date_str] = {}
+                            all_cache_updates[lt][date_str].update(cache_updates[lt][date_str])
                     
                     # Incrementăm seeds procesate (fiecare task = un chunk)
                     seeds_processed += chunk_size
