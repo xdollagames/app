@@ -915,6 +915,10 @@ class CPUOnlyPredictor:
         print(f"  Timeout: {rng_timeout_minutes} min per RNG")
         print(f"{'='*70}\n")
         
+        # PRE-LOAD cache-ul o singură dată (evită file descriptor leak!)
+        global_cache = load_seeds_cache()
+        print(f"  💾 Cache pre-loaded (versiune: {global_cache.get('_version', 'none')})\n")
+        
         rng_results = {}
         
         for idx, rng_name in enumerate(rng_list, 1):
