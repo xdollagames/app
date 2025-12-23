@@ -1168,7 +1168,11 @@ class CPUOnlyPredictor:
                             else:
                                 nums = generate_numbers(rng, self.config.numbers_to_draw, self.config.min_number, self.config.max_number)
                             
-                            print(f"  Predicție: {nums}")
+                            if len(perfect_patterns) > 1:
+                                print(f"  Predicție #{i}: {nums}")
+                            else:
+                                print(f"  Predicție: {nums}")
+                            
                             predictions.append({
                                 'rng': rng_name,
                                 'type': 'ALL_SEEDS',
