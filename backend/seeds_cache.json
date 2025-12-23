@@ -1,0 +1,8 @@
+{
+  "_version": "v2_exact_order",
+  "joker": {
+    "2024-12-31": {
+      "lcg_borland": 123456
+    }
+  }
+}
