@@ -950,7 +950,7 @@ class CPUOnlyPredictor:
                 chunk_end = min(chunk_start + chunk_size, seed_range[1])
                 # Un task procesează un chunk pentru TOATE extragerile
                 tasks.append((all_targets, rng_name, self.config, chunk_start, chunk_end, 
-                            timeout_seconds, self.lottery_type, seed_range))
+                            timeout_seconds, self.lottery_type, seed_range, global_cache))
             
             print(f"  🔥 {len(tasks)} task-uri (chunks de {chunk_size:,}) → {min(num_cores, len(tasks))} cores active")
             print(f"  ⚡ OPTIMIZAT: Fiecare seed testat o singură dată pentru {len(all_targets)} extrageri!")
