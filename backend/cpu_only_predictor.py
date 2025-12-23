@@ -1194,8 +1194,19 @@ class CPUOnlyPredictor:
                 pattern_combo = analyze_all_patterns_cpu(result['combo_seeds'])
                 
                 if pattern_combo and pattern_combo.get('top_patterns'):
-                    for p in pattern_combo['top_patterns'][:1]:
-                        print(f"  Pattern: {p['name']}")
+                    # Afișează TOATE pattern-urile cu 100% confidence
+                    perfect_patterns = [p for p in pattern_combo['top_patterns'] if p['confidence'] == 100.0]
+                    if not perfect_patterns:
+                        perfect_patterns = pattern_combo['top_patterns'][:1]  # Măcar cel mai bun
+                    
+                    if len(perfect_patterns) > 1:
+                        print(f"  🔥 {len(perfect_patterns)} PATTERN-URI CU 100%:")
+                    
+                    for i, p in enumerate(perfect_patterns, 1):
+                        if len(perfect_patterns) > 1:
+                            print(f"\n  Pattern #{i}: {p['name']}")
+                        else:
+                            print(f"  Pattern: {p['name']}")
                         print(f"  Confidence: {p['confidence']:.1f}%")
                         print(f"  Seed prezis (combo): {p['pred']:,}")
                         
@@ -1212,7 +1223,11 @@ class CPUOnlyPredictor:
                             else:
                                 nums = generate_numbers(rng, self.config.numbers_to_draw, self.config.min_number, self.config.max_number)
                             
-                            print(f"  🎯 Predicție PRIORITARĂ: {nums}")
+                            if len(perfect_patterns) > 1:
+                                print(f"  🎯 Predicție PRIORITARĂ #{i}: {nums}")
+                            else:
+                                print(f"  🎯 Predicție PRIORITARĂ: {nums}")
+                            
                             predictions.append({
                                 'rng': rng_name,
                                 'type': 'CONSECUTIVE_COMBO',
