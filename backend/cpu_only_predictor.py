@@ -1001,16 +1001,18 @@ class CPUOnlyPredictor:
             # BATCH WRITE: Scrie toate cache updates o singură dată (evită 1000+ write-uri!)
             if all_cache_updates:
                 try:
-                    cache = load_seeds_cache()
+                    # Merge cu global_cache (deja loaded)
                     for lt in all_cache_updates:
-                        if lt not in cache:
-                            cache[lt] = {}
+                        if lt not in global_cache:
+                            global_cache[lt] = {}
                         for date_str in all_cache_updates[lt]:
-                            if date_str not in cache[lt]:
-                                cache[lt][date_str] = {}
-                            cache[lt][date_str].update(all_cache_updates[lt][date_str])
-                    save_seeds_cache(cache)
-                    print(f"\n  💾 Cache salvat: {sum(len(all_cache_updates[lt]) for lt in all_cache_updates)} date entries")
+                            if date_str not in global_cache[lt]:
+                                global_cache[lt][date_str] = {}
+                            global_cache[lt][date_str].update(all_cache_updates[lt][date_str])
+                    
+                    # Scrie o singură dată
+                    save_seeds_cache(global_cache)
+                    print(f"\n  💾 Cache actualizat: {sum(len(all_cache_updates[lt]) for lt in all_cache_updates)} date entries")
                 except Exception as e:
                     print(f"\n  ⚠️  Cache save error: {e}")
             
