@@ -132,7 +132,7 @@ def cache_seed(lottery_type, date_str, rng_name, seed):
         pass
 
 
-# SEED RANGES pentru fiecare RNG - TOATE DISPONIBILE (fără Mersenne)
+# SEED RANGES pentru fiecare RNG - TOATE pe 32-bit (rapid și practic!)
 ALL_RNGS = {
     # LCG family (6 RNG-uri)
     'lcg_borland': 2**32,
@@ -144,14 +144,14 @@ ALL_RNGS = {
     
     # Xorshift family (4 RNG-uri)
     'xorshift32': 2**32 - 1,
-    'xorshift64': 2**32,        # Poate merge la 2^64 pentru 6-49
-    'xorshift128': 2**32,       # Poate merge la 2^64 pentru 6-49
+    'xorshift64': 2**32,
+    'xorshift128': 2**32,
     'xorshift_simple': 2**32,
     
     # Modern RNGs (3 RNG-uri)
     'pcg32': 2**32,
-    'xoshiro256': 2**32,        # Poate merge la 2^64 pentru 6-49
-    'splitmix': 2**32,          # Poate merge la 2^64 pentru 6-49
+    'xoshiro256': 2**32,
+    'splitmix': 2**32,
     
     # Other algorithms (4 RNG-uri)
     'mwc': 2**32,
@@ -165,19 +165,12 @@ ALL_RNGS = {
     'complex_hash': 2**32,
     
     # NEW - Algoritmi conceptual diferiți (4 RNG-uri)
-    'lxm': 2**32,               # LCG + Xorshift hybrid
-    'xoroshiro128': 2**64,      # Xorshift cu rotații + 64-bit
-    'chacha': 2**32,            # ChaCha-based
-    'kiss': 2**32,              # KISS - combinație 3 RNG-uri
-    
-    # NEW - 64-bit specifice pentru 6-49 (2 RNG-uri)
-    'pcg64': 2**64,             # PCG 64-bit - top quality
-    'lxm64': 2**64,             # LXM 64-bit - robust modern
+    'lxm': 2**32,
+    'xoroshiro128': 2**32,  # Înapoi la 32-bit
+    'chacha': 2**32,
+    'kiss': 2**32,
 }
-# TOTAL: 26 RNG-uri
-
-# RNG-uri care pot scala la 64-bit DOAR pentru 6-49
-RNG_64BIT_CAPABLE = ['xorshift64', 'xorshift128', 'xoshiro256', 'splitmix', 'xoroshiro128', 'pcg64', 'lxm64']
+# TOTAL: 24 RNG-uri (TOATE pe 32-bit pentru viteză!)
 
 # Calcul factorial
 def factorial(n):
@@ -203,11 +196,8 @@ LOTTERY_POSSIBILITIES = {
 }
 
 def get_rng_max_seeds(rng_name, lottery_type='5-40'):
-    """Returnează numărul MAXIM de seeds pentru un RNG specific și loterie"""
-    # Pentru 6-49, folosește 64-bit pentru RNG-urile capabile
-    if lottery_type == '6-49' and rng_name in RNG_64BIT_CAPABLE:
-        return 2**64
-    # Altfel, folosește range-ul standard
+    """Returnează numărul MAXIM de seeds pentru un RNG specific"""
+    # TOATE RNG-urile folosesc 32-bit acum (rapid și practic!)
     return ALL_RNGS.get(rng_name, 2**32)
 
 def get_compatible_rngs(lottery_type):
@@ -215,18 +205,12 @@ def get_compatible_rngs(lottery_type):
     min_required = LOTTERY_POSSIBILITIES.get(lottery_type, 0)
     compatible = []
     
+    # TOATE jocurile folosesc aceleași RNG-uri 32-bit!
     for rng_name in ALL_RNGS.keys():
         max_seeds = get_rng_max_seeds(rng_name, lottery_type)
-        
-        # Pentru 5-40 și Joker: EXCLUDE RNG-urile 64-bit (prea mari!)
-        if lottery_type in ['5-40', 'joker']:
-            # Acceptă doar dacă range-ul e între min_required și 10 miliarde
-            if min_required <= max_seeds < 10_000_000_000:
-                compatible.append(rng_name)
-        # Pentru 6-49: DOAR 64-bit
-        else:
-            if max_seeds >= min_required:
-                compatible.append(rng_name)
+        # Acceptă dacă range-ul e între 2.5B și 5B (32-bit optim)
+        if 2_500_000_000 <= max_seeds <= 5_000_000_000:
+            compatible.append(rng_name)
     
     return compatible
 
