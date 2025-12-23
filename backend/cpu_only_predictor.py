@@ -352,7 +352,12 @@ def cpu_worker_chunked(args):
         if results_per_draw[idx_0] is None:
             reversed_seed = try_reverse_engineering(rng_name, numbers_0, lottery_config)
             if reversed_seed is not None:
-                cache_seed(lottery_type, date_0, rng_name, reversed_seed)
+                # Colectează pentru cache (nu scrie pe disk!)
+                if lottery_type not in cache_updates:
+                    cache_updates[lottery_type] = {}
+                if date_0 not in cache_updates[lottery_type]:
+                    cache_updates[lottery_type][date_0] = {}
+                cache_updates[lottery_type][date_0][rng_name] = reversed_seed
                 results_per_draw[idx_0] = reversed_seed
     
     # LOOP OPTIMIZAT: testează fiecare seed o singură dată
@@ -379,7 +384,12 @@ def cpu_worker_chunked(args):
             for idx, target, date_str in all_targets:
                 if results_per_draw[idx] is None:  # Doar dacă nu am găsit deja
                     if generated == target:
-                        cache_seed(lottery_type, date_str, rng_name, seed)
+                        # Colectează pentru cache (nu scrie pe disk!)
+                        if lottery_type not in cache_updates:
+                            cache_updates[lottery_type] = {}
+                        if date_str not in cache_updates[lottery_type]:
+                            cache_updates[lottery_type][date_str] = {}
+                        cache_updates[lottery_type][date_str][rng_name] = seed
                         results_per_draw[idx] = seed
                         # Nu break - poate să matchuiască și alte extrageri!
         except:
@@ -389,11 +399,16 @@ def cpu_worker_chunked(args):
     if seed_chunk_end >= seed_range_tuple[1]:
         for idx, numbers, date_str in all_targets:
             if results_per_draw[idx] is None:
-                cache_seed(lottery_type, date_str, rng_name, 'NOT_FOUND')
+                # Colectează pentru cache (nu scrie pe disk!)
+                if lottery_type not in cache_updates:
+                    cache_updates[lottery_type] = {}
+                if date_str not in cache_updates[lottery_type]:
+                    cache_updates[lottery_type][date_str] = {}
+                cache_updates[lottery_type][date_str][rng_name] = 'NOT_FOUND'
                 results_per_draw[idx] = 'NOT_FOUND'
     
-    # Returnează rezultate pentru toate extragerile
-    return results_per_draw
+    # Returnează rezultate pentru toate extragerile + cache updates
+    return (results_per_draw, cache_updates)
     """Worker CPU - cu CACHE pentru seeds deja găsite!"""
     import time
     
