@@ -998,6 +998,11 @@ class CPUOnlyPredictor:
                         
                         print(f"  Găsite: {num_found}/{len(data)} ({success_pct:.0f}%) | {elapsed_min:.1f}/{rng_timeout_minutes}min | Seeds: {seeds_progress:.1f}% ({seeds_str}/{total_str}){cache_info}", end='\r')
             
+            # Pool închis automat aici (with context manager)
+            # Forțează cleanup complet
+            import gc
+            gc.collect()  # Curăță file descriptors
+            
             # BATCH WRITE: Scrie toate cache updates o singură dată (evită 1000+ write-uri!)
             if all_cache_updates:
                 try:
@@ -1015,6 +1020,9 @@ class CPUOnlyPredictor:
                     print(f"\n  💾 Cache actualizat: {sum(len(all_cache_updates[lt]) for lt in all_cache_updates)} date entries")
                 except Exception as e:
                     print(f"\n  ⚠️  Cache save error: {e}")
+            
+            # Delay între RNG-uri pentru cleanup complet
+            time.sleep(0.5)  # 500ms pentru file descriptor cleanup
             
             elapsed_total = time.time() - rng_start_time
             success_rate = len(seeds_found) / len(data) if len(data) > 0 else 0
